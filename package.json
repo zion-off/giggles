@@ -1,0 +1,50 @@
+{
+  "name": "giggles",
+  "version": "0.0.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zion-off/bento.git"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "nodemon --watch src --ext ts,tsx --exec tsup",
+    "dev": "tsx --watch playground/index.tsx",
+    "lint": "prettier --write . && eslint . --fix"
+  },
+  "files": [
+    "dist"
+  ],
+  "peerDependencies": {
+    "ink": "^6.0.0",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.13",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react": "^7.32.2",
+    "ink": "^6.6.0",
+    "nodemon": "^3.1.11",
+    "prettier": "^2.8.7",
+    "react": "^19.2.4",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.0.3",
+    "typescript-eslint": "^8.0.0"
+  }
+}
