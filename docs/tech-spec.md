@@ -704,6 +704,96 @@ The palette itself is a framework-provided component. It's a `FocusTrap` with ca
 
 ---
 
+## Package Structure
+
+The framework ships as a single npm package with subpath exports for clear separation of concerns:
+
+```tsx
+import { ... } from 'giggles';           // Core framework
+import { ... } from 'giggles/headless';  // Headless UI primitives
+import { ... } from 'giggles/ui';        // Styled UI components
+```
+
+### `giggles` — Core Framework
+
+The base import provides all structural primitives:
+
+```tsx
+import {
+  // Router
+  Router,
+  Screen,
+  useNavigation,
+
+  // Focus system
+  FocusGroup,
+  FocusTrap,
+  useFocus,
+  useFocusState,
+
+  // Input
+  useKeybindings,
+
+  // Command palette
+  useCommands,
+  CommandPalette,
+
+  // Terminal lifecycle
+  AlternateScreen,
+  useTerminalFocus,
+  useTerminalSize,
+  useShellOut
+} from 'giggles';
+```
+
+These are always needed for any non-trivial app. They're small (mostly hooks and context) and tree-shakeable.
+
+### `giggles/headless` — Headless UI Primitives
+
+Provides component behavior without visual opinions. Use these when you need full control over rendering:
+
+```tsx
+import { TextInput, Select, Table, Modal } from 'giggles/headless';
+
+// Or namespace to avoid conflicts with styled components
+import * as Headless from 'giggles/headless';
+
+<Headless.TextInput.Root>
+  <Headless.TextInput.Input render={...} />
+</Headless.TextInput.Root>
+```
+
+Each headless component exposes compound components (`.Root`, `.Input`, `.Label`, etc.) and render props for full customization.
+
+### `giggles/ui` — Styled UI Components
+
+Provides ready-to-use components with sensible defaults. Use these for rapid development:
+
+```tsx
+import { TextInput, Select, Table, Modal } from 'giggles/ui';
+
+<TextInput
+  label="Name"
+  value={name}
+  onChange={setName}
+  placeholder="Enter your name"
+/>
+```
+
+Styled components are thin wrappers around headless primitives. Internally, `giggles/ui` imports from `giggles/headless` and provides default `render` implementations.
+
+### Why Subpath Exports (Not Separate Packages)
+
+- **Single install** — `npm install giggles` gets everything
+- **Version coordination** — No risk of mismatched versions between `@giggles/core`, `@giggles/headless`, and `@giggles/ui`
+- **Tree-shaking** — Modern bundlers only include what you import
+- **Simpler mental model** — One package, three import paths
+- **All layers integrate tightly** — Headless and styled components both depend on core focus/input systems
+
+The framework is distributed as one package but organized into logical import paths for clarity.
+
+---
+
 ## Summary of Exports
 
 ### Hooks
