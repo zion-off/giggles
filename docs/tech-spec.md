@@ -726,10 +726,95 @@ The palette itself is a framework-provided component. It's a `FocusTrap` with ca
 - `<AlternateScreen>` — Runs children in alternate screen buffer
 - `<CommandPalette>` — Fuzzy-searchable action list (reads from command registry)
 
-### Built-in UI Primitives (to be designed later)
+### Built-in UI Primitives
 
-- Input: `TextInput`, `Select`, `MultiSelect`, `Confirm`, `Autocomplete`
-- Layout: `Split`, `Tabs`
-- Display: `Table`, `VirtualList`, `Spinner`, `Badge`, `Markdown`
-- Overlay: `Modal`, `Dialog`, `Toast`
-- Chrome: `StatusBar`, `Breadcrumb`, `KeyHints`
+#### Two-Tier Architecture
+
+The framework provides UI components in two forms:
+
+1. **Headless primitives** — Pure behavior and logic (focus management, keyboard handling, state machines) with no visual opinions
+2. **Styled components** — Thin wrappers around headless primitives with sensible default styling
+
+This is inspired by Radix UI and Headless UI from the web ecosystem. Most users can use the styled components and get a polished experience out of the box. Power users can drop down to headless primitives for full control.
+
+**Example: TextInput**
+
+Headless primitive (full control):
+
+```tsx
+import { TextInput } from 'ink-framework/headless';
+
+function CustomInput() {
+  const [value, setValue] = useState('');
+
+  return (
+    <TextInput.Root>
+      <TextInput.Label>Enter your name:</TextInput.Label>
+      <TextInput.Input
+        value={value}
+        onChange={setValue}
+        render={({ value, focused, cursor }) => (
+          <Box borderStyle="double" borderColor={focused ? 'cyan' : 'gray'}>
+            <Text color={focused ? 'cyan' : 'white'}>
+              {value.slice(0, cursor)}
+              <Text inverse>{value[cursor] || ' '}</Text>
+              {value.slice(cursor + 1)}
+            </Text>
+          </Box>
+        )}
+      />
+    </TextInput.Root>
+  );
+}
+```
+
+Styled component (batteries included):
+
+```tsx
+import { TextInput } from 'ink-framework';
+
+function SimpleInput() {
+  const [value, setValue] = useState('');
+
+  return (
+    <TextInput
+      label="Enter your name:"
+      value={value}
+      onChange={setValue}
+      placeholder="John Doe"
+    />
+  );
+}
+```
+
+The styled component internally uses the headless primitive. It's just a convenience wrapper with default styling decisions.
+
+**Why This Matters**
+
+- **Progressive disclosure** — Start simple, drop down when you need customization
+- **Maintainability** — Behavior lives in one place (headless), styling is just a wrapper
+- **No fighting defaults** — When the styled component doesn't fit, use headless instead of overriding styles
+- **Testability** — Headless primitives are easier to unit test (pure logic, no rendering)
+- **Consistency** — All styled components share the same visual language, but you can customize individual pieces
+
+**Implementation Note**
+
+Headless components expose their behavior through:
+- Compound components (`Root`, `Input`, `Label`, etc.)
+- Render props for full rendering control
+- State and event handlers
+- Focus management integration with the framework's focus tree
+
+Styled components are just React components that compose headless primitives with default `render` implementations.
+
+#### Planned Components
+
+All components below will ship in both headless and styled forms:
+
+- **Input**: `TextInput`, `Select`, `MultiSelect`, `Confirm`, `Autocomplete`
+- **Layout**: `Split`, `Tabs`
+- **Display**: `Table`, `VirtualList`, `Spinner`, `Badge`, `Markdown`
+- **Overlay**: `Modal`, `Dialog`, `Toast`
+- **Chrome**: `StatusBar`, `Breadcrumb`, `KeyHints`
+
+Each component handles responsive behavior internally (adapts to available space, scrolls when necessary, truncates intelligently). Developers describe layout with flexbox; components measure and adapt.
