@@ -349,6 +349,56 @@ nav.push('commitDetail', { hash: 'abc123' });
 <CommitDetail hash="abc123" />;
 ```
 
+#### Dependency Injection vs Navigation Params
+
+**Navigation params** are for screen-specific data that changes which content the screen displays:
+
+```tsx
+nav.push('commitDetail', { hash: 'abc123' });
+nav.push('settings', { tab: 'keybindings' });
+nav.push('fileEditor', { path: '/src/app.ts' });
+```
+
+**Shared dependencies** (API clients, configuration, theme, feature flags) should go through React context, not params:
+
+```tsx
+function App() {
+  return (
+    <ApiProvider client={apiClient}>
+      <ThemeProvider theme={theme}>
+        <ConfigProvider config={config}>
+          <Router initial="dashboard">
+            <Screen name="dashboard" component={Dashboard} />
+            <Screen name="commitDetail" component={CommitDetail} />
+            <Screen name="settings" component={Settings} />
+          </Router>
+        </ConfigProvider>
+      </ThemeProvider>
+    </ApiProvider>
+  );
+}
+
+function Dashboard() {
+  const api = useApi();      // from context
+  const theme = useTheme();  // from context
+  const nav = useNavigation();
+
+  // Navigation params are for screen-specific data
+  const onSelectCommit = (hash: string) => {
+    nav.push('commitDetail', { hash });
+  };
+}
+```
+
+**Why context instead of static props on `<Screen>`?**
+
+1. **Router stays simple** — Its only job is managing the navigation stack, not dependency wiring
+2. **Standard React pattern** — Context is the idiomatic way to share dependencies
+3. **Works with direct renders** — When testing or embedding a screen component directly, context providers work the same way
+4. **Cleaner types** — Navigation params can be strictly typed per-screen without polluting the type system with every possible dependency
+
+The Router's `params` should only contain data that determines *which* thing to show. Everything else comes from context.
+
 #### Router Internals
 
 ```tsx
