@@ -117,6 +117,8 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+export const FocusNodeContext = createContext<string | null>(null);
+
 export const useFocusContext = () => {
   const context = useContext(FocusContext);
 
