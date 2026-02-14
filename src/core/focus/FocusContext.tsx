@@ -14,6 +14,7 @@ export type FocusContextValue = {
   getFocusedId: () => string | null;
   isInActiveBranch: (id: string) => boolean;
   getActiveBranchPath: () => string[];
+  navigateSibling: (direction: 'next' | 'prev', wrap?: boolean) => void;
 };
 
 export const FocusContext = createContext<FocusContextValue | null>(null);
@@ -120,6 +121,39 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
     return activeBranchPath;
   }, [activeBranchPath]);
 
+  const navigateSibling = useCallback(
+    (direction: 'next' | 'prev', wrap: boolean = true) => {
+      const currentId = focusedId;
+      if (!currentId) return;
+
+      const nodes = nodesRef.current;
+      const currentNode = nodes.get(currentId);
+      if (!currentNode?.parentId) return;
+
+      const parent = nodes.get(currentNode.parentId);
+      if (!parent || parent.childrenIds.length === 0) return;
+
+      const siblings = parent.childrenIds;
+      const currentIndex = siblings.indexOf(currentId);
+      if (currentIndex === -1) return;
+
+      let nextIndex: number;
+
+      if (wrap) {
+        nextIndex =
+          direction === 'next'
+            ? (currentIndex + 1) % siblings.length
+            : (currentIndex - 1 + siblings.length) % siblings.length;
+      } else {
+        nextIndex =
+          direction === 'next' ? Math.min(currentIndex + 1, siblings.length - 1) : Math.max(currentIndex - 1, 0);
+      }
+
+      focusNode(siblings[nextIndex]);
+    },
+    [focusedId, focusNode]
+  );
+
   return (
     <FocusContext.Provider
       value={{
@@ -129,7 +163,8 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
         isFocused,
         getFocusedId,
         isInActiveBranch,
-        getActiveBranchPath
+        getActiveBranchPath,
+        navigateSibling
       }}
     >
       {children}
