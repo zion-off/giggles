@@ -1,12 +1,5 @@
 import type { Key } from 'ink';
 
-/**
- * Converts Ink's useInput (input, key) into the binding name
- * users write in their keybindings.
- *
- * This is the single place that maps Ink's key representation
- * to Giggles' key names.
- */
 export function normalizeKey(input: string, key: Key): string {
   if (key.downArrow) return 'down';
   if (key.upArrow) return 'up';
