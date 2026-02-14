@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { type Keybindings, useKeybindings } from '../input';
 import { FocusBindContext } from './FocusBindContext';
 import { FocusNodeContext, useFocusContext } from './FocusContext';
 import { useFocus } from './useFocus';
@@ -7,11 +8,19 @@ type FocusGroupProps = {
   children: React.ReactNode;
   direction?: 'vertical' | 'horizontal';
   value?: string;
+  wrap?: boolean;
+  navigable?: boolean;
 };
 
-export function FocusGroup({ children, direction = 'vertical', value }: FocusGroupProps) {
+export function FocusGroup({
+  children,
+  direction = 'vertical',
+  value,
+  wrap = true,
+  navigable = true
+}: FocusGroupProps) {
   const { id } = useFocus();
-  const { focusNode } = useFocusContext();
+  const { focusNode, navigateSibling } = useFocusContext();
   const bindMapRef = useRef<Map<string, string>>(new Map());
 
   const register = useCallback((logicalId: string, nodeId: string) => {
@@ -32,6 +41,29 @@ export function FocusGroup({ children, direction = 'vertical', value }: FocusGro
   }, [value, focusNode]);
 
   const bindContextValue = value ? { register, unregister } : null;
+
+  const navigationKeys = useMemo((): Keybindings => {
+    if (!navigable) return {};
+
+    const next = () => navigateSibling('next', wrap);
+    const prev = () => navigateSibling('prev', wrap);
+
+    return direction === 'vertical'
+      ? {
+          j: next,
+          k: prev,
+          down: next,
+          up: prev
+        }
+      : {
+          l: next,
+          h: prev,
+          right: next,
+          left: prev
+        };
+  }, [navigable, direction, wrap, navigateSibling]);
+
+  useKeybindings(navigationKeys);
 
   return (
     <FocusNodeContext.Provider value={id}>
