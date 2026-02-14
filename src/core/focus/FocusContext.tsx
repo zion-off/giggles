@@ -20,7 +20,7 @@ export const FocusContext = createContext<FocusContextValue | null>(null);
 export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
   const nodesRef = useRef<Map<string, FocusNode>>(new Map());
   const [focusedId, setFocusedId] = useState<string | null>(null);
-  const [activePath, setActivePath] = useState<Set<string>>(new Set());
+  const [activeBranchNodes, setActiveBranchNodes] = useState<Set<string>>(new Set());
 
   const focusNode = useCallback((id: string) => {
     const nodes = nodesRef.current;
@@ -35,7 +35,7 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
         const node = nodes.get(currentNode);
         currentNode = node?.parentId ?? null;
       }
-      setActivePath(path);
+      setActiveBranchNodes(path);
       return id;
     });
   }, []);
@@ -85,7 +85,7 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
           focusNode(node.parentId);
         } else {
           setFocusedId(null);
-          setActivePath(new Set());
+          setActiveBranchNodes(new Set());
         }
       }
     },
@@ -101,9 +101,9 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isActive = useCallback(
     (id: string) => {
-      return activePath.has(id);
+      return activeBranchNodes.has(id);
     },
-    [activePath]
+    [activeBranchNodes]
   );
 
   const getFocusedId = useCallback(() => {
