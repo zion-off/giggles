@@ -4,6 +4,7 @@ description: API reference for the focus system
 ---
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
 
 The focus system provides components and hooks for managing keyboard navigation.
 
@@ -32,12 +33,31 @@ function MenuItem({ label }) {
 
 Returns focus state and methods for a component.
 
+```ts title="Type Signature"
+function useFocus(id?: string): {
+  id: string;
+  focused: boolean;
+  focus: () => void;
+}
+```
+
+**Parameters:**
+
+<TypeTable
+  type={{
+    id: {
+      description: 'Optional logical ID for declarative focus control via FocusGroup value prop',
+      type: 'string',
+    },
+  }}
+/>
+
 **Returns:**
 
 <TypeTable
   type={{
     id: {
-      description: 'Unique identifier for this focus node',
+      description: 'Unique identifier for this focus node (internal React ID)',
       type: 'string',
     },
     focused: {
@@ -82,6 +102,38 @@ Creates a navigable group of focusable children.
     },
   }}
 />
+
+## Controlled Focus
+
+Use the `value` prop on `FocusGroup` with the `id` parameter on `useFocus` to control focus declaratively:
+
+```tsx title="Controlled Focus Example"
+function Form() {
+  const [field, setField] = useState('name');
+
+  const handleNext = () => {
+    if (field === 'name') setField('email');
+    else if (field === 'email') setField('submit');
+  };
+
+  return (
+    <FocusGroup value={field}>
+      <TextInput id="name" label="Name" />
+      <TextInput id="email" label="Email" />
+      <Button id="submit" label="Submit" />
+    </FocusGroup>
+  );
+}
+
+function TextInput({ id, label }) {
+  const focus = useFocus(id);
+  return <Text color={focus.focused ? 'green' : 'white'}>{label}</Text>;
+}
+```
+
+<Callout type="warn">
+  Each child within a FocusGroup must have a unique id. Duplicate IDs will throw an error.
+</Callout>
 
 ### useFocusState()
 
