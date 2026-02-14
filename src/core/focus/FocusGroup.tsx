@@ -24,6 +24,11 @@ export function FocusGroup({
   const bindMapRef = useRef<Map<string, string>>(new Map());
 
   const register = useCallback((logicalId: string, nodeId: string) => {
+    if (bindMapRef.current.has(logicalId)) {
+      throw new Error(
+        `FocusGroup: Duplicate id "${logicalId}". Each child must have a unique id.`
+      );
+    }
     bindMapRef.current.set(logicalId, nodeId);
   }, []);
 
