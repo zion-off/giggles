@@ -43,5 +43,5 @@ jobs:
         working-directory: documentation
 
       - name: Type check
-        run: pnpm exec tsc --noEmit
+        run: pnpm run types:check
         working-directory: documentation
