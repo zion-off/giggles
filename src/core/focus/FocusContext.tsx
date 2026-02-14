@@ -11,8 +11,9 @@ export type FocusContextValue = {
   unregisterNode: (id: string) => void;
   focusNode: (id: string) => void;
   isFocused: (id: string) => boolean;
-  isInActiveBranch: (id: string) => boolean;
   getFocusedId: () => string | null;
+  isInActiveBranch: (id: string) => boolean;
+  getActiveBranchPath: () => string[];
 };
 
 export const FocusContext = createContext<FocusContextValue | null>(null);
@@ -21,6 +22,7 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
   const nodesRef = useRef<Map<string, FocusNode>>(new Map());
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [activeBranchNodes, setActiveBranchNodes] = useState<Set<string>>(new Set());
+  const [activeBranchPath, setActiveBranchPath] = useState<string[]>([]);
 
   const focusNode = useCallback((id: string) => {
     const nodes = nodesRef.current;
@@ -28,14 +30,17 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
 
     setFocusedId((current) => {
       if (current === id) return current;
-      const path = new Set<string>();
+      const pathSet = new Set<string>();
+      const pathArray: string[] = [];
       let currentNode: string | null = id;
       while (currentNode) {
-        path.add(currentNode);
+        pathSet.add(currentNode);
+        pathArray.push(currentNode);
         const node = nodes.get(currentNode);
         currentNode = node?.parentId ?? null;
       }
-      setActiveBranchNodes(path);
+      setActiveBranchNodes(pathSet);
+      setActiveBranchPath(pathArray);
       return id;
     });
   }, []);
@@ -86,6 +91,7 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
           setFocusedId(null);
           setActiveBranchNodes(new Set());
+          setActiveBranchPath([]);
         }
       }
     },
@@ -99,6 +105,10 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
     [focusedId]
   );
 
+  const getFocusedId = useCallback(() => {
+    return focusedId;
+  }, [focusedId]);
+
   const isInActiveBranch = useCallback(
     (id: string) => {
       return activeBranchNodes.has(id);
@@ -106,13 +116,21 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
     [activeBranchNodes]
   );
 
-  const getFocusedId = useCallback(() => {
-    return focusedId;
-  }, [focusedId]);
+  const getActiveBranchPath = useCallback(() => {
+    return activeBranchPath;
+  }, [activeBranchPath]);
 
   return (
     <FocusContext.Provider
-      value={{ registerNode, unregisterNode, focusNode, isFocused, isInActiveBranch, getFocusedId }}
+      value={{
+        registerNode,
+        unregisterNode,
+        focusNode,
+        isFocused,
+        getFocusedId,
+        isInActiveBranch,
+        getActiveBranchPath
+      }}
     >
       {children}
     </FocusContext.Provider>
