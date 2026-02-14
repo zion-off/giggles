@@ -6,8 +6,8 @@ The foundational architectural primitives that solve the core problems of buildi
 
 | Feature       | Status      |
 | ------------- | ----------- |
-| Input System  | Not Started |
-| Focus Tree    | Not Started |
+| Focus Tree    | Done        |
+| Input System  | Done        |
 | Screen Router | Not Started |
 
 ---
