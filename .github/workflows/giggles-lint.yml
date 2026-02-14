@@ -1,4 +1,4 @@
-name: lint & format
+name: giggles / ci
 
 on:
   push:
