@@ -26,7 +26,7 @@ export const InputProvider = ({ children }: { children: React.ReactNode }) => {
 
   const registerKeybindings = useCallback((nodeId: string, bindings: Keybindings, options?: KeybindingOptions) => {
     const registration: NodeBindings = {
-      bindings: new Map(Object.entries(bindings)),
+      bindings: new Map(Object.entries(bindings).filter((entry): entry is [string, KeyHandler] => entry[1] != null)),
       capture: options?.capture ?? false,
       onKeypress: options?.onKeypress,
       layer: options?.layer

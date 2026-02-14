@@ -10,21 +10,38 @@ import type { Key } from 'ink';
  * - Register bindings conditionally based on component state, or
  * - Use internal logic within the handler to decide whether to perform an action
  *
- * @param input - The input string representing the key pressed (e.g., 'j', 'enter', 'ctrl+c')
- * @param key - Object containing key metadata (modifiers like ctrl, shift, meta, etc.)
+ * @param input - The character string for the key pressed (e.g., 'j', 'q')
+ * @param key - Ink's Key object with boolean properties (downArrow, return, escape, etc.)
  *
  * @example
  * ```tsx
- * useKeybindings({
+ * useKeybindings(focus, {
  *   j: () => moveDown(),
  *   k: () => moveUp(),
- *   enter: () => selectItem()
+ *   return: () => selectItem()
  * });
  * ```
  */
 export type KeyHandler = (input: string, key: Key) => void;
 
-export type Keybindings = Record<string, KeyHandler>;
+type SpecialKey =
+  | 'up'
+  | 'down'
+  | 'left'
+  | 'right'
+  | 'enter'
+  | 'escape'
+  | 'tab'
+  | 'backspace'
+  | 'delete'
+  | 'pageup'
+  | 'pagedown'
+  | 'home'
+  | 'end';
+
+type KeyName = SpecialKey | (string & {});
+
+export type Keybindings = Partial<Record<KeyName, KeyHandler>>;
 
 export type KeybindingOptions = {
   capture?: boolean;
