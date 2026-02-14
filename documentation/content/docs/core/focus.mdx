@@ -34,7 +34,9 @@ function MenuItem({ label }) {
 Returns focus state and methods for a component.
 
 ```ts title="Type Signature"
-function useFocus(id?: string): {
+function useFocus(id?: string): FocusHandle
+
+type FocusHandle = {
   id: string;
   focused: boolean;
   focus: () => void;
@@ -52,7 +54,7 @@ function useFocus(id?: string): {
   }}
 />
 
-**Returns:**
+**Returns:** `FocusHandle`
 
 <TypeTable
   type={{
@@ -70,6 +72,16 @@ function useFocus(id?: string): {
     },
   }}
 />
+
+The `FocusHandle` type can be imported and used for typing component props:
+
+```tsx
+import type { FocusHandle } from 'giggles';
+
+function MyComponent({ focus }: { focus: FocusHandle }) {
+  return <Text color={focus.focused ? 'green' : 'white'}>Item</Text>;
+}
+```
 
 ### FocusGroup
 
