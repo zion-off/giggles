@@ -1,6 +1,6 @@
 import { Box, Text, render } from 'ink';
-import { MenuItem } from '../examples/components/MenuItem';
 import { FocusGroup, GigglesProvider, useFocus, useKeybindings } from '../src';
+import { MenuItem } from './components/MenuItem';
 
 function Menu() {
   const focus = useFocus();
