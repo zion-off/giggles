@@ -63,7 +63,7 @@ export function FocusGroup({
         };
   }, [navigable, direction, wrap, navigateSibling]);
 
-  useKeybindings(navigationKeys);
+  useKeybindings({ id }, navigationKeys);
 
   return (
     <FocusNodeContext.Provider value={id}>
