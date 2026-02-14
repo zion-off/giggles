@@ -1,0 +1,128 @@
+---
+title: Input
+description: API reference for the input system
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+The input system routes keyboard events to focused components and prevents input leaking.
+
+```tsx
+import { useKeybindings, useFocus, FocusTrap } from 'giggles';
+
+function FileList() {
+  const focus = useFocus();
+
+  useKeybindings(focus, {
+    j: () => moveDown(),
+    k: () => moveUp(),
+    enter: () => openFile(),
+  });
+
+  return <List items={files} />;
+}
+```
+
+## API Reference
+
+### useKeybindings()
+
+Registers keybindings that only fire when the component is focused.
+
+```tsx
+function useKeybindings(
+  focus: { id: string },
+  bindings: Keybindings,
+  options?: KeybindingOptions
+): void
+```
+
+**Parameters:**
+
+<TypeTable
+  type={{
+    focus: {
+      description: 'Focus handle from useFocus()',
+      type: '{ id: string }',
+    },
+    bindings: {
+      description: 'Map of key names to handler functions',
+      type: 'Keybindings',
+    },
+    options: {
+      description: 'Optional configuration for capture mode and layers',
+      type: 'KeybindingOptions',
+    },
+  }}
+/>
+
+#### Keybindings
+
+<TypeTable
+  type={{
+    '[key: string]': {
+      description: 'Key name (e.g., "j", "enter", "ctrl+c") mapped to handler function',
+      type: '(input: string, key: Key) => void',
+    },
+  }}
+/>
+
+#### KeybindingOptions
+
+<TypeTable
+  type={{
+    capture: {
+      description: 'Enable capture mode - all keystrokes go to onKeypress, nothing bubbles',
+      type: 'boolean',
+      default: 'false',
+    },
+    onKeypress: {
+      description: 'Handler for keystrokes in capture mode that don\'t match explicit bindings',
+      type: '(input: string, key: Key) => void',
+    },
+    layer: {
+      description: 'Optional layer identifier for organizing keybindings (metadata only)',
+      type: 'string',
+    },
+  }}
+/>
+
+### FocusTrap
+
+Stops input bubbling at a boundary. Used for modals and dialogs.
+
+```tsx
+function App() {
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <>
+      <MainContent />
+      {showModal && (
+        <FocusTrap>
+          <Modal onClose={() => setShowModal(false)} />
+        </FocusTrap>
+      )}
+    </>
+  );
+}
+```
+
+<TypeTable
+  type={{
+    children: {
+      description: 'Components that should trap input',
+      type: 'React.ReactNode',
+    },
+  }}
+/>
+
+### Key Names
+
+Supported key names for bindings:
+
+- **Special keys**: `enter`, `escape`, `tab`, `backspace`, `delete`, `up`, `down`, `left`, `right`, `pageup`, `pagedown`, `home`, `end`
+- **Character keys**: `a`, `b`, `j`, `k`, `?`, etc.
+- **Modified keys**: `ctrl+c`, `ctrl+q`, etc.
+
+Key normalization handles variants like `ctrl+c`, `Ctrl-C`, `^c` automatically.

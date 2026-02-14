@@ -1,0 +1,126 @@
+---
+title: Getting Started
+description: A framework for building interactive terminal user interfaces with React and Ink
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+giggles is a framework for building interactive terminal user interfaces (TUIs) with React and Ink. It provides a declarative, composable system for handling focus navigation and keyboard input in terminal applications.
+
+## Installation
+
+<Steps>
+<Step>
+
+Install giggles along with its peer dependencies:
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab value="npm">
+    ```bash
+    npm install giggles ink react
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add giggles ink react
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add giggles ink react
+    ```
+  </Tab>
+</Tabs>
+
+</Step>
+
+<Step>
+
+Verify requirements:
+- Node.js 16+
+- React 18+ or 19+
+- Ink 6+
+
+</Step>
+</Steps>
+
+## Your First TUI
+
+Here's a simple focusable menu that demonstrates giggles' core concepts:
+
+```tsx title="menu.tsx"
+import { Box, Text, render } from 'ink';
+import { GigglesProvider, FocusGroup, useFocus, useKeybindings } from 'giggles';
+
+function MenuItem({ label }: { label: string }) {
+  const focus = useFocus();
+
+  return (
+    <Box>
+      <Text color={focus.isFocused ? 'green' : 'white'}>
+        {focus.isFocused ? '> ' : '  '}
+        {label}
+      </Text>
+    </Box>
+  );
+}
+
+function Menu() {
+  const focus = useFocus();
+
+  useKeybindings(focus, {
+    q: () => process.exit(0),
+  });
+
+  return (
+    <Box flexDirection="column">
+      <Text bold>My Menu (j/k to navigate, q to quit)</Text>
+      <Text> </Text>
+      <FocusGroup direction="vertical">
+        <MenuItem label="Start Game" />
+        <MenuItem label="Settings" />
+        <MenuItem label="Exit" />
+      </FocusGroup>
+    </Box>
+  );
+}
+
+function App() {
+  return (
+    <GigglesProvider>
+      <Menu />
+    </GigglesProvider>
+  );
+}
+
+render(<App />);
+```
+
+<Callout type="info" title="What's happening">
+1. `GigglesProvider` wraps your app and provides focus + input context
+2. `FocusGroup` creates a navigable group (use `j`/`k` or arrow keys)
+3. `useFocus()` gives each item access to its focus state
+4. `useKeybindings()` binds keys to actions
+</Callout>
+
+## Core Concepts
+
+### Focus System
+giggles manages focus as a **tree structure**. Components can be focusable, and `FocusGroup` creates navigable lists. Focus moves through the tree based on your layout.
+
+- **FocusGroup**: Container for navigable items (horizontal or vertical)
+- **useFocus()**: Hook to access focus state and methods
+- **useFocusState()**: Observer hook for focus changes
+
+[Learn more: Focus →](/core/focus)
+
+### Input Handling
+Input events flow through the focus tree. The focused component receives input first, then it bubbles up the tree until handled.
+
+- **useKeybindings()**: Bind keys to actions for a component
+- **FocusTrap**: Contain input within a section (for modals, dialogs)
+- **Key normalization**: `ctrl+c`, `Ctrl-C`, `^c` all work the same
+
+[Learn more: Input →](/core/input)

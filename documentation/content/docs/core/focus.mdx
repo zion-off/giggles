@@ -1,0 +1,103 @@
+---
+title: Focus
+description: API reference for the focus system
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+The focus system provides components and hooks for managing keyboard navigation.
+
+```tsx
+import { FocusGroup, useFocus, useFocusState } from 'giggles';
+
+function Menu() {
+  return (
+    <FocusGroup direction="vertical">
+      <MenuItem label="Option 1" />
+      <MenuItem label="Option 2" />
+      <MenuItem label="Option 3" />
+    </FocusGroup>
+  );
+}
+
+function MenuItem({ label }) {
+  const focus = useFocus();
+  return <Text color={focus.focused ? 'green' : 'white'}>{label}</Text>;
+}
+```
+
+## API Reference
+
+### useFocus()
+
+Returns focus state and methods for a component.
+
+**Returns:**
+
+<TypeTable
+  type={{
+    id: {
+      description: 'Unique identifier for this focus node',
+      type: 'string',
+    },
+    focused: {
+      description: 'Whether this component is currently focused',
+      type: 'boolean',
+    },
+    focus: {
+      description: 'Programmatically focus this component',
+      type: '() => void',
+    },
+  }}
+/>
+
+### FocusGroup
+
+Creates a navigable group of focusable children.
+
+<TypeTable
+  type={{
+    direction: {
+      description: 'Navigation direction (j/k for vertical, h/l for horizontal)',
+      type: "'vertical' | 'horizontal'",
+      default: "'vertical'",
+    },
+    wrap: {
+      description: 'Whether navigation wraps from last to first item',
+      type: 'boolean',
+      default: 'true',
+    },
+    navigable: {
+      description: 'Whether arrow keys navigate children',
+      type: 'boolean',
+      default: 'true',
+    },
+    value: {
+      description: 'Controlled focus - ID of child that should be focused',
+      type: 'string',
+    },
+    children: {
+      description: 'Focusable child components',
+      type: 'React.ReactNode',
+    },
+  }}
+/>
+
+### useFocusState()
+
+Returns a state tuple for controlling focus declaratively.
+
+```tsx
+function useFocusState<T extends string>(initial: T): [T, (value: T) => void]
+```
+
+<TypeTable
+  type={{
+    initial: {
+      description: 'Initial focused value',
+      type: 'T extends string',
+    },
+  }}
+/>
+
+**Returns:** A tuple `[currentValue, setValue]` similar to `useState`.
