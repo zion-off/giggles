@@ -65,6 +65,12 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
 
+      nodes.forEach((existingNode) => {
+        if (existingNode.parentId === id && !node.childrenIds.includes(existingNode.id)) {
+          node.childrenIds.push(existingNode.id);
+        }
+      });
+
       if (nodes.size === 1) {
         focusNode(id);
       }
@@ -72,32 +78,42 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
     [focusNode]
   );
 
-  const unregisterNode = useCallback(
-    (id: string) => {
-      const nodes = nodesRef.current;
-      const node = nodes.get(id);
+  const unregisterNode = useCallback((id: string) => {
+    const nodes = nodesRef.current;
+    const node = nodes.get(id);
 
-      if (!node) return;
+    if (!node) return;
+    if (node.parentId) {
+      const parent = nodes.get(node.parentId);
+      if (parent) {
+        parent.childrenIds = parent.childrenIds.filter((childId) => childId !== id);
+      }
+    }
+    nodes.delete(id);
+
+    setFocusedId((current) => {
+      if (current !== id) return current;
+
       if (node.parentId) {
-        const parent = nodes.get(node.parentId);
-        if (parent) {
-          parent.childrenIds = parent.childrenIds.filter((childId) => childId !== id);
+        const pathSet = new Set<string>();
+        const pathArray: string[] = [];
+        let currentNode: string | null = node.parentId;
+        while (currentNode) {
+          pathSet.add(currentNode);
+          pathArray.push(currentNode);
+          const n = nodes.get(currentNode);
+          currentNode = n?.parentId ?? null;
         }
+        setActiveBranchNodes(pathSet);
+        setActiveBranchPath(pathArray);
+        return node.parentId;
       }
-      nodes.delete(id);
 
-      if (focusedId === id) {
-        if (node.parentId) {
-          focusNode(node.parentId);
-        } else {
-          setFocusedId(null);
-          setActiveBranchNodes(new Set());
-          setActiveBranchPath([]);
-        }
-      }
-    },
-    [focusedId, focusNode]
-  );
+      setActiveBranchNodes(new Set());
+      setActiveBranchPath([]);
+      return null;
+    });
+  }, []);
 
   const isFocused = useCallback(
     (id: string) => {
