@@ -1,3 +1,281 @@
 @import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
+
+/* ============================================
+   giggles — mondrian theme
+   primary blocks: red, blue, yellow
+   grid lines: bold black borders
+   ============================================ */
+
+/* ---------- Light mode ---------- */
+:root {
+  --color-fd-info: hsl(215, 90%, 42%);
+  --color-fd-warning: hsl(40, 90%, 50%);
+  --color-fd-error: hsl(4, 85%, 50%);
+  --color-fd-success: hsl(145, 70%, 40%);
+  --color-fd-idea: hsl(35, 90%, 55%);
+}
+
+@theme {
+  --color-fd-background: hsl(45, 20%, 92%);
+  --color-fd-foreground: hsl(0, 0%, 20%);
+  --color-fd-muted: hsl(45, 15%, 88%);
+  --color-fd-muted-foreground: hsl(0, 0%, 42%);
+  --color-fd-popover: hsl(45, 18%, 93%);
+  --color-fd-popover-foreground: hsl(0, 0%, 22%);
+  --color-fd-card: hsl(45, 18%, 94%);
+  --color-fd-card-foreground: hsl(0, 0%, 20%);
+  --color-fd-border: hsl(0, 0%, 35%);
+  --color-fd-primary: hsl(215, 90%, 42%);
+  --color-fd-primary-foreground: hsl(0, 0%, 100%);
+  --color-fd-secondary: hsl(45, 15%, 90%);
+  --color-fd-secondary-foreground: hsl(0, 0%, 22%);
+  --color-fd-accent: hsla(215, 90%, 42%, 0.1);
+  --color-fd-accent-foreground: hsl(215, 90%, 38%);
+  --color-fd-ring: hsl(215, 90%, 42%);
+  --color-fd-overlay: hsla(0, 0%, 0%, 0.2);
+
+  /* mondrian palette */
+  --color-mondrian-red: hsl(4, 85%, 50%);
+  --color-mondrian-blue: hsl(215, 90%, 42%);
+  --color-mondrian-yellow: hsl(48, 95%, 55%);
+  --color-mondrian-black: hsl(0, 0%, 25%);
+
+  /* semantic */
+  --color-fd-info: oklch(44.5% 0.195 260);
+  --color-fd-warning: oklch(76.9% 0.188 70.08);
+  --color-fd-error: oklch(63.7% 0.237 25.331);
+  --color-fd-success: oklch(72.3% 0.219 149.579);
+  --color-fd-idea: oklch(70.5% 0.209 60.849);
+  --color-fd-diff-remove: rgba(200, 10, 100, 0.12);
+  --color-fd-diff-remove-symbol: rgb(230, 10, 100);
+  --color-fd-diff-add: rgba(14, 180, 100, 0.1);
+  --color-fd-diff-add-symbol: rgb(10, 200, 100);
+}
+
+/* ---------- Dark mode ---------- */
+.dark {
+  --color-fd-background: hsl(0, 0%, 5%);
+  --color-fd-foreground: hsl(45, 20%, 90%);
+  --color-fd-muted: hsl(0, 0%, 10%);
+  --color-fd-muted-foreground: hsla(45, 10%, 60%, 0.8);
+  --color-fd-popover: hsl(0, 0%, 8%);
+  --color-fd-popover-foreground: hsl(45, 15%, 85%);
+  --color-fd-card: hsl(0, 0%, 8%);
+  --color-fd-card-foreground: hsl(45, 20%, 94%);
+  --color-fd-border: hsl(45, 10%, 28%);
+  --color-fd-primary: hsl(215, 85%, 60%);
+  --color-fd-primary-foreground: hsl(0, 0%, 100%);
+  --color-fd-secondary: hsl(0, 0%, 12%);
+  --color-fd-secondary-foreground: hsl(45, 15%, 88%);
+  --color-fd-accent: hsla(215, 85%, 60%, 0.12);
+  --color-fd-accent-foreground: hsl(215, 85%, 65%);
+  --color-fd-ring: hsl(215, 85%, 60%);
+  --color-fd-overlay: hsla(0, 0%, 0%, 0.5);
+
+  /* mondrian palette — slightly brighter for dark bg */
+  --color-mondrian-red: hsl(4, 80%, 58%);
+  --color-mondrian-blue: hsl(215, 85%, 60%);
+  --color-mondrian-yellow: hsl(48, 95%, 62%);
+  --color-mondrian-black: hsl(45, 10%, 28%);
+}
+
+/* ============================================
+   Typography — Geist Mono everywhere
+   ============================================ */
+
+/* Ensure code blocks inherit the monospace font */
+pre code,
+code {
+  font-family: inherit !important;
+}
+
+/* Scale down to compensate for monospace's wider character width */
+html {
+  font-size: 14px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+}
+
+/* ============================================
+   Decorative touches
+   ============================================ */
+
+/* --- Blinking cursor on nav title --- */
+nav [class*="title"]::after {
+  content: '█';
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+  color: var(--color-mondrian-red);
+  font-weight: 400;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* --- Links: blue with red hover (Mondrian primary shift) --- */
+.prose a,
+[class*="DocsBody"] a {
+  text-decoration-color: var(--color-mondrian-blue);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+  transition: text-decoration-color 0.2s;
+}
+
+.prose a:hover,
+[class*="DocsBody"] a:hover {
+  text-decoration-color: var(--color-mondrian-red);
+}
+
+/* --- Custom scrollbar (Webkit) --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-fd-border);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-mondrian-blue);
+}
+
+/* --- Selection color: yellow block --- */
+::selection {
+  background: var(--color-mondrian-yellow);
+  color: var(--color-fd-foreground);
+}
+
+/* --- Focus rings use blue --- */
+*:focus-visible {
+  outline-color: var(--color-mondrian-blue);
+}
+
+/* ============================================
+   Mondrian color block accents
+   ============================================ */
+
+/* --- 1. Navbar color strip --- */
+/* A thin band of red|blue|yellow blocks across the bottom of the navbar */
+nav {
+  position: relative;
+  border-bottom: 2px solid var(--color-mondrian-black) !important;
+}
+
+nav::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    var(--color-mondrian-red) 0%,
+    var(--color-mondrian-red) 25%,
+    var(--color-mondrian-black) 25%,
+    var(--color-mondrian-black) 25.5%,
+    var(--color-mondrian-blue) 25.5%,
+    var(--color-mondrian-blue) 55%,
+    var(--color-mondrian-black) 55%,
+    var(--color-mondrian-black) 55.5%,
+    var(--color-mondrian-yellow) 55.5%,
+    var(--color-mondrian-yellow) 80%,
+    var(--color-mondrian-black) 80%,
+    var(--color-mondrian-black) 80.5%,
+    var(--color-mondrian-red) 80.5%,
+    var(--color-mondrian-red) 100%
+  );
+}
+
+/* --- 2. Sidebar section dividers — color block strips --- */
+/* Color blocks between sidebar folder sections */
+aside [data-type="folder"] + [data-type="folder"]::before,
+aside [data-type="folder"] + [data-type="page"]::before {
+  content: '';
+  display: block;
+  height: 3px;
+  margin: 8px 0;
+  background: linear-gradient(
+    to right,
+    var(--color-mondrian-yellow) 0%,
+    var(--color-mondrian-yellow) 40%,
+    var(--color-mondrian-black) 40%,
+    var(--color-mondrian-black) 40.8%,
+    var(--color-mondrian-blue) 40.8%,
+    var(--color-mondrian-blue) 70%,
+    var(--color-mondrian-black) 70%,
+    var(--color-mondrian-black) 70.8%,
+    var(--color-mondrian-red) 70.8%,
+    var(--color-mondrian-red) 100%
+  );
+}
+
+/* --- 3. Page title — colored square marker --- */
+/* A small rotating-color block before h1 titles */
+[class*="DocsTitle"] h1::before,
+article > h1:first-of-type::before {
+  content: '■';
+  margin-right: 0.4em;
+  font-size: 0.7em;
+  vertical-align: middle;
+  color: var(--color-mondrian-red);
+}
+
+/* Rotate colors for h2s and h3s */
+article h2::before {
+  content: '■';
+  margin-right: 0.35em;
+  font-size: 0.55em;
+  vertical-align: middle;
+  color: var(--color-mondrian-blue);
+}
+
+article h3::before {
+  content: '■';
+  margin-right: 0.3em;
+  font-size: 0.45em;
+  vertical-align: middle;
+  color: var(--color-mondrian-yellow);
+}
+
+
+/* --- 5. Footer — Mondrian grid band --- */
+/* A decorative composition at the bottom of the page */
+body::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 5px;
+  margin-top: auto;
+  background: linear-gradient(
+    to right,
+    var(--color-mondrian-blue) 0%,
+    var(--color-mondrian-blue) 20%,
+    var(--color-mondrian-black) 20%,
+    var(--color-mondrian-black) 20.5%,
+    var(--color-mondrian-red) 20.5%,
+    var(--color-mondrian-red) 55%,
+    var(--color-mondrian-black) 55%,
+    var(--color-mondrian-black) 55.5%,
+    var(--color-mondrian-yellow) 55.5%,
+    var(--color-mondrian-yellow) 75%,
+    var(--color-mondrian-black) 75%,
+    var(--color-mondrian-black) 75.5%,
+    var(--color-mondrian-blue) 75.5%,
+    var(--color-mondrian-blue) 100%
+  );
+}
+
+/* --- 6. TOC active indicator --- */
+/* Uses fd-primary (Mondrian blue) by default — already on-theme. */

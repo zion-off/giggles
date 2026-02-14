@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Mondrian grid favicon for giggles -->
+  <!-- Black background (grid lines) -->
+  <rect width="32" height="32" fill="#404040"/>
+  <!-- Top-left: red block -->
+  <rect x="1" y="1" width="18" height="12" fill="#dc2626"/>
+  <!-- Top-right: white/cream block -->
+  <rect x="21" y="1" width="10" height="12" fill="#ebe6de"/>
+  <!-- Bottom-left: cream block -->
+  <rect x="1" y="15" width="8" height="16" fill="#ebe6de"/>
+  <!-- Bottom-center: blue block -->
+  <rect x="11" y="15" width="10" height="16" fill="#1d5bbd"/>
+  <!-- Bottom-right: yellow block -->
+  <rect x="23" y="15" width="8" height="16" fill="#f0c430"/>
+</svg>
