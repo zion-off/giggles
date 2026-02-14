@@ -11,7 +11,7 @@ export type FocusContextValue = {
   unregisterNode: (id: string) => void;
   focusNode: (id: string) => void;
   isFocused: (id: string) => boolean;
-  isActive: (id: string) => boolean;
+  isInActiveBranch: (id: string) => boolean;
   getFocusedId: () => string | null;
 };
 
@@ -99,7 +99,7 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
     [focusedId]
   );
 
-  const isActive = useCallback(
+  const isInActiveBranch = useCallback(
     (id: string) => {
       return activeBranchNodes.has(id);
     },
@@ -111,7 +111,9 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
   }, [focusedId]);
 
   return (
-    <FocusContext.Provider value={{ registerNode, unregisterNode, focusNode, isFocused, isActive, getFocusedId }}>
+    <FocusContext.Provider
+      value={{ registerNode, unregisterNode, focusNode, isFocused, isInActiveBranch, getFocusedId }}
+    >
       {children}
     </FocusContext.Provider>
   );
