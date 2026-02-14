@@ -2,7 +2,13 @@ import { useContext, useEffect, useId } from 'react';
 import { FocusBindContext } from './FocusBindContext';
 import { FocusNodeContext, useFocusContext } from './FocusContext';
 
-export const useFocus = (id?: string) => {
+export type FocusHandle = {
+  id: string;
+  focused: boolean;
+  focus: () => void;
+};
+
+export const useFocus = (id?: string): FocusHandle => {
   const nodeId = useId();
   const parentId = useContext(FocusNodeContext);
   const bindContext = useContext(FocusBindContext);

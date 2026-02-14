@@ -19,15 +19,13 @@ export function FocusGroup({
   wrap = true,
   navigable = true
 }: FocusGroupProps) {
-  const { id } = useFocus();
+  const focus = useFocus();
   const { focusNode, navigateSibling } = useFocusContext();
   const bindMapRef = useRef<Map<string, string>>(new Map());
 
   const register = useCallback((logicalId: string, nodeId: string) => {
     if (bindMapRef.current.has(logicalId)) {
-      throw new Error(
-        `FocusGroup: Duplicate id "${logicalId}". Each child must have a unique id.`
-      );
+      throw new Error(`FocusGroup: Duplicate id "${logicalId}". Each child must have a unique id.`);
     }
     bindMapRef.current.set(logicalId, nodeId);
   }, []);
@@ -68,10 +66,10 @@ export function FocusGroup({
         };
   }, [navigable, direction, wrap, navigateSibling]);
 
-  useKeybindings({ id }, navigationKeys);
+  useKeybindings(focus, navigationKeys);
 
   return (
-    <FocusNodeContext.Provider value={id}>
+    <FocusNodeContext.Provider value={focus.id}>
       <FocusBindContext.Provider value={bindContextValue}>{children}</FocusBindContext.Provider>
     </FocusNodeContext.Provider>
   );
