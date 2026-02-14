@@ -5,10 +5,14 @@ on:
     branches: [main]
     paths-ignore:
       - 'documentation/**'
+      - '.github/workflows/documentation-ci.yml'
+      - '.github/workflows/documentation-cd.yml'
   pull_request:
     branches: [main]
     paths-ignore:
       - 'documentation/**'
+      - '.github/workflows/documentation-ci.yml'
+      - '.github/workflows/documentation-cd.yml'
 
 jobs:
   lint:
