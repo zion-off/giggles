@@ -1,0 +1,30 @@
+---
+title: API Reference
+description: Framework API reference
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+## GigglesProvider
+
+Root provider for giggles applications. Wraps your app in the necessary context providers and sets up the input router.
+
+```tsx title="Basic Setup"
+import { render } from 'ink';
+import { GigglesProvider } from 'giggles';
+
+render(
+  <GigglesProvider>
+    <App />
+  </GigglesProvider>
+);
+```
+
+<TypeTable
+  type={{
+    children: {
+      description: 'Your application components',
+      type: 'React.ReactNode',
+    },
+  }}
+/>

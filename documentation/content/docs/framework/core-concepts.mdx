@@ -1,0 +1,43 @@
+---
+title: Core Concepts
+description: Understanding how giggles works
+---
+
+## GigglesProvider
+
+All giggles applications must be wrapped in `GigglesProvider`. This root provider combines the focus and input systems, setting up the necessary context for your entire application.
+
+```tsx title="Basic Setup"
+import { render } from 'ink';
+import { GigglesProvider } from 'giggles';
+
+render(
+  <GigglesProvider>
+    <App />
+  </GigglesProvider>
+);
+```
+
+Without this provider, none of the focus or input features will work.
+
+[API Reference →](/framework/api-reference)
+
+## Focus System
+
+giggles manages focus as a **tree structure**. Components can be focusable, and `FocusGroup` creates navigable lists. Focus moves through the tree based on your layout.
+
+- **FocusGroup**: Container for navigable items (horizontal or vertical)
+- **useFocus()**: Hook to access focus state and methods
+- **useFocusState()**: Observer hook for focus changes
+
+[Learn more: Focus →](/core/focus)
+
+## Input Handling
+
+Input events flow through the focus tree. The focused component receives input first, then it bubbles up the tree until handled.
+
+- **useKeybindings()**: Bind keys to actions for a component
+- **FocusTrap**: Contain input within a section (for modals, dialogs)
+- **Key normalization**: `ctrl+c`, `Ctrl-C`, `^c` all work the same
+
+[Learn more: Input →](/core/input)

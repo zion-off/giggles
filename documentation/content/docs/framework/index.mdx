@@ -48,79 +48,47 @@ Verify requirements:
 
 ## Your First TUI
 
-Here's a simple focusable menu that demonstrates giggles' core concepts:
+Here's a simple menu with keyboard navigation:
 
-```tsx title="menu.tsx"
-import { Box, Text, render } from 'ink';
+```tsx title="app.tsx"
+import { Box, Text, render, useApp } from 'ink';
 import { GigglesProvider, FocusGroup, useFocus, useKeybindings } from 'giggles';
 
-function MenuItem({ label }: { label: string }) {
-  const focus = useFocus();
-
-  return (
-    <Box>
-      <Text color={focus.isFocused ? 'green' : 'white'}>
-        {focus.isFocused ? '> ' : '  '}
-        {label}
-      </Text>
-    </Box>
-  );
-}
-
-function Menu() {
+function App() {
+  const { exit } = useApp();
   const focus = useFocus();
 
   useKeybindings(focus, {
-    q: () => process.exit(0),
+    q: () => exit(),
   });
 
   return (
     <Box flexDirection="column">
       <Text bold>My Menu (j/k to navigate, q to quit)</Text>
-      <Text> </Text>
       <FocusGroup direction="vertical">
-        <MenuItem label="Start Game" />
-        <MenuItem label="Settings" />
-        <MenuItem label="Exit" />
+        <Text>Start Game</Text>
+        <Text>Settings</Text>
+        <Text>Exit</Text>
       </FocusGroup>
     </Box>
   );
 }
 
-function App() {
-  return (
-    <GigglesProvider>
-      <Menu />
-    </GigglesProvider>
-  );
-}
-
-render(<App />);
+render(
+  <GigglesProvider>
+    <App />
+  </GigglesProvider>
+);
 ```
 
 <Callout type="info" title="What's happening">
 1. `GigglesProvider` wraps your app and provides focus + input context
 2. `FocusGroup` creates a navigable group (use `j`/`k` or arrow keys)
-3. `useFocus()` gives each item access to its focus state
-4. `useKeybindings()` binds keys to actions
+3. `useFocus()` gives your component access to focus state
+4. `useKeybindings()` binds keys to actions when focused
 </Callout>
 
-## Core Concepts
+## Next Steps
 
-### Focus System
-giggles manages focus as a **tree structure**. Components can be focusable, and `FocusGroup` creates navigable lists. Focus moves through the tree based on your layout.
-
-- **FocusGroup**: Container for navigable items (horizontal or vertical)
-- **useFocus()**: Hook to access focus state and methods
-- **useFocusState()**: Observer hook for focus changes
-
-[Learn more: Focus →](/core/focus)
-
-### Input Handling
-Input events flow through the focus tree. The focused component receives input first, then it bubbles up the tree until handled.
-
-- **useKeybindings()**: Bind keys to actions for a component
-- **FocusTrap**: Contain input within a section (for modals, dialogs)
-- **Key normalization**: `ctrl+c`, `Ctrl-C`, `^c` all work the same
-
-[Learn more: Input →](/core/input)
+- [Core Concepts →](/framework/core-concepts) - Understand focus and input systems
+- [API Reference →](/framework/api-reference) - Framework API documentation

@@ -56,13 +56,34 @@ function useKeybindings(
   }}
 />
 
+#### KeyHandler
+
+Handler function for a key binding.
+
+```ts title="Type Signature"
+type KeyHandler = (input: string, key: Key) => void
+```
+
+<TypeTable
+  type={{
+    input: {
+      description: 'The character string for the key pressed',
+      type: 'string',
+    },
+    key: {
+      description: 'Ink Key object with boolean properties (downArrow, return, escape, etc.)',
+      type: 'Key',
+    },
+  }}
+/>
+
 #### Keybindings
 
 <TypeTable
   type={{
     '[key: string]': {
       description: 'Key name (e.g., "j", "enter", "ctrl+c") mapped to handler function',
-      type: '(input: string, key: Key) => void',
+      type: 'KeyHandler',
     },
   }}
 />

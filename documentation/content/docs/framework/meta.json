@@ -3,5 +3,10 @@
   "description": "Getting started guide",
   "icon": "BookOpen",
   "root": true,
-  "defaultOpen": true
+  "defaultOpen": true,
+  "pages": [
+    "index",
+    "core-concepts",
+    "api-reference"
+  ]
 }
