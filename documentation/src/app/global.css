@@ -166,6 +166,12 @@ nav [class*='title']::after {
   color: var(--color-fd-foreground);
 }
 
+.dark ::selection,
+.dark::selection {
+  background: hsl(215, 85%, 40%);
+  color: hsl(0, 0%, 100%);
+}
+
 /* --- Focus rings use blue --- */
 *:focus-visible {
   outline-color: var(--color-mondrian-blue);
@@ -236,7 +242,7 @@ aside [data-type='folder'] + [data-type='page']::before {
 [class*='DocsTitle'] h1::before,
 article > h1:first-of-type::before {
   content: '■';
-  margin-right: 0.4em;
+  margin-right: 0.5em;
   font-size: 0.7em;
   vertical-align: middle;
   color: var(--color-mondrian-red);
@@ -245,7 +251,7 @@ article > h1:first-of-type::before {
 /* Rotate colors for h2s and h3s */
 article h2::before {
   content: '■';
-  margin-right: 0.35em;
+  margin-right: 0.5em;
   font-size: 0.55em;
   vertical-align: middle;
   color: var(--color-mondrian-blue);
@@ -253,7 +259,7 @@ article h2::before {
 
 article h3::before {
   content: '■';
-  margin-right: 0.3em;
+  margin-right: 1em;
   font-size: 0.45em;
   vertical-align: middle;
   color: var(--color-mondrian-yellow);
