@@ -23,7 +23,7 @@ export default async function Page(props: PageProps<'/[[...slug]]'>) {
         <ViewOptions
           markdownUrl={`${page.url}.mdx`}
           // update it to match your repo
-          githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/content/docs/${page.path}`}
+          githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/documentation/content/docs/${page.path}`}
         />
       </div>
       <DocsBody>
