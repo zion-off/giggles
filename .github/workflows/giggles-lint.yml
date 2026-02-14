@@ -1,13 +1,18 @@
-name: Lint & Format
+name: giggles
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'documentation/**'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'documentation/**'
 
 jobs:
   lint:
+    name: lint & format
     runs-on: ubuntu-latest
 
     steps:
