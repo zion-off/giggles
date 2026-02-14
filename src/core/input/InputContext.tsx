@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useRef } from 'react';
-import { Key, KeyBindings, KeyHandler, KeybindingOptions, RegisteredKeybinding } from './types';
+import { Key, KeyHandler, KeybindingOptions, Keybindings, RegisteredKeybinding } from './types';
 
 type NodeBindings = {
   bindings: Map<string, KeyHandler>;
@@ -9,7 +9,7 @@ type NodeBindings = {
 };
 
 type InputContextValue = {
-  registerKeybindings: (nodeId: string, bindings: KeyBindings, options?: KeybindingOptions) => void;
+  registerKeybindings: (nodeId: string, bindings: Keybindings, options?: KeybindingOptions) => void;
   unregisterKeybindings: (nodeId: string) => void;
   getNodeBindings: (nodeId: string) => NodeBindings | undefined;
   setTrap: (nodeId: string) => void;
@@ -24,7 +24,7 @@ export const InputProvider = ({ children }: { children: React.ReactNode }) => {
   const bindingsRef = useRef<Map<string, NodeBindings>>(new Map());
   const trapNodeIdRef = useRef<string | null>(null);
 
-  const registerKeybindings = useCallback((nodeId: string, bindings: KeyBindings, options?: KeybindingOptions) => {
+  const registerKeybindings = useCallback((nodeId: string, bindings: Keybindings, options?: KeybindingOptions) => {
     const registration: NodeBindings = {
       bindings: new Map(Object.entries(bindings)),
       capture: options?.capture ?? false,

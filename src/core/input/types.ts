@@ -24,7 +24,7 @@ import type { Key } from 'ink';
  */
 export type KeyHandler = (input: string, key: Key) => void;
 
-export type KeyBindings = Record<string, KeyHandler>;
+export type Keybindings = Record<string, KeyHandler>;
 
 export type KeybindingOptions = {
   capture?: boolean;
