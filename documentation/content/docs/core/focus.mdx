@@ -7,7 +7,7 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 
 The focus system provides components and hooks for managing keyboard navigation.
 
-```tsx
+```tsx title="Basic Usage"
 import { FocusGroup, useFocus, useFocusState } from 'giggles';
 
 function Menu() {
@@ -87,7 +87,7 @@ Creates a navigable group of focusable children.
 
 Returns a state tuple for controlling focus declaratively.
 
-```tsx
+```ts title="Type Signature"
 function useFocusState<T extends string>(initial: T): [T, (value: T) => void]
 ```
 

@@ -1,4 +1,4 @@
-import { Geist_Mono, Barriecito } from 'next/font/google';
+import { Barriecito, Geist_Mono } from 'next/font/google';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import './global.css';
 
@@ -9,7 +9,7 @@ const geistMono = Geist_Mono({
 const barriecito = Barriecito({
   weight: '400',
   subsets: ['latin'],
-  variable: '--font-barriecito',
+  variable: '--font-barriecito'
 });
 
 export default function Layout({ children }: LayoutProps<'/'>) {

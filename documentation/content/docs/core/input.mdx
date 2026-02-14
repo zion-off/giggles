@@ -7,7 +7,7 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 
 The input system routes keyboard events to focused components and prevents input leaking.
 
-```tsx
+```tsx title="Basic Usage"
 import { useKeybindings, useFocus, FocusTrap } from 'giggles';
 
 function FileList() {
@@ -29,7 +29,7 @@ function FileList() {
 
 Registers keybindings that only fire when the component is focused.
 
-```tsx
+```ts title="Type Signature"
 function useKeybindings(
   focus: { id: string },
   bindings: Keybindings,
@@ -91,7 +91,7 @@ function useKeybindings(
 
 Stops input bubbling at a boundary. Used for modals and dialogs.
 
-```tsx
+```tsx title="FocusTrap Example"
 function App() {
   const [showModal, setShowModal] = useState(false);
 
