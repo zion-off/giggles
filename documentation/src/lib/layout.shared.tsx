@@ -3,14 +3,14 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 export const gitConfig = {
   user: 'zion-off',
   repo: 'giggles',
-  branch: 'main',
+  branch: 'main'
 };
 
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
-      title: 'giggles',
+      title: 'giggles'
     },
-    githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`,
+    githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`
   };
 }

@@ -95,7 +95,12 @@ html {
   font-size: 14px;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
 }
 
@@ -104,7 +109,7 @@ h1, h2, h3, h4, h5, h6 {
    ============================================ */
 
 /* --- Blinking cursor on nav title --- */
-nav [class*="title"]::after {
+nav [class*='title']::after {
   content: '█';
   animation: blink 1s step-end infinite;
   margin-left: 2px;
@@ -113,13 +118,18 @@ nav [class*="title"]::after {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 /* --- Links: blue with red hover (Mondrian primary shift) --- */
 .prose a,
-[class*="DocsBody"] a {
+[class*='DocsBody'] a {
   text-decoration-color: var(--color-mondrian-blue);
   text-underline-offset: 3px;
   text-decoration-thickness: 2px;
@@ -127,7 +137,7 @@ nav [class*="title"]::after {
 }
 
 .prose a:hover,
-[class*="DocsBody"] a:hover {
+[class*='DocsBody'] a:hover {
   text-decoration-color: var(--color-mondrian-red);
 }
 
@@ -200,8 +210,8 @@ nav::after {
 
 /* --- 2. Sidebar section dividers — color block strips --- */
 /* Color blocks between sidebar folder sections */
-aside [data-type="folder"] + [data-type="folder"]::before,
-aside [data-type="folder"] + [data-type="page"]::before {
+aside [data-type='folder'] + [data-type='folder']::before,
+aside [data-type='folder'] + [data-type='page']::before {
   content: '';
   display: block;
   height: 3px;
@@ -223,7 +233,7 @@ aside [data-type="folder"] + [data-type="page"]::before {
 
 /* --- 3. Page title — colored square marker --- */
 /* A small rotating-color block before h1 titles */
-[class*="DocsTitle"] h1::before,
+[class*='DocsTitle'] h1::before,
 article > h1:first-of-type::before {
   content: '■';
   margin-right: 0.4em;
@@ -248,7 +258,6 @@ article h3::before {
   vertical-align: middle;
   color: var(--color-mondrian-yellow);
 }
-
 
 /* --- 5. Footer — Mondrian grid band --- */
 /* A decorative composition at the bottom of the page */

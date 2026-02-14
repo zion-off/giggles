@@ -1,9 +1,9 @@
+import { Geist_Mono } from 'next/font/google';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import './global.css';
-import { Geist_Mono } from 'next/font/google';
 
 const geistMono = Geist_Mono({
-  subsets: ['latin'],
+  subsets: ['latin']
 });
 
 export default function Layout({ children }: LayoutProps<'/'>) {

@@ -8,7 +8,7 @@
     "start": "next start",
     "types:check": "fumadocs-mdx && next typegen && tsc --noEmit",
     "postinstall": "fumadocs-mdx",
-    "lint": "eslint"
+    "lint": "prettier --write . && eslint --fix"
   },
   "dependencies": {
     "fumadocs-core": "16.6.1",
@@ -30,6 +30,8 @@
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "eslint-config-next": "16.1.6",
-    "eslint": "^10.0.0"
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "eslint": "^9.0.0",
+    "prettier": "^2.8.7"
   }
 }
