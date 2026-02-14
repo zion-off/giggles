@@ -6,35 +6,20 @@ env:
 
 on:
   workflow_dispatch:
-  push:
+  workflow_run:
+    workflows: ["documentation / ci"]
     branches:
       - main
-    paths:
-      - 'documentation/**'
+    types:
+      - completed
 
 jobs:
   deploy-production:
     name: Deploy Production
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: latest
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: documentation
-
-      - name: Check formatting
-        run: pnpm exec prettier --check .
-        working-directory: documentation
-
-      - name: Lint
-        run: pnpm exec eslint
-        working-directory: documentation
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
