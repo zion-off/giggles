@@ -1,13 +1,13 @@
-name: lint & format
+name: documentation
 
 on:
   push:
     branches: [main]
-    paths-ignore:
+    paths:
       - 'documentation/**'
   pull_request:
     branches: [main]
-    paths-ignore:
+    paths:
       - 'documentation/**'
 
 jobs:
@@ -20,9 +20,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: latest
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,12 +32,16 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        working-directory: documentation
 
       - name: Check formatting
         run: pnpm exec prettier --check .
+        working-directory: documentation
 
       - name: Run linter
         run: pnpm exec eslint .
+        working-directory: documentation
 
       - name: Type check
         run: pnpm exec tsc --noEmit
+        working-directory: documentation
