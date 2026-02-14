@@ -108,8 +108,14 @@ h6 {
    Decorative touches
    ============================================ */
 
+/* --- Sidebar title font --- */
+aside a[href='/'] {
+  font-family: var(--font-barriecito), cursive;
+  font-size: 2rem;
+}
+
 /* --- Blinking cursor on nav title --- */
-nav [class*='title']::after {
+aside a[href='/']::after {
   content: '█';
   animation: blink 1s step-end infinite;
   margin-left: 2px;
