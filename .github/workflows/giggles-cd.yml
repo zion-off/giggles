@@ -1,13 +1,14 @@
 name: publish to npm
 
 on:
-  push:
+  workflow_run:
+    workflows: ['giggles / ci']
+    types: [completed]
     branches: [main]
-    paths-ignore:
-      - 'documentation/**'
 
 jobs:
   publish:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: npm
     permissions:
