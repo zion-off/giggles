@@ -27,8 +27,12 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: documentation
 
+      - name: Check formatting
+        run: pnpm exec prettier --check .
+        working-directory: documentation
+
       - name: Lint
-        run: pnpm lint
+        run: pnpm exec eslint
         working-directory: documentation
 
       - name: Install Vercel CLI
