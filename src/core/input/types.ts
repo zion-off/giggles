@@ -41,11 +41,51 @@ type SpecialKey =
 
 type KeyName = SpecialKey | (string & {});
 
+/**
+ * Map of key names to handler functions.
+ *
+ * Keys are strings that match either:
+ * - Special keys (autocompleted): 'enter', 'escape', 'up', 'down', etc.
+ * - Character keys: 'j', 'k', 'a', '?', etc.
+ * - Modified keys: 'ctrl+c', 'ctrl+q', etc.
+ *
+ * @example
+ * ```tsx
+ * const bindings: Keybindings = {
+ *   j: () => moveDown(),
+ *   k: () => moveUp(),
+ *   enter: () => selectItem(),
+ *   'ctrl+q': () => quit()
+ * };
+ * ```
+ */
 export type Keybindings = Partial<Record<KeyName, KeyHandler>>;
 
+/**
+ * Options for configuring keybinding behavior.
+ */
 export type KeybindingOptions = {
+  /**
+   * Enable capture mode. When true, explicit bindings are checked first,
+   * then all remaining keystrokes go to `onKeypress`. Nothing bubbles.
+   *
+   * Used for text inputs and components that need to receive all keystrokes.
+   */
   capture?: boolean;
+
+  /**
+   * Handler for keystrokes in capture mode that don't match explicit bindings.
+   *
+   * Only called when `capture` is true.
+   */
   onKeypress?: (input: string, key: Key) => void;
+
+  /**
+   * Optional layer identifier for organizing keybindings.
+   *
+   * Can be used for debugging or building tooling that inspects keybindings.
+   * Has no effect on input routing behavior.
+   */
   layer?: string;
 };
 
