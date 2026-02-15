@@ -54,7 +54,7 @@ export function ScreenEntry({
       focusFirstChild(screenNodeId);
     }
     wasTopRef.current = isTop;
-  }, [isTop, screenNodeId, focusFirstChild, focusNode, getFocusedId]);
+  }, [isTop, screenNodeId, restoreFocus, focusFirstChild, focusNode, getFocusedId]);
 
   const value = useMemo<NavigationContextValue>(
     () => ({ currentRoute: entry, active: isTop, canGoBack, push, pop, replace, reset }),
