@@ -1,0 +1,45 @@
+{
+  "name": "create-giggles-app",
+  "version": "0.1.0",
+  "description": "scaffold a giggles terminal app",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zion-off/giggles.git",
+    "directory": "tools/create-giggles-app"
+  },
+  "keywords": [
+    "tui",
+    "terminal",
+    "cli",
+    "react",
+    "ink",
+    "giggles"
+  ],
+  "type": "module",
+  "bin": {
+    "create-giggles-app": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "lint": "prettier --write . && eslint . --fix"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.10.0"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "prettier": "^2.8.7",
+    "tsup": "^8.5.1",
+    "typescript": "^5.0.3",
+    "typescript-eslint": "^8.0.0"
+  }
+}

@@ -1,0 +1,82 @@
+name: create-giggles-app / publish to npm
+
+on:
+  workflow_run:
+    workflows: ['create-giggles-app / ci']
+    types: [completed]
+    branches: [main]
+
+jobs:
+  check:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      exists: ${{ steps.tag_check.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version
+        id: version
+        run: echo "version=$(jq -r .version tools/create-giggles-app/package.json)" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: tag_check
+        run: |
+          if git ls-remote --tags origin | grep -q "refs/tags/create-giggles-app@${{ steps.version.outputs.version }}$"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag create-giggles-app@${{ steps.version.outputs.version }} already exists, skipping publish"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+  publish:
+    needs: check
+    if: needs.check.outputs.exists == 'false'
+    runs-on: ubuntu-latest
+    environment:
+      name: create-giggles-app
+      url: https://www.npmjs.com/package/create-giggles-app
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: tools/create-giggles-app
+
+      - name: Build
+        run: pnpm build
+        working-directory: tools/create-giggles-app
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: create-giggles-app@${{ needs.check.outputs.version }}
+          name: create-giggles-app@${{ needs.check.outputs.version }}
+          body: |
+            **npm package**: https://www.npmjs.com/package/create-giggles-app/v/${{ needs.check.outputs.version }}
+          generate_release_notes: true
+          append_body: true
+
+      - name: Publish to npm
+        run: npm publish --access public
+        working-directory: tools/create-giggles-app

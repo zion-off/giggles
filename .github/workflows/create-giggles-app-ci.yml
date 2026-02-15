@@ -1,0 +1,55 @@
+name: create-giggles-app / ci
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/create-giggles-app/**'
+      - '.github/workflows/create-giggles-app-ci.yml'
+      - '.github/workflows/create-giggles-app-cd.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/create-giggles-app/**'
+      - '.github/workflows/create-giggles-app-ci.yml'
+      - '.github/workflows/create-giggles-app-cd.yml'
+
+jobs:
+  lint:
+    name: lint & format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: tools/create-giggles-app
+
+      - name: Check formatting
+        run: pnpm exec prettier --check .
+        working-directory: tools/create-giggles-app
+
+      - name: Run linter
+        run: pnpm exec eslint .
+        working-directory: tools/create-giggles-app
+
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+        working-directory: tools/create-giggles-app
+
+      - name: Build
+        run: pnpm build
+        working-directory: tools/create-giggles-app
