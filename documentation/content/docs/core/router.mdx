@@ -138,16 +138,6 @@ function useNavigation(): NavigationContextValue
   `push`, `replace`, and `reset` throw a `GigglesError` if the screen name is not registered.
 </Callout>
 
-### ScreenRoute
-
-```ts title="Type"
-type ScreenRoute = {
-  id: number;
-  name: string;
-  params?: Record<string, unknown>;
-}
-```
-
 ## Nested Routers
 
 Each Router manages its own independent stack. You can nest routers for tabbed layouts or sub-navigation:
