@@ -7,6 +7,10 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 
 The input system routes keyboard events to focused components and prevents input leaking.
 
+Key events are dispatched along the active branch of the focus tree — from the focused node upward to the root. Each node on the path can register keybindings with `useKeybindings`, and the first matching binding handles the event. This means a focused child's bindings take priority over its parent's, and components outside the active branch never receive input.
+
+For modal-like scenarios where input should be isolated, `FocusTrap` stops events from bubbling past a boundary.
+
 ```tsx title="Basic Usage"
 import { useKeybindings, useFocus } from 'giggles';
 import { useState } from 'react';

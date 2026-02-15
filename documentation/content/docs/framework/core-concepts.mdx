@@ -18,7 +18,7 @@ render(
 );
 ```
 
-Without this provider, none of the focus or input features will work.
+Without this provider, none of the focus or input features will work. The `Router` is composed separately, giving you control over where and whether to use screen navigation.
 
 [API Reference →](/framework/api-reference)
 
@@ -41,3 +41,13 @@ Input events flow through the focus tree. The focused component receives input f
 - **Key normalization**: `ctrl+c`, `Ctrl-C`, `^c` all work the same
 
 [Learn more: Input →](/core/input)
+
+## Screen Router
+
+giggles includes a **stack-based router** for navigating between screens. Screens stay mounted when pushed to preserve state, and each screen knows whether it's active via the navigation context.
+
+- **Router**: Manages a stack of screens, renders the top one
+- **Screen**: Declarative route definition
+- **useNavigation()**: Push, pop, replace, and reset screens
+
+[Learn more: Router →](/core/router)
