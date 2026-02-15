@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { GigglesError } from '../GigglesError';
 import { type Keybindings, useKeybindings } from '../input';
 import { FocusBindContext } from './FocusBindContext';
 import { FocusNodeContext, useFocusContext } from './FocusContext';
@@ -25,7 +26,7 @@ export function FocusGroup({
 
   const register = useCallback((logicalId: string, nodeId: string) => {
     if (bindMapRef.current.has(logicalId)) {
-      throw new Error(`FocusGroup: Duplicate id "${logicalId}". Each child must have a unique id.`);
+      throw new GigglesError(`FocusGroup: Duplicate id "${logicalId}". Each child must have a unique id.`);
     }
     bindMapRef.current.set(logicalId, nodeId);
   }, []);

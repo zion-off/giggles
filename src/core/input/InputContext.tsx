@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useRef } from 'react';
+import { GigglesError } from '../GigglesError';
 import { Key, KeyHandler, KeybindingOptions, Keybindings, RegisteredKeybinding } from './types';
 
 type NodeBindings = {
@@ -91,7 +92,7 @@ export const InputProvider = ({ children }: { children: React.ReactNode }) => {
 export function useInputContext() {
   const context = useContext(InputContext);
   if (!context) {
-    throw new Error('useInputContext must be used within an InputProvider');
+    throw new GigglesError('useInputContext must be used within an InputProvider');
   }
   return context;
 }

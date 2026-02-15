@@ -1,6 +1,7 @@
 // giggles — a framework for ink apps
 
 // Core
+export { GigglesError } from './core/GigglesError';
 export { GigglesProvider } from './core/GigglesProvider';
 
 // Focus system

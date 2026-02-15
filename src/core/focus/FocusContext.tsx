@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
+import { GigglesError } from '../GigglesError';
 
 type FocusNode = {
   id: string;
@@ -194,7 +195,7 @@ export const useFocusContext = () => {
   const context = useContext(FocusContext);
 
   if (!context) {
-    throw new Error('useFocusContext must be used within a FocusProvider');
+    throw new GigglesError('useFocusContext must be used within a FocusProvider');
   }
   return context;
 };
