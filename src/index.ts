@@ -14,4 +14,4 @@ export type { Keybindings, KeybindingOptions, KeyHandler, Key } from './core/inp
 
 // Router
 export { Router, Screen, useNavigation } from './core/router';
-export type { ScreenRoute, NavigationContextValue } from './core/router';
+export type { NavigationContextValue } from './core/router';
