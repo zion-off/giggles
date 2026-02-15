@@ -5,14 +5,20 @@ on:
     branches: [main]
     paths-ignore:
       - 'documentation/**'
+      - 'tools/**'
       - '.github/workflows/documentation-ci.yml'
       - '.github/workflows/documentation-cd.yml'
+      - '.github/workflows/create-giggles-app-ci.yml'
+      - '.github/workflows/create-giggles-app-cd.yml'
   pull_request:
     branches: [main]
     paths-ignore:
       - 'documentation/**'
+      - 'tools/**'
       - '.github/workflows/documentation-ci.yml'
       - '.github/workflows/documentation-cd.yml'
+      - '.github/workflows/create-giggles-app-ci.yml'
+      - '.github/workflows/create-giggles-app-cd.yml'
 
 jobs:
   lint:
