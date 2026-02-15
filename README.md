@@ -3,4 +3,14 @@
 [![npm version](https://img.shields.io/npm/v/giggles)](https://www.npmjs.com/package/giggles)
 [![npm downloads](https://img.shields.io/npm/dm/giggles)](https://www.npmjs.com/package/giggles)
 
-wip -- see [giggles.zzzzion.com](https://giggles.zzzzion.com)!
+# giggles
+
+build terminal apps the way you build web apps — with react, hooks, and jsx.
+
+giggles sits on top of [ink](https://github.com/vadimdemedes/ink) and handles focus, keyboard input, and screen navigation so you don't have to. declare your screens, bind your keys, and let the framework do the wiring.
+
+```
+npm install giggles
+```
+
+see [giggles.zzzzion.com](https://giggles.zzzzion.com) for docs.
