@@ -4,4 +4,4 @@ export { FocusGroup } from './FocusGroup';
 export { useFocus } from './useFocus';
 export type { FocusHandle } from './useFocus';
 export { useFocusState } from './useFocusState';
-export { FocusBindContext, useFocusBind } from './FocusBindContext';
+export { FocusBindContext } from './FocusBindContext';

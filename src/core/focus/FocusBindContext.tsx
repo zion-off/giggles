@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext } from 'react';
 
 type FocusBindContextValue = {
   register: (logicalId: string, nodeId: string) => void;
@@ -6,11 +6,3 @@ type FocusBindContextValue = {
 };
 
 export const FocusBindContext = createContext<FocusBindContextValue | null>(null);
-
-export function useFocusBind() {
-  const context = useContext(FocusBindContext);
-  if (!context) {
-    throw new Error('useFocusBind must be used within a FocusBindProvider');
-  }
-  return context;
-}
