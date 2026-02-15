@@ -22,6 +22,7 @@
     "build": "tsup",
     "build:watch": "nodemon --watch src --ext ts,tsx --exec tsup",
     "dev": "tsx --watch playground/index.tsx",
+    "dev:docs": "pnpm build && cd documentation && pnpm link ../ && pnpm dev",
     "lint": "prettier --write . && eslint . --fix"
   },
   "files": [
