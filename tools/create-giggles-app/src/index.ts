@@ -1,7 +1,10 @@
 import * as p from '@clack/prompts';
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 function detectPackageManager(): string {
   const userAgent = process.env.npm_config_user_agent ?? '';
@@ -33,42 +36,42 @@ async function main() {
     {
       name: () =>
         p.text({
-          message: 'Project name?',
+          message: 'project name?',
           placeholder: 'my-tui',
           initialValue: argName ?? '',
           validate: (value) => {
-            if (!value.trim()) return 'Project name is required.';
-            if (/[^\w\-.]/.test(value)) return 'Project name contains invalid characters.';
+            if (!value.trim()) return 'project name is required.';
+            if (/[^\w\-.]/.test(value)) return 'project name contains invalid characters.';
           }
         }),
       location: ({ results }) =>
         p.text({
-          message: 'Where should we create the project?',
+          message: 'where should we create the project?',
           placeholder: `./${results.name}`,
           initialValue: `./${results.name}`
         }),
       language: () =>
         p.select({
-          message: 'Language?',
+          message: 'language?',
           options: [
-            { value: 'typescript', label: 'TypeScript', hint: 'recommended' },
-            { value: 'javascript', label: 'JavaScript' }
+            { value: 'typescript', label: 'typescript', hint: 'recommended' },
+            { value: 'javascript', label: 'javascript' }
           ]
         }),
       linting: () =>
         p.confirm({
-          message: 'Add ESLint + Prettier?',
+          message: 'add eslint + prettier?',
           initialValue: true
         }),
       install: () =>
         p.confirm({
-          message: 'Install dependencies?',
+          message: 'install dependencies?',
           initialValue: true
         })
     },
     {
       onCancel: () => {
-        p.cancel('Cancelled.');
+        p.cancel('cancelled.');
         process.exit(0);
       }
     }
@@ -85,14 +88,14 @@ async function main() {
   if (fs.existsSync(projectDir)) {
     const files = fs.readdirSync(projectDir);
     if (files.length > 0) {
-      p.cancel(`Directory ${options.location} is not empty.`);
+      p.cancel(`directory ${options.location} is not empty.`);
       process.exit(1);
     }
   }
   fs.mkdirSync(projectDir, { recursive: true });
 
   // copy base files
-  s.start('Scaffolding project...');
+  s.start('scaffolding project...');
   copyDir(path.join(templatesDir, 'base'), projectDir, {
     _gitignore: '.gitignore'
   });
@@ -153,25 +156,33 @@ async function main() {
   };
 
   fs.writeFileSync(path.join(projectDir, 'package.json'), JSON.stringify(pkg, null, 2) + '\n');
-  s.stop('Project scaffolded.');
+  s.stop('project scaffolded.');
 
   // install dependencies
   if (options.install) {
-    s.start('Installing dependencies...');
+    const messages = ['installing dependencies...', 'giggling...', 'hehehe...', 'almost there...', 'still giggling...'];
+    let i = 0;
+    s.start(messages[0]);
+    const interval = setInterval(() => {
+      i = (i + 1) % messages.length;
+      s.message(messages[i]);
+    }, 2000);
     try {
-      execSync(`${pm} install`, { cwd: projectDir, stdio: 'ignore' });
-      s.stop('Dependencies installed.');
+      await execAsync(`${pm} install`, { cwd: projectDir });
+      clearInterval(interval);
+      s.stop('dependencies installed.');
     } catch {
-      s.stop('Failed to install dependencies.');
-      p.log.warning(`Run \`${pm} install\` manually in the project directory.`);
+      clearInterval(interval);
+      s.stop('failed to install dependencies.');
+      p.log.warning(`run \`${pm} install\` manually in the project directory.`);
     }
   }
 
   const relative = path.relative(process.cwd(), projectDir);
 
-  p.note([`cd ${relative}`, `${pm} dev`].join('\n'), 'Next steps');
+  p.note([`cd ${relative}`, `${pm} dev`].join('\n'), 'next steps');
 
-  p.outro('Happy building!');
+  p.outro('done! :p');
 }
 
 main().catch(console.error);
