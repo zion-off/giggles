@@ -1,5 +1,5 @@
-[![npm version](https://img.shields.io/npm/v/giggles)](https://www.npmjs.com/package/giggles)
-[![npm downloads](https://img.shields.io/npm/dm/giggles)](https://www.npmjs.com/package/giggles)
+[![CI](https://github.com/zion-off/giggles/actions/workflows/giggles-lint.yml/badge.svg)](https://github.com/zion-off/giggles/actions/workflows/giggles-lint.yml)
+[![CD](https://github.com/zion-off/giggles/actions/workflows/giggles-cd.yml/badge.svg)](https://github.com/zion-off/giggles/actions/workflows/giggles-cd.yml)
 [![docs](https://img.shields.io/badge/docs-giggles.zzzzion.com-blue)](https://giggles.zzzzion.com)
 
 # giggles
