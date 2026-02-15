@@ -52,32 +52,37 @@ Verify requirements:
 Here's a simple menu with keyboard navigation:
 
 ```tsx title="app.tsx"
-import { Box, Text, render, useApp } from 'ink';
+import { useState } from 'react';
+import { Box, Text, render } from 'ink';
 import { GigglesProvider, FocusGroup, useFocus, useKeybindings } from 'giggles';
 
-function App() {
-  const { exit } = useApp();
+function MenuItem({ label }: { label: string }) {
   const focus = useFocus();
+  const [selected, setSelected] = useState(false);
 
   useKeybindings(focus, {
-    q: () => exit(),
+    enter: () => setSelected(!selected),
   });
 
   return (
-    <Box flexDirection="column">
-      <Text bold>My Menu (j/k to navigate, q to quit)</Text>
-      <FocusGroup direction="vertical">
-        <Text>Start Game</Text>
-        <Text>Settings</Text>
-        <Text>Exit</Text>
-      </FocusGroup>
-    </Box>
+    <Text color={focus.focused ? 'green' : 'white'}>
+      {focus.focused ? '> ' : '  '}
+      {label}
+      {selected ? ' ✓' : ''}
+    </Text>
   );
 }
 
 render(
   <GigglesProvider>
-    <App />
+    <Box flexDirection="column">
+      <Text bold>My Menu (j/k to navigate, enter to select)</Text>
+      <FocusGroup direction="vertical">
+        <MenuItem label="Start Game" />
+        <MenuItem label="Settings" />
+        <MenuItem label="Exit" />
+      </FocusGroup>
+    </Box>
   </GigglesProvider>
 );
 ```
@@ -89,8 +94,8 @@ render(
 <Callout type="info" title="What's happening">
 1. `GigglesProvider` wraps your app and provides focus + input context
 2. `FocusGroup` creates a navigable group (use `j`/`k` or arrow keys)
-3. `useFocus()` gives your component access to focus state
-4. `useKeybindings()` binds keys to actions when focused
+3. `useFocus()` tells each `MenuItem` whether it's focused
+4. `useKeybindings()` binds keys to actions on the focused item
 </Callout>
 
 ## Next Steps
