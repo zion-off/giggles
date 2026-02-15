@@ -5,6 +5,7 @@
   "root": true,
   "pages": [
     "focus",
-    "input"
+    "input",
+    "router"
   ]
 }
