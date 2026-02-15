@@ -13,5 +13,5 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src", "examples", "playground"]
+  "include": ["src", "examples"]
 }
