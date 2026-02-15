@@ -9,4 +9,4 @@ export type { FocusHandle } from './core/focus';
 
 // Input system
 export { useKeybindings, FocusTrap } from './core/input';
-export type { Keybindings, KeybindingOptions, KeyHandler, Key } from './core/input/types';
+export type { Keybindings, KeybindingOptions, KeyHandler, Key } from './core/input';

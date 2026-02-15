@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { FocusHandle } from '../focus/useFocus';
+import type { FocusHandle } from '../focus';
 import { useInputContext } from './InputContext';
 import { KeybindingOptions, Keybindings } from './types';
 
