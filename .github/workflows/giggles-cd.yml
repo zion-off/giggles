@@ -7,15 +7,12 @@ on:
     branches: [main]
 
 jobs:
-  publish:
+  check:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    environment:
-      name: npm
-      url: https://www.npmjs.com/package/giggles
-    permissions:
-      contents: write
-      id-token: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      exists: ${{ steps.tag_check.outputs.exists }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,14 +32,27 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
+  publish:
+    needs: check
+    if: needs.check.outputs.exists == 'false'
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/giggles
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Setup pnpm
-        if: steps.tag_check.outputs.exists == 'false'
         uses: pnpm/action-setup@v4
         with:
           version: 9
 
       - name: Setup Node.js
-        if: steps.tag_check.outputs.exists == 'false'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -50,24 +60,20 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        if: steps.tag_check.outputs.exists == 'false'
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        if: steps.tag_check.outputs.exists == 'false'
         run: pnpm build
 
       - name: Create Release
-        if: steps.tag_check.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: v${{ steps.version.outputs.version }}
+          tag_name: v${{ needs.check.outputs.version }}
+          name: v${{ needs.check.outputs.version }}
           body: |
-            **npm package**: https://www.npmjs.com/package/giggles/v/${{ steps.version.outputs.version }}
+            **npm package**: https://www.npmjs.com/package/giggles/v/${{ needs.check.outputs.version }}
           generate_release_notes: true
           append_body: true
 
       - name: Publish to npm
-        if: steps.tag_check.outputs.exists == 'false'
         run: npm publish --access public
