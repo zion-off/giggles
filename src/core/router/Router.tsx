@@ -8,6 +8,7 @@ type RouterProps = {
   children: React.ReactNode;
   initialScreen: string;
   initialParams?: Record<string, unknown>;
+  restoreFocus?: boolean;
 };
 
 type NavigationAction =
@@ -29,7 +30,7 @@ function routerReducer(stack: ScreenRoute[], action: NavigationAction): ScreenRo
   }
 }
 
-export function Router({ children, initialScreen, initialParams }: RouterProps) {
+export function Router({ children, initialScreen, initialParams, restoreFocus = true }: RouterProps) {
   const screenId = useRef(0);
   const routes = React.Children.toArray(children)
     .filter((child): child is React.ReactElement<ScreenProps> => React.isValidElement(child) && child.type === Screen)
@@ -97,6 +98,7 @@ export function Router({ children, initialScreen, initialParams }: RouterProps) 
             entry={entry}
             isTop={i === stack.length - 1}
             canGoBack={canGoBack}
+            restoreFocus={restoreFocus}
             component={Component}
             push={push}
             pop={pop}

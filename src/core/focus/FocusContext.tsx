@@ -11,6 +11,7 @@ export type FocusContextValue = {
   registerNode: (id: string, parentId: string | null) => void;
   unregisterNode: (id: string) => void;
   focusNode: (id: string) => void;
+  focusFirstChild: (parentId: string) => void;
   isFocused: (id: string) => boolean;
   getFocusedId: () => string | null;
   isInActiveBranch: (id: string) => boolean;
@@ -22,6 +23,7 @@ export const FocusContext = createContext<FocusContextValue | null>(null);
 
 export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
   const nodesRef = useRef<Map<string, FocusNode>>(new Map());
+  const pendingFocusFirstChildRef = useRef<Set<string>>(new Set());
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [activeBranchNodes, setActiveBranchNodes] = useState<Set<string>>(new Set());
   const [activeBranchPath, setActiveBranchPath] = useState<string[]>([]);
@@ -47,6 +49,19 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
+  const focusFirstChild = useCallback(
+    (parentId: string) => {
+      const nodes = nodesRef.current;
+      const parent = nodes.get(parentId);
+      if (parent && parent.childrenIds.length > 0) {
+        focusNode(parent.childrenIds[0]);
+      } else {
+        pendingFocusFirstChildRef.current.add(parentId);
+      }
+    },
+    [focusNode]
+  );
+
   const registerNode = useCallback(
     (id: string, parentId: string | null) => {
       const nodes = nodesRef.current;
@@ -62,7 +77,13 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
       if (parentId) {
         const parent = nodes.get(parentId);
         if (parent && !parent.childrenIds.includes(id)) {
+          const wasEmpty = parent.childrenIds.length === 0;
           parent.childrenIds.push(id);
+
+          if (wasEmpty && pendingFocusFirstChildRef.current.has(parentId)) {
+            pendingFocusFirstChildRef.current.delete(parentId);
+            focusNode(id);
+          }
         }
       }
 
@@ -91,6 +112,7 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
     nodes.delete(id);
+    pendingFocusFirstChildRef.current.delete(id);
 
     setFocusedId((current) => {
       if (current !== id) return current;
@@ -177,6 +199,7 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
         registerNode,
         unregisterNode,
         focusNode,
+        focusFirstChild,
         isFocused,
         getFocusedId,
         isInActiveBranch,
