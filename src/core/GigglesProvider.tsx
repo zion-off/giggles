@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlternateScreen } from '../terminal/components/AlternateScreen';
 import { FocusProvider } from './focus';
 import { InputProvider, InputRouter } from './input';
 
@@ -8,10 +9,12 @@ type GigglesProviderProps = {
 
 export function GigglesProvider({ children }: GigglesProviderProps) {
   return (
-    <FocusProvider>
-      <InputProvider>
-        <InputRouter>{children}</InputRouter>
-      </InputProvider>
-    </FocusProvider>
+    <AlternateScreen>
+      <FocusProvider>
+        <InputProvider>
+          <InputRouter>{children}</InputRouter>
+        </InputProvider>
+      </FocusProvider>
+    </AlternateScreen>
   );
 }
