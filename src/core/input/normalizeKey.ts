@@ -9,6 +9,7 @@ export function normalizeKey(input: string, key: Key): string {
   if (key.rightArrow) return 'right';
   if (key.return) return 'enter';
   if (key.escape) return 'escape';
+  if (key.tab && key.shift) return 'shift+tab';
   if (key.tab) return 'tab';
   if (input === '\x1b[3~') return 'delete';
   if (key.backspace || key.delete) return 'backspace';

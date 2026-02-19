@@ -69,7 +69,7 @@ export function FocusGroup({
             left: prev
           };
 
-    return { ...base, tab: next };
+    return { ...base, tab: next, 'shift+tab': prev };
   }, [navigable, direction, wrap, navigateSibling]);
 
   const mergedBindings = useMemo(
