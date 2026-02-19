@@ -1,0 +1,165 @@
+---
+title: Terminal
+description: API reference for terminal utilities
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Hooks and components for reactive terminal dimensions, OS-level focus detection, and handing terminal control to external programs.
+
+These are imported from `giggles/terminal` — a separate entry point not included in the main bundle.
+
+```tsx title="Import"
+import { useTerminalSize, useTerminalFocus, useShellOut } from 'giggles/terminal';
+```
+
+```tsx title="Shell Out Example"
+import { useKeybindings, useFocus } from 'giggles';
+import { useShellOut, useTerminalSize } from 'giggles/terminal';
+import { Box, Text } from 'ink';
+
+function Editor({ path }: { path: string }) {
+  const focus = useFocus();
+  const shell = useShellOut();
+  const { columns } = useTerminalSize();
+
+  useKeybindings(focus, {
+    e: async () => {
+      const { exitCode } = await shell.run(`${process.env.EDITOR ?? 'vim'} ${path}`);
+      if (exitCode === 0) reload();
+    },
+  });
+
+  return (
+    <Box width={columns}>
+      <Text>Press e to edit {path}</Text>
+    </Box>
+  );
+}
+```
+
+## API Reference
+
+### useTerminalSize()
+
+Returns reactive terminal dimensions that update on resize.
+
+```ts title="Type Signature"
+function useTerminalSize(): TerminalSize
+```
+
+**Returns:** `TerminalSize`
+
+<TypeTable
+  type={{
+    rows: {
+      description: 'Number of rows in the terminal',
+      type: 'number',
+    },
+    columns: {
+      description: 'Number of columns in the terminal',
+      type: 'number',
+    },
+  }}
+/>
+
+### useTerminalFocus()
+
+Detects when the terminal window gains or loses OS-level focus.
+
+```ts title="Type Signature"
+function useTerminalFocus(callback: (focused: boolean) => void): void
+```
+
+Opts into ANSI focus reporting (`\x1b[?1004h`). The terminal emits a sequence when the user switches to another app and back. Not all terminal emulators support this — test for your target environment.
+
+<TypeTable
+  type={{
+    callback: {
+      description: 'Called with true when the terminal gains focus, false when it loses focus',
+      type: '(focused: boolean) => void',
+    },
+  }}
+/>
+
+### useShellOut()
+
+Hands terminal control to an external program and reclaims it when the process exits.
+
+```ts title="Type Signature"
+function useShellOut(): { run: (command: string) => Promise<{ exitCode: number }> }
+```
+
+`run()` handles the full sequence: leaves the alternate screen, releases stdin/stdout to the child process with `stdio: 'inherit'`, waits for exit, then reclaims control and repaints. Getting this sequence wrong leaves the terminal in a broken state — use this instead of spawning processes manually.
+
+`run()` never throws on non-zero exit codes. Check `exitCode` in the result if you need to act on failure.
+
+<TypeTable
+  type={{
+    run: {
+      description: 'Runs a shell command with full terminal control. Returns the exit code when the process exits.',
+      type: '(command: string) => Promise<{ exitCode: number }>',
+    },
+  }}
+/>
+
+## Examples
+
+### Responsive layout
+
+```tsx title="Responsive Sidebar"
+import { useTerminalSize } from 'giggles/terminal';
+import { Box } from 'ink';
+
+function App() {
+  const { columns } = useTerminalSize();
+
+  return (
+    <Box>
+      {columns > 80 && <Sidebar />}
+      <MainContent />
+    </Box>
+  );
+}
+```
+
+### Pause on blur
+
+```tsx title="Pause on Blur"
+import { useTerminalFocus } from 'giggles/terminal';
+import { useState } from 'react';
+import { Text } from 'ink';
+
+function Timer() {
+  const [paused, setPaused] = useState(false);
+
+  useTerminalFocus((focused) => {
+    setPaused(!focused);
+  });
+
+  return <Text>{paused ? 'Paused' : 'Running'}</Text>;
+}
+```
+
+### Open $EDITOR
+
+```tsx title="Edit a File"
+import { useFocus, useKeybindings } from 'giggles';
+import { useShellOut } from 'giggles/terminal';
+import { Text } from 'ink';
+
+function FileViewer({ path }: { path: string }) {
+  const focus = useFocus();
+  const shell = useShellOut();
+
+  useKeybindings(focus, {
+    e: async () => {
+      await shell.run(`${process.env.EDITOR ?? 'vim'} ${path}`);
+    },
+  });
+
+  return <Text dimColor>Press e to edit {path}</Text>;
+}
+```
+

@@ -1,0 +1,9 @@
+{
+  "title": "Terminal",
+  "description": "Terminal-level utilities",
+  "icon": "Terminal",
+  "root": true,
+  "pages": [
+    "index"
+  ]
+}
