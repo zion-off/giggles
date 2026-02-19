@@ -4,27 +4,27 @@ UI components and command palette built on the core framework.
 
 ## Progress
 
-| Feature                           | Status      |
-| --------------------------------- | ----------- |
-| Command Palette                   | Not Started |
-| TextInput (primitive + styled)    | Not Started |
-| Select (primitive + styled)       | Not Started |
-| MultiSelect (primitive + styled)  | Not Started |
-| Confirm (primitive + styled)      | Not Started |
-| Autocomplete (primitive + styled) | Not Started |
-| Split (primitive + styled)        | Not Started |
-| Tabs (primitive + styled)         | Not Started |
-| Table (primitive + styled)        | Not Started |
-| VirtualList (primitive + styled)  | Not Started |
-| Spinner (primitive + styled)      | Not Started |
-| Badge (primitive + styled)        | Not Started |
-| Markdown (primitive + styled)     | Not Started |
-| Modal (primitive + styled)        | Not Started |
-| Dialog (primitive + styled)       | Not Started |
-| Toast (primitive + styled)        | Not Started |
-| StatusBar (primitive + styled)    | Not Started |
-| Breadcrumb (primitive + styled)   | Not Started |
-| KeyHints (primitive + styled)     | Not Started |
+| Feature       | Render Prop | Status      |
+| ------------- | ----------- | ----------- |
+| Command Palette | Yes       | Not Started |
+| TextInput     | Yes         | Not Started |
+| Select        | Yes         | Not Started |
+| MultiSelect   | Yes         | Not Started |
+| Confirm       | No          | Not Started |
+| Autocomplete  | Yes         | Not Started |
+| Split         | No          | Not Started |
+| Tabs          | No          | Not Started |
+| Table         | Yes         | Not Started |
+| VirtualList   | Yes         | Not Started |
+| Spinner       | No          | Not Started |
+| Badge         | No          | Not Started |
+| Markdown      | No          | Not Started |
+| Modal         | No          | Not Started |
+| Dialog        | No          | Not Started |
+| Toast         | No          | Not Started |
+| StatusBar     | No          | Not Started |
+| Breadcrumb    | No          | Not Started |
+| KeyHints      | No          | Not Started |
 
 ---
 
@@ -173,49 +173,25 @@ function App() {
 
 ---
 
-## Built-in UI Primitives
+## Built-in UI Components
 
-### Two-Tier Architecture
+### Design Approach
 
-The framework provides UI components in two forms:
+Every component ships as a single styled component from `giggles/ui` with sensible defaults and good props. No separate primitives package.
 
-1. **Unstyled primitives** — Pure behavior and logic (focus management, keyboard handling, state machines) with no visual opinions
-2. **Styled components** — Thin wrappers around primitives with sensible default styling
+For components where rendering genuinely varies (inputs with cursors, lists with custom items, tables with custom cells), a `render` prop gives full control over the visual output without needing a separate abstraction layer. The terminal's styling surface area (border styles, colors, bold/dim/inverse, padding) is small enough that props cover the vast majority of customization needs.
 
-This is inspired by Radix UI and Headless UI from the web ecosystem. Most users can use the styled components and get a polished experience out of the box. Power users can drop down to unstyled primitives for full control.
+### Customization Strategy
+
+Components are customizable through three levels, in order of reach:
+
+1. **Props** — Colors, labels, border styles, placeholder text. Covers most use cases.
+2. **Render prop** — Full control over how a component renders its content. Available on components marked with "Render Prop: Yes" in the progress table. Use this when the default rendering doesn't fit.
+3. **Build your own** — Use the framework's focus management, keybinding, and input hooks directly. This is always an option and doesn't require a primitives layer.
 
 ### Example: TextInput
 
-Unstyled primitive (full control):
-
-```tsx
-import { TextInput } from 'giggles/primitives';
-
-function CustomInput() {
-  const [value, setValue] = useState('');
-
-  return (
-    <TextInput.Root>
-      <TextInput.Label>Enter your name:</TextInput.Label>
-      <TextInput.Input
-        value={value}
-        onChange={setValue}
-        render={({ value, focused, cursor }) => (
-          <Box borderStyle="double" borderColor={focused ? 'cyan' : 'gray'}>
-            <Text color={focused ? 'cyan' : 'white'}>
-              {value.slice(0, cursor)}
-              <Text inverse>{value[cursor] || ' '}</Text>
-              {value.slice(cursor + 1)}
-            </Text>
-          </Box>
-        )}
-      />
-    </TextInput.Root>
-  );
-}
-```
-
-Styled component (batteries included):
+Default usage:
 
 ```tsx
 import { TextInput } from 'giggles/ui';
@@ -227,30 +203,36 @@ function SimpleInput() {
 }
 ```
 
-The styled component internally uses the primitive. It's just a convenience wrapper with default styling decisions.
+Custom rendering via render prop:
 
-### Why This Matters
+```tsx
+import { TextInput } from 'giggles/ui';
 
-- **Progressive disclosure** — Start simple, drop down when you need customization
-- **Maintainability** — Behavior lives in one place (primitives), styling is just a wrapper
-- **No fighting defaults** — When the styled component doesn't fit, use primitives instead of overriding styles
-- **Testability** — Unstyled primitives are easier to unit test (pure logic, no rendering)
-- **Consistency** — All styled components share the same visual language, but you can customize individual pieces
+function CustomInput() {
+  const [value, setValue] = useState('');
 
-### Implementation Note
+  return (
+    <TextInput
+      label="Enter your name:"
+      value={value}
+      onChange={setValue}
+      render={({ value, focused, cursor }) => (
+        <Box borderStyle="double" borderColor={focused ? 'cyan' : 'gray'}>
+          <Text color={focused ? 'cyan' : 'white'}>
+            {value.slice(0, cursor)}
+            <Text inverse>{value[cursor] || ' '}</Text>
+            {value.slice(cursor + 1)}
+          </Text>
+        </Box>
+      )}
+    />
+  );
+}
+```
 
-Primitive components expose their behavior through:
-
-- Compound components (`Root`, `Input`, `Label`, etc.)
-- Render props for full rendering control
-- State and event handlers
-- Focus management integration with the framework's focus tree
-
-Styled components are just React components that compose primitives with default `render` implementations.
+Same component, same import. The `render` prop opts into full control when you need it.
 
 ### Planned Components
-
-All components below will ship in both primitive and styled forms:
 
 - **Input**: `TextInput`, `Select`, `MultiSelect`, `Confirm`, `Autocomplete`
 - **Layout**: `Split`, `Tabs`
