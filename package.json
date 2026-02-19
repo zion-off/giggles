@@ -1,6 +1,6 @@
 {
   "name": "giggles",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -17,6 +17,10 @@
     "./terminal": {
       "import": "./dist/terminal/index.js",
       "types": "./dist/terminal/index.d.ts"
+    },
+    "./ui": {
+      "import": "./dist/ui/index.js",
+      "types": "./dist/ui/index.d.ts"
     }
   },
   "keywords": [

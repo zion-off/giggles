@@ -10,12 +10,15 @@ export function normalizeKey(input: string, key: Key): string {
   if (key.return) return 'enter';
   if (key.escape) return 'escape';
   if (key.tab) return 'tab';
-  if (key.backspace) return 'backspace';
-  if (key.delete) return 'delete';
+  if (key.backspace || key.delete) return 'backspace';
   if (key.pageUp) return 'pageup';
   if (key.pageDown) return 'pagedown';
   if (key.home) return 'home';
   if (key.end) return 'end';
+
+  if (key.ctrl && input.length === 1) {
+    return `ctrl+${input}`;
+  }
 
   return input;
 }

@@ -6,7 +6,7 @@ UI components and command palette built on the core framework.
 
 | Feature       | Render Prop | Status      |
 | ------------- | ----------- | ----------- |
-| Command Palette | Yes       | Not Started |
+| Command Palette | Yes       | Done        |
 | TextInput     | Yes         | Not Started |
 | Select        | Yes         | Not Started |
 | MultiSelect   | Yes         | Not Started |

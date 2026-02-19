@@ -10,7 +10,7 @@ export type KeybindingRegistry = {
 };
 
 export function useKeybindingRegistry(focus?: FocusHandle): KeybindingRegistry {
-  const { getAllBindings } = useInputContext();
+  const { getAllBindings, getTrapNodeId } = useInputContext();
   const { getActiveBranchPath } = useFocusContext();
 
   const all = getAllBindings().filter((b) => b.name != null);
@@ -18,9 +18,16 @@ export function useKeybindingRegistry(focus?: FocusHandle): KeybindingRegistry {
   const branchPath = getActiveBranchPath();
   const branchSet = new Set(branchPath);
 
+  const trapNodeId = getTrapNodeId();
+  const withinTrapSet = (() => {
+    if (!trapNodeId) return null;
+    const trapIndex = branchPath.indexOf(trapNodeId);
+    return trapIndex >= 0 ? new Set(branchPath.slice(0, trapIndex + 1)) : null;
+  })();
+
   const available = all.filter((b) => {
-    if (b.when === 'mounted') return true;
-    return branchSet.has(b.nodeId);
+    if (b.when === 'mounted') return withinTrapSet ? withinTrapSet.has(b.nodeId) : true;
+    return (withinTrapSet ?? branchSet).has(b.nodeId);
   });
 
   const local = focus ? all.filter((b) => b.nodeId === focus.id) : [];
