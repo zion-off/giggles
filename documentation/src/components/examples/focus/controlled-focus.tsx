@@ -8,7 +8,8 @@ function Field({ id, label }: { id: string; label: string }) {
   const focus = useFocus(id);
   return (
     <Text color={focus.focused ? 'green' : 'white'}>
-      {focus.focused ? '> ' : '  '}{label}
+      {focus.focused ? '> ' : '  '}
+      {label}
     </Text>
   );
 }

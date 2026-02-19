@@ -11,7 +11,7 @@ function FileList() {
 
   useKeybindings(focus, {
     j: () => setSelected((i) => Math.min(files.length - 1, i + 1)),
-    k: () => setSelected((i) => Math.max(0, i - 1)),
+    k: () => setSelected((i) => Math.max(0, i - 1))
   });
 
   return (
@@ -19,7 +19,8 @@ function FileList() {
       <Text bold>Files (j/k to select)</Text>
       {files.map((file, i) => (
         <Text key={file} color={i === selected ? 'green' : 'white'}>
-          {i === selected ? '> ' : '  '}{file}
+          {i === selected ? '> ' : '  '}
+          {file}
         </Text>
       ))}
     </Box>

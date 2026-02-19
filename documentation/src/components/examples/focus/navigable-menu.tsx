@@ -7,7 +7,8 @@ function MenuItem({ label }: { label: string }) {
   const focus = useFocus();
   return (
     <Text color={focus.focused ? 'green' : 'white'}>
-      {focus.focused ? '> ' : '  '}{label}
+      {focus.focused ? '> ' : '  '}
+      {label}
     </Text>
   );
 }

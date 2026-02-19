@@ -8,7 +8,8 @@ function MenuItem({ label }: { label: string }) {
   const focus = useFocus();
   return (
     <Text color={focus.focused ? 'green' : 'white'}>
-      {focus.focused ? '> ' : '  '}{label}
+      {focus.focused ? '> ' : '  '}
+      {label}
     </Text>
   );
 }
@@ -16,7 +17,9 @@ function MenuItem({ label }: { label: string }) {
 function Modal({ onClose }: { onClose: () => void }) {
   return (
     <Box flexDirection="column" borderStyle="round" paddingX={1}>
-      <Text bold color="yellow">Modal (q to close)</Text>
+      <Text bold color="yellow">
+        Modal (q to close)
+      </Text>
       <FocusGroup direction="vertical" keybindings={{ q: onClose }}>
         <MenuItem label="Confirm" />
         <MenuItem label="Cancel" />
