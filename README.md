@@ -1,4 +1,4 @@
-[![CI](https://github.com/zion-off/giggles/actions/workflows/giggles-lint.yml/badge.svg)](https://github.com/zion-off/giggles/actions/workflows/giggles-lint.yml)
+[![CI](https://github.com/zion-off/giggles/actions/workflows/giggles-ci.yml/badge.svg)](https://github.com/zion-off/giggles/actions/workflows/giggles-ci.yml)
 [![CD](https://github.com/zion-off/giggles/actions/workflows/giggles-cd.yml/badge.svg)](https://github.com/zion-off/giggles/actions/workflows/giggles-cd.yml)
 [![docs](https://img.shields.io/badge/docs-giggles.zzzzion.com-blue)](https://giggles.zzzzion.com)
 
