@@ -14,7 +14,6 @@ export type FocusContextValue = {
   focusFirstChild: (parentId: string) => void;
   isFocused: (id: string) => boolean;
   getFocusedId: () => string | null;
-  isInActiveBranch: (id: string) => boolean;
   getActiveBranchPath: () => string[];
   navigateSibling: (direction: 'next' | 'prev', wrap?: boolean) => void;
 };
@@ -25,8 +24,6 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
   const nodesRef = useRef<Map<string, FocusNode>>(new Map());
   const pendingFocusFirstChildRef = useRef<Set<string>>(new Set());
   const [focusedId, setFocusedId] = useState<string | null>(null);
-  const [activeBranchNodes, setActiveBranchNodes] = useState<Set<string>>(new Set());
-  const [activeBranchPath, setActiveBranchPath] = useState<string[]>([]);
 
   const focusNode = useCallback((id: string) => {
     const nodes = nodesRef.current;
@@ -34,17 +31,6 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
 
     setFocusedId((current) => {
       if (current === id) return current;
-      const pathSet = new Set<string>();
-      const pathArray: string[] = [];
-      let currentNode: string | null = id;
-      while (currentNode) {
-        pathSet.add(currentNode);
-        pathArray.push(currentNode);
-        const node = nodes.get(currentNode);
-        currentNode = node?.parentId ?? null;
-      }
-      setActiveBranchNodes(pathSet);
-      setActiveBranchPath(pathArray);
       return id;
     });
   }, []);
@@ -116,25 +102,7 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
 
     setFocusedId((current) => {
       if (current !== id) return current;
-
-      if (node.parentId) {
-        const pathSet = new Set<string>();
-        const pathArray: string[] = [];
-        let currentNode: string | null = node.parentId;
-        while (currentNode) {
-          pathSet.add(currentNode);
-          pathArray.push(currentNode);
-          const n = nodes.get(currentNode);
-          currentNode = n?.parentId ?? null;
-        }
-        setActiveBranchNodes(pathSet);
-        setActiveBranchPath(pathArray);
-        return node.parentId;
-      }
-
-      setActiveBranchNodes(new Set());
-      setActiveBranchPath([]);
-      return null;
+      return node.parentId ?? null;
     });
   }, []);
 
@@ -149,16 +117,18 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
     return focusedId;
   }, [focusedId]);
 
-  const isInActiveBranch = useCallback(
-    (id: string) => {
-      return activeBranchNodes.has(id);
-    },
-    [activeBranchNodes]
-  );
-
   const getActiveBranchPath = useCallback(() => {
-    return activeBranchPath;
-  }, [activeBranchPath]);
+    if (!focusedId) return [];
+    const nodes = nodesRef.current;
+    const pathArray: string[] = [];
+    let node: string | null = focusedId;
+    while (node) {
+      pathArray.push(node);
+      const n = nodes.get(node);
+      node = n?.parentId ?? null;
+    }
+    return pathArray;
+  }, [focusedId]);
 
   const navigateSibling = useCallback(
     (direction: 'next' | 'prev', wrap: boolean = true) => {
@@ -202,7 +172,6 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
         focusFirstChild,
         isFocused,
         getFocusedId,
-        isInActiveBranch,
         getActiveBranchPath,
         navigateSibling
       }}

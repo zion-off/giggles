@@ -1,6 +1,6 @@
 'use client';
 
-import { FocusGroup, GigglesProvider, useFocus, useKeybindings } from 'giggles';
+import { FocusGroup, GigglesProvider, useFocus } from 'giggles';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
 
@@ -14,23 +14,20 @@ function Field({ id, label }: { id: string; label: string }) {
 }
 
 function Form() {
-  const focus = useFocus();
   const [field, setField] = useState('name');
 
-  useKeybindings(focus, {
-    tab: () => {
-      setField((f) => {
-        if (f === 'name') return 'email';
-        if (f === 'email') return 'submit';
-        return 'name';
-      });
-    }
-  });
+  const advance = () => {
+    setField((f) => {
+      if (f === 'name') return 'email';
+      if (f === 'email') return 'submit';
+      return 'name';
+    });
+  };
 
   return (
     <Box flexDirection="column">
       <Text bold>Form (tab to advance)</Text>
-      <FocusGroup value={field}>
+      <FocusGroup value={field} keybindings={{ tab: advance }}>
         <Field id="name" label="Name" />
         <Field id="email" label="Email" />
         <Field id="submit" label="Submit" />

@@ -116,6 +116,10 @@ Creates a navigable group of focusable children.
       description: 'Controlled focus - ID of child that should be focused',
       type: 'string',
     },
+    keybindings: {
+      description: 'Custom keybindings registered on this group node',
+      type: 'Keybindings',
+    },
     children: {
       description: 'Focusable child components',
       type: 'React.ReactNode',
@@ -176,7 +180,7 @@ function MenuItem({ label }: { label: string }) {
 
 ### Controlled focus
 
-Use the `value` prop on `FocusGroup` with the `id` parameter on `useFocus` to control focus declaratively:
+Use the `value` prop on `FocusGroup` with the `id` parameter on `useFocus` to control focus declaratively. Pass custom `keybindings` to the group to advance focus programmatically:
 
 ```tsx title="Controlled Form"
 import { FocusGroup, useFocus } from 'giggles';
@@ -186,8 +190,16 @@ import { Text } from 'ink';
 function Form() {
   const [field, setField] = useState('name');
 
+  const advance = () => {
+    setField((f) => {
+      if (f === 'name') return 'email';
+      if (f === 'email') return 'submit';
+      return 'name';
+    });
+  };
+
   return (
-    <FocusGroup value={field}>
+    <FocusGroup value={field} keybindings={{ tab: advance }}>
       <TextInput id="name" label="Name" />
       <TextInput id="email" label="Email" />
       <Button id="submit" label="Submit" />

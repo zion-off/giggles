@@ -11,6 +11,7 @@ type FocusGroupProps = {
   value?: string;
   wrap?: boolean;
   navigable?: boolean;
+  keybindings?: Keybindings;
 };
 
 export function FocusGroup({
@@ -18,7 +19,8 @@ export function FocusGroup({
   direction = 'vertical',
   value,
   wrap = true,
-  navigable = true
+  navigable = true,
+  keybindings: customBindings
 }: FocusGroupProps) {
   const focus = useFocus();
   const { focusNode, navigateSibling } = useFocusContext();
@@ -67,7 +69,12 @@ export function FocusGroup({
         };
   }, [navigable, direction, wrap, navigateSibling]);
 
-  useKeybindings(focus, navigationKeys);
+  const mergedBindings = useMemo(
+    (): Keybindings => ({ ...navigationKeys, ...customBindings }),
+    [navigationKeys, customBindings]
+  );
+
+  useKeybindings(focus, mergedBindings);
 
   return (
     <FocusNodeContext.Provider value={focus.id}>
