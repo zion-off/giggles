@@ -11,6 +11,7 @@ type SpecialKey =
   | 'escape'
   | 'tab'
   | 'backspace'
+  | 'delete'
   | 'pageup'
   | 'pagedown'
   | 'home'
@@ -25,6 +26,7 @@ export type Keybindings = Partial<Record<KeyName, KeybindingDefinition>>;
 export type KeybindingOptions = {
   capture?: boolean;
   onKeypress?: (input: string, key: Key) => void;
+  passthrough?: string[];
   layer?: string;
 };
 

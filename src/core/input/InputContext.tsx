@@ -12,6 +12,7 @@ type NodeBindings = {
   bindings: Map<string, BindingEntry>;
   capture: boolean;
   onKeypress?: (input: string, key: Key) => void;
+  passthrough?: Set<string>;
   layer?: string;
 };
 
@@ -45,6 +46,7 @@ export const InputProvider = ({ children }: { children: React.ReactNode }) => {
       bindings: new Map(entries),
       capture: options?.capture ?? false,
       onKeypress: options?.onKeypress,
+      passthrough: options?.passthrough ? new Set(options.passthrough) : undefined,
       layer: options?.layer
     };
     bindingsRef.current.set(nodeId, registration);

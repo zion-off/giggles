@@ -54,19 +54,22 @@ export function FocusGroup({
     const next = () => navigateSibling('next', wrap);
     const prev = () => navigateSibling('prev', wrap);
 
-    return direction === 'vertical'
-      ? {
-          j: next,
-          k: prev,
-          down: next,
-          up: prev
-        }
-      : {
-          l: next,
-          h: prev,
-          right: next,
-          left: prev
-        };
+    const base =
+      direction === 'vertical'
+        ? {
+            j: next,
+            k: prev,
+            down: next,
+            up: prev
+          }
+        : {
+            l: next,
+            h: prev,
+            right: next,
+            left: prev
+          };
+
+    return { ...base, tab: next };
   }, [navigable, direction, wrap, navigateSibling]);
 
   const mergedBindings = useMemo(

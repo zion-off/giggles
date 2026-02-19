@@ -115,16 +115,22 @@ The `when` field controls when the binding is considered available:
 
 #### KeybindingOptions
 
+Capture mode intercepts all input at the component, preventing it from bubbling to parents. Named bindings are still checked first — any key matching a named binding fires that handler. Remaining keys fall through to `onKeypress`. Use `passthrough` to let specific keys bypass capture and continue bubbling to parent nodes.
+
 <TypeTable
   type={{
     capture: {
-      description: 'Enable capture mode - all keystrokes go to onKeypress, nothing bubbles',
+      description: 'Enable capture mode — unmatched keystrokes go to onKeypress instead of bubbling',
       type: 'boolean',
       default: 'false',
     },
     onKeypress: {
-      description: 'Handler for keystrokes in capture mode that don\'t match explicit bindings',
+      description: 'Handler for keystrokes in capture mode that don\'t match named bindings',
       type: '(input: string, key: Key) => void',
+    },
+    passthrough: {
+      description: 'Key names that should skip capture and continue bubbling to parent nodes. Useful for letting keys like escape reach parent components.',
+      type: 'string[]',
     },
     layer: {
       description: 'Optional layer identifier for organizing keybindings (metadata only)',

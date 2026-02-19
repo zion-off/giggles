@@ -10,6 +10,7 @@ export function normalizeKey(input: string, key: Key): string {
   if (key.return) return 'enter';
   if (key.escape) return 'escape';
   if (key.tab) return 'tab';
+  if (input === '\x1b[3~') return 'delete';
   if (key.backspace || key.delete) return 'backspace';
   if (key.pageUp) return 'pageup';
   if (key.pageDown) return 'pagedown';

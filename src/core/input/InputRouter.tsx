@@ -29,6 +29,9 @@ export function InputRouter({ children }: { children: React.ReactNode }) {
       }
 
       if (nodeBindings.capture && nodeBindings.onKeypress) {
+        if (nodeBindings.passthrough?.has(keyName)) {
+          continue;
+        }
         nodeBindings.onKeypress(input, key);
         return;
       }
