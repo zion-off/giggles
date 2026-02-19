@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFocus } from '../focus';
+import { FocusNodeContext, useFocusContext } from '../focus/FocusContext';
 import { useInputContext } from './InputContext';
 
 type FocusTrapProps = {
@@ -9,11 +10,21 @@ type FocusTrapProps = {
 export function FocusTrap({ children }: FocusTrapProps) {
   const { id } = useFocus();
   const { setTrap, clearTrap } = useInputContext();
+  const { focusFirstChild, getFocusedId, focusNode } = useFocusContext();
+  const previousFocusRef = useRef<string | null>(getFocusedId());
 
   useEffect(() => {
+    const previousFocus = previousFocusRef.current;
     setTrap(id);
-    return () => clearTrap(id);
-  }, [id, setTrap, clearTrap]);
+    focusFirstChild(id);
+    return () => {
+      clearTrap(id);
+      if (previousFocus) {
+        focusNode(previousFocus);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
-  return <>{children}</>;
+  return <FocusNodeContext.Provider value={id}>{children}</FocusNodeContext.Provider>;
 }
