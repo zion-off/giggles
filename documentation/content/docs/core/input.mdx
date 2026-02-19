@@ -98,14 +98,20 @@ type KeyHandler = (input: string, key: Key) => void
 
 #### Keybindings
 
+Each value can be a plain handler function or a named binding object. Named bindings are registered in the command registry and become discoverable via `useKeybindingRegistry`.
+
 <TypeTable
   type={{
     '[key: string]': {
-      description: 'Key name (e.g., "j", "enter", "ctrl+c") mapped to handler function',
-      type: 'KeyHandler',
+      description: 'Key name mapped to a handler function or named binding object',
+      type: 'KeyHandler | { action: KeyHandler; name: string; when?: "focused" | "mounted" }',
     },
   }}
 />
+
+The `when` field controls when the binding is considered available:
+- `"focused"` (default) — active only when the registering component is the focused leaf
+- `"mounted"` — active whenever the component is mounted, regardless of focus. Fires even if the component is not in the current focus path.
 
 #### KeybindingOptions
 
@@ -123,6 +129,74 @@ type KeyHandler = (input: string, key: Key) => void
     layer: {
       description: 'Optional layer identifier for organizing keybindings (metadata only)',
       type: 'string',
+    },
+  }}
+/>
+
+### useKeybindingRegistry()
+
+Reads all named keybindings registered across the app. Useful for building command palettes, help screens, and key hints bars.
+
+```tsx title="Help Screen"
+import { useKeybindingRegistry } from 'giggles';
+import { Box, Text } from 'ink';
+
+function HelpScreen() {
+  const registry = useKeybindingRegistry();
+
+  return (
+    <Box flexDirection="column">
+      {registry.available.map((cmd) => (
+        <Box key={`${cmd.nodeId}-${cmd.key}`} gap={2}>
+          <Text color="cyan">{cmd.key}</Text>
+          <Text>{cmd.name}</Text>
+        </Box>
+      ))}
+    </Box>
+  );
+}
+```
+
+<TypeTable
+  type={{
+    all: {
+      description: 'All named bindings registered across the entire app',
+      type: 'RegisteredKeybinding[]',
+    },
+    available: {
+      description: 'Named bindings currently reachable — focused/ancestor bindings from the active focus path, plus all mounted bindings',
+      type: 'RegisteredKeybinding[]',
+    },
+    local: {
+      description: 'Named bindings registered by the component that passed its focus handle. Empty if no focus handle provided.',
+      type: 'RegisteredKeybinding[]',
+    },
+  }}
+/>
+
+#### RegisteredKeybinding
+
+<TypeTable
+  type={{
+    nodeId: {
+      description: 'Internal focus node ID of the registering component',
+      type: 'string',
+    },
+    key: {
+      description: 'The key name the binding is registered under',
+      type: 'string',
+    },
+    handler: {
+      description: 'The handler function',
+      type: 'KeyHandler',
+    },
+    name: {
+      description: 'Human-readable label (only present on named bindings)',
+      type: 'string | undefined',
+    },
+    when: {
+      description: 'Availability scope of the binding',
+      type: '"focused" | "mounted" | undefined',
     },
   }}
 />
@@ -161,7 +235,7 @@ function App() {
 
 Supported key names for bindings:
 
-- **Special keys**: `enter`, `escape`, `tab`, `backspace`, `delete`, `up`, `down`, `left`, `right`, `pageup`, `pagedown`, `home`, `end`
+- **Special keys**: `enter`, `escape`, `tab`, `backspace`, `up`, `down`, `left`, `right`, `pageup`, `pagedown`, `home`, `end`
 - **Character keys**: `a`, `b`, `j`, `k`, `?`, etc.
 - **Modified keys**: `ctrl+c`, `ctrl+q`, etc.
 

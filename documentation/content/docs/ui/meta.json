@@ -1,0 +1,9 @@
+{
+  "title": "UI",
+  "description": "Ready-to-use components",
+  "icon": "LayoutGrid",
+  "root": true,
+  "pages": [
+    "index"
+  ]
+}
