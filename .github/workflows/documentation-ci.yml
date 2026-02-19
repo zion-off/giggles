@@ -1,19 +1,12 @@
 name: documentation / ci
 
 on:
+  workflow_call:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'documentation/**'
-      - '.github/workflows/documentation-ci.yml'
-      - '.github/workflows/documentation-cd.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'documentation/**'
-      - '.github/workflows/documentation-ci.yml'
-      - '.github/workflows/documentation-cd.yml'
+
+concurrency:
+  group: ${{ github.workflow_ref }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:

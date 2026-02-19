@@ -1,18 +1,12 @@
 name: create-giggles-app / ci
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'tools/create-giggles-app/**'
-      - '.github/workflows/create-giggles-app-ci.yml'
-      - '.github/workflows/create-giggles-app-cd.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'tools/create-giggles-app/**'
-      - '.github/workflows/create-giggles-app-ci.yml'
-      - '.github/workflows/create-giggles-app-cd.yml'
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow_ref }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:

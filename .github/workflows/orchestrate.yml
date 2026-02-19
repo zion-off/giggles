@@ -1,0 +1,134 @@
+name: orchestrate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  detect-changes:
+    name: Detect changed services
+    runs-on: ubuntu-latest
+    outputs:
+      giggles: ${{ steps.changes.outputs.giggles }}
+      documentation: ${{ steps.changes.outputs.documentation }}
+      create-giggles-app: ${{ steps.changes.outputs.create-giggles-app }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Determine changed services
+        id: changes
+        run: |
+          CHANGED=$(git diff --name-only HEAD^ HEAD)
+          GIGGLES=false
+          DOCUMENTATION=false
+          CREATE_GIGGLES_APP=false
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            # documentation: files under documentation/ or its workflow files
+            if [[ "$file" == documentation/* ]] || \
+               [[ "$file" == .github/workflows/documentation-ci.yml ]] || \
+               [[ "$file" == .github/workflows/documentation-cd.yml ]]; then
+              DOCUMENTATION=true
+            fi
+
+            # create-giggles-app: files under tools/create-giggles-app/ or its workflow files
+            if [[ "$file" == tools/create-giggles-app/* ]] || \
+               [[ "$file" == .github/workflows/create-giggles-app-ci.yml ]] || \
+               [[ "$file" == .github/workflows/create-giggles-app-cd.yml ]]; then
+              CREATE_GIGGLES_APP=true
+            fi
+
+            # giggles: any file not in documentation/, tools/, or the other services' workflow files
+            if [[ "$file" != documentation/* ]] && \
+               [[ "$file" != tools/* ]] && \
+               [[ "$file" != .github/workflows/documentation-ci.yml ]] && \
+               [[ "$file" != .github/workflows/documentation-cd.yml ]] && \
+               [[ "$file" != .github/workflows/create-giggles-app-ci.yml ]] && \
+               [[ "$file" != .github/workflows/create-giggles-app-cd.yml ]]; then
+              GIGGLES=true
+            fi
+          done <<< "$CHANGED"
+
+          echo "giggles=$GIGGLES" >> $GITHUB_OUTPUT
+          echo "documentation=$DOCUMENTATION" >> $GITHUB_OUTPUT
+          echo "create-giggles-app=$CREATE_GIGGLES_APP" >> $GITHUB_OUTPUT
+
+  # ── giggles pipeline ────────────────────────────────────────────────────────
+
+  giggles-ci:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.giggles == 'true'
+    uses: ./.github/workflows/giggles-ci.yml
+    secrets: inherit
+
+  giggles-cd:
+    needs: [detect-changes, giggles-ci]
+    # Only deploy on pushes to main; skip on pull requests.
+    if: |
+      github.event_name == 'push' &&
+      needs.detect-changes.outputs.giggles == 'true'
+    permissions:
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/giggles-cd.yml
+    secrets: inherit
+
+  # ── documentation pipeline (parallel with create-giggles-app) ───────────────
+  # Waits for the full giggles pipeline when giggles was triggered; starts
+  # immediately when giggles was not triggered (giggles-ci result == 'skipped').
+  # Blocked only if giggles-ci or giggles-cd explicitly failed.
+
+  documentation-ci:
+    needs: [detect-changes, giggles-ci, giggles-cd]
+    if: |
+      always() &&
+      needs.detect-changes.outputs.documentation == 'true' &&
+      needs.giggles-ci.result != 'failure' &&
+      needs.giggles-cd.result != 'failure'
+    uses: ./.github/workflows/documentation-ci.yml
+    secrets: inherit
+
+  documentation-cd:
+    needs: [detect-changes, documentation-ci]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      needs.detect-changes.outputs.documentation == 'true' &&
+      needs.documentation-ci.result == 'success'
+    uses: ./.github/workflows/documentation-cd.yml
+    secrets: inherit
+
+  # ── create-giggles-app pipeline (parallel with documentation) ───────────────
+
+  create-giggles-app-ci:
+    needs: [detect-changes, giggles-ci, giggles-cd]
+    if: |
+      always() &&
+      needs.detect-changes.outputs['create-giggles-app'] == 'true' &&
+      needs.giggles-ci.result != 'failure' &&
+      needs.giggles-cd.result != 'failure'
+    uses: ./.github/workflows/create-giggles-app-ci.yml
+    secrets: inherit
+
+  create-giggles-app-cd:
+    needs: [detect-changes, create-giggles-app-ci]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      needs.detect-changes.outputs['create-giggles-app'] == 'true' &&
+      needs.create-giggles-app-ci.result == 'success'
+    permissions:
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/create-giggles-app-cd.yml
+    secrets: inherit

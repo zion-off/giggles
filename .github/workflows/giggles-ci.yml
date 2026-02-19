@@ -1,24 +1,12 @@
 name: giggles / ci
 
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - 'documentation/**'
-      - 'tools/**'
-      - '.github/workflows/documentation-ci.yml'
-      - '.github/workflows/documentation-cd.yml'
-      - '.github/workflows/create-giggles-app-ci.yml'
-      - '.github/workflows/create-giggles-app-cd.yml'
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - 'documentation/**'
-      - 'tools/**'
-      - '.github/workflows/documentation-ci.yml'
-      - '.github/workflows/documentation-cd.yml'
-      - '.github/workflows/create-giggles-app-ci.yml'
-      - '.github/workflows/create-giggles-app-cd.yml'
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow_ref }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
@@ -30,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
           version: 9
 
