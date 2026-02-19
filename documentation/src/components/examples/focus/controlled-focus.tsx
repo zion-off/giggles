@@ -28,7 +28,7 @@ function Form() {
   return (
     <Box flexDirection="column">
       <Text bold>Form (n to advance)</Text>
-      <FocusGroup value={field} keybindings={{ n: advance }}>
+      <FocusGroup value={field} navigable={false} keybindings={{ n: advance }}>
         <Field id="name" label="Name" />
         <Field id="email" label="Email" />
         <Field id="submit" label="Submit" />

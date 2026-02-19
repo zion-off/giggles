@@ -199,7 +199,7 @@ function Form() {
   };
 
   return (
-    <FocusGroup value={field} keybindings={{ tab: advance }}>
+    <FocusGroup value={field} navigable={false} keybindings={{ tab: advance }}>
       <TextInput id="name" label="Name" />
       <TextInput id="email" label="Email" />
       <Button id="submit" label="Submit" />
