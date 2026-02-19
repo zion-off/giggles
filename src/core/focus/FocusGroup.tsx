@@ -46,7 +46,7 @@ export function FocusGroup({
     }
   }, [value, focusNode]);
 
-  const bindContextValue = value ? { register, unregister } : null;
+  const bindContextValue = useMemo(() => (value ? { register, unregister } : null), [value, register, unregister]);
 
   const navigationKeys = useMemo((): Keybindings => {
     if (!navigable) return {};
