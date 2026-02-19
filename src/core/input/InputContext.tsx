@@ -2,8 +2,14 @@ import { createContext, useCallback, useContext, useRef } from 'react';
 import { GigglesError } from '../GigglesError';
 import { Key, KeyHandler, KeybindingOptions, Keybindings, RegisteredKeybinding } from './types';
 
+type BindingEntry = {
+  handler: KeyHandler;
+  name?: string;
+  when?: 'focused' | 'mounted';
+};
+
 type NodeBindings = {
-  bindings: Map<string, KeyHandler>;
+  bindings: Map<string, BindingEntry>;
   capture: boolean;
   onKeypress?: (input: string, key: Key) => void;
   layer?: string;
@@ -26,8 +32,17 @@ export const InputProvider = ({ children }: { children: React.ReactNode }) => {
   const trapNodeIdRef = useRef<string | null>(null);
 
   const registerKeybindings = useCallback((nodeId: string, bindings: Keybindings, options?: KeybindingOptions) => {
+    const entries: [string, BindingEntry][] = Object.entries(bindings)
+      .filter((entry): entry is [string, NonNullable<(typeof bindings)[string]>] => entry[1] != null)
+      .map(([key, def]) => {
+        if (typeof def === 'function') {
+          return [key, { handler: def }];
+        }
+        return [key, { handler: def.action, name: def.name, when: def.when }];
+      });
+
     const registration: NodeBindings = {
-      bindings: new Map(Object.entries(bindings).filter((entry): entry is [string, KeyHandler] => entry[1] != null)),
+      bindings: new Map(entries),
       capture: options?.capture ?? false,
       onKeypress: options?.onKeypress,
       layer: options?.layer
@@ -60,11 +75,13 @@ export const InputProvider = ({ children }: { children: React.ReactNode }) => {
   const getAllBindings = useCallback(() => {
     const allBindings: RegisteredKeybinding[] = [];
     bindingsRef.current.forEach((nodeBindings, nodeId) => {
-      nodeBindings.bindings.forEach((handler, key) => {
+      nodeBindings.bindings.forEach((entry, key) => {
         allBindings.push({
           nodeId,
           key,
-          handler,
+          handler: entry.handler,
+          name: entry.name,
+          when: entry.when,
           layer: nodeBindings.layer
         });
       });

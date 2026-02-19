@@ -6,7 +6,7 @@ import { normalizeKey } from './normalizeKey';
 
 export function InputRouter({ children }: { children: React.ReactNode }) {
   const { getFocusedId, getActiveBranchPath } = useFocusContext();
-  const { getNodeBindings, getTrapNodeId } = useInputContext();
+  const { getNodeBindings, getTrapNodeId, getAllBindings } = useInputContext();
 
   useInput((input, key) => {
     const focusedId = getFocusedId();
@@ -22,9 +22,9 @@ export function InputRouter({ children }: { children: React.ReactNode }) {
       const nodeBindings = getNodeBindings(nodeId);
       if (!nodeBindings) continue;
 
-      const handler = nodeBindings.bindings.get(keyName);
-      if (handler) {
-        handler(input, key);
+      const entry = nodeBindings.bindings.get(keyName);
+      if (entry && entry.when !== 'mounted') {
+        entry.handler(input, key);
         return;
       }
 
@@ -34,6 +34,14 @@ export function InputRouter({ children }: { children: React.ReactNode }) {
       }
 
       if (nodeId === trapNodeId) {
+        return;
+      }
+    }
+
+    // Fall through to mounted bindings (not in the focus path)
+    for (const binding of getAllBindings()) {
+      if (binding.key === keyName && binding.when === 'mounted') {
+        binding.handler(input, key);
         return;
       }
     }

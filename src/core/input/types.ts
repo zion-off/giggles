@@ -11,7 +11,6 @@ type SpecialKey =
   | 'escape'
   | 'tab'
   | 'backspace'
-  | 'delete'
   | 'pageup'
   | 'pagedown'
   | 'home'
@@ -19,7 +18,9 @@ type SpecialKey =
 
 type KeyName = SpecialKey | (string & {});
 
-export type Keybindings = Partial<Record<KeyName, KeyHandler>>;
+type KeybindingDefinition = KeyHandler | { action: KeyHandler; name: string; when?: 'focused' | 'mounted' };
+
+export type Keybindings = Partial<Record<KeyName, KeybindingDefinition>>;
 
 export type KeybindingOptions = {
   capture?: boolean;
@@ -31,6 +32,8 @@ export type RegisteredKeybinding = {
   nodeId: string;
   key: string;
   handler: KeyHandler;
+  name?: string;
+  when?: 'focused' | 'mounted';
   layer?: string;
 };
 

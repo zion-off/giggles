@@ -9,8 +9,9 @@ export { FocusGroup, useFocus, useFocusState } from './core/focus';
 export type { FocusHandle } from './core/focus';
 
 // Input system
-export { useKeybindings, FocusTrap } from './core/input';
-export type { Keybindings, KeybindingOptions, KeyHandler, Key } from './core/input';
+export { useKeybindings, FocusTrap, useKeybindingRegistry } from './core/input';
+export type { Keybindings, KeybindingOptions, KeyHandler, Key, RegisteredKeybinding } from './core/input';
+export type { KeybindingRegistry } from './core/input';
 
 // Router
 export { Router, Screen, useNavigation } from './core/router';
