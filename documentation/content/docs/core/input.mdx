@@ -4,6 +4,9 @@ description: API reference for the input system
 ---
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Terminal } from '@/components/terminal';
+import FileListExample from '@/components/examples/input/file-list';
+import FocusTrapExample from '@/components/examples/input/focus-trap';
 
 The input system routes keyboard events to focused components and prevents input leaking.
 
@@ -126,7 +129,7 @@ type KeyHandler = (input: string, key: Key) => void
 
 ### FocusTrap
 
-Stops input bubbling at a boundary. Used for modals and dialogs.
+Isolates input within a boundary. When mounted, it captures focus into its subtree and prevents input from reaching components outside. When unmounted, it restores focus to the previously focused component.
 
 ```tsx title="FocusTrap Example"
 function App() {
@@ -163,3 +166,71 @@ Supported key names for bindings:
 - **Modified keys**: `ctrl+c`, `ctrl+q`, etc.
 
 Key normalization handles variants like `ctrl+c`, `Ctrl-C`, `^c` automatically.
+
+## Examples
+
+### File list
+
+```tsx title="File List"
+import { useFocus, useKeybindings } from 'giggles';
+import { useState } from 'react';
+import { Box, Text } from 'ink';
+
+function FileList() {
+  const focus = useFocus();
+  const [selected, setSelected] = useState(0);
+  const files = ['file1.ts', 'file2.ts', 'file3.ts'];
+
+  useKeybindings(focus, {
+    j: () => setSelected((i) => Math.min(files.length - 1, i + 1)),
+    k: () => setSelected((i) => Math.max(0, i - 1)),
+  });
+
+  return (
+    <Box flexDirection="column">
+      {files.map((file, i) => (
+        <Text key={file} color={i === selected ? 'green' : 'white'}>
+          {i === selected ? '> ' : '  '}{file}
+        </Text>
+      ))}
+    </Box>
+  );
+}
+```
+
+<Terminal>
+  <FileListExample />
+</Terminal>
+
+### Focus trap
+
+When a `FocusTrap` is active, input stops bubbling past it. The menu behind the modal won't receive any keypresses:
+
+```tsx title="Modal with FocusTrap"
+import { FocusGroup, FocusTrap, useFocus, useKeybindings } from 'giggles';
+import { Box, Text } from 'ink';
+import { useState } from 'react';
+
+function App() {
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <Box flexDirection="column">
+      <FocusGroup direction="vertical" keybindings={{ m: () => setShowModal(true) }}>
+        <MenuItem label="New File" />
+        <MenuItem label="Open File" />
+        <MenuItem label="Save" />
+      </FocusGroup>
+      {showModal && (
+        <FocusTrap>
+          <Modal onClose={() => setShowModal(false)} />
+        </FocusTrap>
+      )}
+    </Box>
+  );
+}
+```
+
+<Terminal>
+  <FocusTrapExample />
+</Terminal>
