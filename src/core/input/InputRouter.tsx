@@ -16,6 +16,7 @@ export function InputRouter({ children }: { children: React.ReactNode }) {
     const trapNodeId = getTrapNodeId();
 
     const keyName = normalizeKey(input, key);
+    if (!keyName) return;
 
     for (const nodeId of path) {
       const nodeBindings = getNodeBindings(nodeId);

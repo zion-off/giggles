@@ -1,6 +1,8 @@
 import type { Key } from 'ink';
 
 export function normalizeKey(input: string, key: Key): string {
+  if (input === '\x1b[I' || input === '\x1b[O') return '';
+
   if (key.downArrow) return 'down';
   if (key.upArrow) return 'up';
   if (key.leftArrow) return 'left';
