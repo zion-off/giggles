@@ -5,6 +5,10 @@ description: API reference for the focus system
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Callout } from 'fumadocs-ui/components/callout';
+import { Terminal } from '@/components/terminal';
+import NavigableMenuExample from '@/components/examples/focus/navigable-menu';
+import ControlledFocusExample from '@/components/examples/focus/controlled-focus';
+import HorizontalTabsExample from '@/components/examples/focus/horizontal-tabs';
 
 The focus system provides components and hooks for managing keyboard navigation.
 
@@ -119,38 +123,6 @@ Creates a navigable group of focusable children.
   }}
 />
 
-## Controlled Focus
-
-Use the `value` prop on `FocusGroup` with the `id` parameter on `useFocus` to control focus declaratively:
-
-```tsx title="Controlled Focus Example"
-function Form() {
-  const [field, setField] = useState('name');
-
-  const handleNext = () => {
-    if (field === 'name') setField('email');
-    else if (field === 'email') setField('submit');
-  };
-
-  return (
-    <FocusGroup value={field}>
-      <TextInput id="name" label="Name" />
-      <TextInput id="email" label="Email" />
-      <Button id="submit" label="Submit" />
-    </FocusGroup>
-  );
-}
-
-function TextInput({ id, label }) {
-  const focus = useFocus(id);
-  return <Text color={focus.focused ? 'green' : 'white'}>{label}</Text>;
-}
-```
-
-<Callout type="warn">
-  Each child within a FocusGroup must have a unique id. Duplicate IDs will throw an error.
-</Callout>
-
 ### useFocusState()
 
 Returns a state tuple for controlling focus declaratively.
@@ -169,3 +141,100 @@ function useFocusState<T extends string>(initial: T): [T, (value: T) => void]
 />
 
 **Returns:** A tuple `[currentValue, setValue]` similar to `useState`.
+
+## Examples
+
+### Navigable menu
+
+```tsx title="Vertical Menu"
+import { FocusGroup, useFocus } from 'giggles';
+import { Box, Text } from 'ink';
+
+function Menu() {
+  return (
+    <FocusGroup direction="vertical">
+      <MenuItem label="New File" />
+      <MenuItem label="Open File" />
+      <MenuItem label="Save" />
+    </FocusGroup>
+  );
+}
+
+function MenuItem({ label }: { label: string }) {
+  const focus = useFocus();
+  return (
+    <Text color={focus.focused ? 'green' : 'white'}>
+      {focus.focused ? '> ' : '  '}{label}
+    </Text>
+  );
+}
+```
+
+<Terminal>
+  <NavigableMenuExample />
+</Terminal>
+
+### Controlled focus
+
+Use the `value` prop on `FocusGroup` with the `id` parameter on `useFocus` to control focus declaratively:
+
+```tsx title="Controlled Form"
+import { FocusGroup, useFocus } from 'giggles';
+import { useState } from 'react';
+import { Text } from 'ink';
+
+function Form() {
+  const [field, setField] = useState('name');
+
+  return (
+    <FocusGroup value={field}>
+      <TextInput id="name" label="Name" />
+      <TextInput id="email" label="Email" />
+      <Button id="submit" label="Submit" />
+    </FocusGroup>
+  );
+}
+
+function TextInput({ id, label }: { id: string; label: string }) {
+  const focus = useFocus(id);
+  return <Text color={focus.focused ? 'green' : 'white'}>{label}</Text>;
+}
+```
+
+<Terminal>
+  <ControlledFocusExample />
+</Terminal>
+
+<Callout type="warn">
+  Each child within a FocusGroup must have a unique id. Duplicate IDs will throw a `GigglesError`.
+</Callout>
+
+### Horizontal tabs
+
+```tsx title="Tab Bar"
+import { FocusGroup, useFocus } from 'giggles';
+import { Box, Text } from 'ink';
+
+function TabBar() {
+  return (
+    <FocusGroup direction="horizontal">
+      <Tab label="General" />
+      <Tab label="Keybindings" />
+      <Tab label="Appearance" />
+    </FocusGroup>
+  );
+}
+
+function Tab({ label }: { label: string }) {
+  const focus = useFocus();
+  return (
+    <Box paddingX={1}>
+      <Text bold={focus.focused} underline={focus.focused}>{label}</Text>
+    </Box>
+  );
+}
+```
+
+<Terminal>
+  <HorizontalTabsExample />
+</Terminal>
