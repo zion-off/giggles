@@ -21,12 +21,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Determine changed services
         id: changes
         run: |
-          CHANGED=$(git diff --name-only HEAD^ HEAD)
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED=$(git diff --name-only ${{ github.event.pull_request.base.sha }} HEAD)
+          elif git cat-file -e ${{ github.event.before }}^{commit} 2>/dev/null; then
+            CHANGED=$(git diff --name-only ${{ github.event.before }} HEAD)
+          else
+            # Force push or new branch — can't determine base, run all pipelines
+            CHANGED=$(git ls-files)
+          fi
           GIGGLES=false
           DOCUMENTATION=false
           CREATE_GIGGLES_APP=false
