@@ -1,0 +1,139 @@
+---
+title: TextInput
+description: API reference for the TextInput component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Terminal } from '@/components/terminal';
+import TextInputExample from '@/components/examples/ui/text-input';
+
+A controlled single-line text input with cursor navigation, inline editing, and render prop support.
+
+While focused, TextInput handles all keyboard input. Tab, shift+tab, and Escape bubble to parent components normally. Enter bubbles unless `onSubmit` is provided.
+
+```tsx title="Basic Usage"
+import { TextInput } from 'giggles/ui';
+import { useState } from 'react';
+
+function NameInput() {
+  const [value, setValue] = useState('');
+
+  return <TextInput label="Name:" value={value} onChange={setValue} placeholder="John Doe" />;
+}
+```
+
+<Terminal>
+  <TextInputExample />
+</Terminal>
+
+```tsx title="Form with Submit"
+import { TextInput } from 'giggles/ui';
+import { FocusGroup } from 'giggles';
+import { useState } from 'react';
+
+function SearchForm() {
+  const [query, setQuery] = useState('');
+
+  return (
+    <FocusGroup direction="vertical">
+      <TextInput
+        label="Search:"
+        value={query}
+        onChange={setQuery}
+        onSubmit={(value) => performSearch(value)}
+        placeholder="type to search..."
+      />
+    </FocusGroup>
+  );
+}
+```
+
+## API Reference
+
+### TextInput
+
+<TypeTable
+  type={{
+    value: {
+      description: 'Current input value (controlled)',
+      type: 'string',
+    },
+    onChange: {
+      description: 'Called with the new value on every edit',
+      type: '(value: string) => void',
+    },
+    onSubmit: {
+      description: 'Called with the current value when Enter is pressed. When not provided, Enter passes through to parent bindings.',
+      type: '(value: string) => void',
+    },
+    label: {
+      description: 'Text label displayed before the input',
+      type: 'string',
+    },
+    placeholder: {
+      description: 'Dimmed text shown when the value is empty and the input is not focused',
+      type: 'string',
+    },
+    render: {
+      description: 'Custom render function. Replaces the default rendering entirely.',
+      type: '(props: TextInputRenderProps) => React.ReactNode',
+    },
+  }}
+/>
+
+### Keybindings
+
+| Key | Action |
+| --- | --- |
+| Characters | Insert at cursor position |
+| `←` `→` | Move cursor |
+| `Home` `End` | Jump to start/end |
+| `Backspace` | Delete character before cursor |
+| `Delete` | Delete character at cursor |
+| `Tab` / `Shift+Tab` | Move to next/previous field |
+| `Enter` | Fire `onSubmit` if provided, otherwise ignored |
+| `Escape` | Ignored (available for parent keybindings) |
+
+### TextInputRenderProps
+
+The `render` prop receives pre-split text segments around the cursor.
+
+<TypeTable
+  type={{
+    value: {
+      description: 'Current input value',
+      type: 'string',
+    },
+    focused: {
+      description: 'Whether the input is currently focused',
+      type: 'boolean',
+    },
+    before: {
+      description: 'Text before the cursor',
+      type: 'string',
+    },
+    cursorChar: {
+      description: 'Character at the cursor position, or a space if at the end',
+      type: 'string',
+    },
+    after: {
+      description: 'Text after the cursor',
+      type: 'string',
+    },
+  }}
+/>
+
+```tsx title="Custom Render"
+<TextInput
+  label="Notes:"
+  value={value}
+  onChange={setValue}
+  render={({ before, cursorChar, after, focused }) => (
+    <Text color={focused ? 'cyan' : 'white'}>
+      {before}
+      <Text inverse>{cursorChar}</Text>
+      {after}
+    </Text>
+  )}
+/>
+```

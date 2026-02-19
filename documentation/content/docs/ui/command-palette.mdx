@@ -1,0 +1,94 @@
+---
+title: Command Palette
+description: API reference for the CommandPalette component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Terminal } from '@/components/terminal';
+import CommandPaletteExample from '@/components/examples/ui/command-palette';
+
+An overlay that collects all named keybindings registered across the app and lets the user search and execute them by name.
+
+Components register commands by passing a `name` field to `useKeybindings`. The palette fuzzy-matches these against the search query. It wraps itself in a `FocusTrap`, so all input is captured while open and focus is restored when it closes.
+
+```tsx title="Basic Usage"
+import { useKeybindings, useFocus } from 'giggles';
+import { CommandPalette } from 'giggles/ui';
+import { useState } from 'react';
+
+function FileList() {
+  const focus = useFocus();
+
+  useKeybindings(focus, {
+    d: { action: deleteSelected, name: 'Delete file' },
+    r: { action: renameSelected, name: 'Rename file' },
+    j: () => moveDown(), // no name = won't appear in palette
+    k: () => moveUp(),
+  });
+}
+
+function App() {
+  const focus = useFocus();
+  const [showPalette, setShowPalette] = useState(false);
+
+  useKeybindings(focus, {
+    'ctrl+k': { action: () => setShowPalette(true), name: 'Open command palette', when: 'mounted' },
+  });
+
+  return (
+    <>
+      <FileList />
+      {showPalette && <CommandPalette onClose={() => setShowPalette(false)} />}
+    </>
+  );
+}
+```
+
+The example below shows `useKeybindingRegistry` used directly to build a `KeyHints` bar — the same registry that `CommandPalette` uses internally. Switch focus between panels with `j`/`k` to see the available commands update.
+
+<Terminal>
+  <CommandPaletteExample />
+</Terminal>
+
+## API Reference
+
+### CommandPalette
+
+<TypeTable
+  type={{
+    onClose: {
+      description: 'Called when the palette should close (Escape key or after executing a command)',
+      type: '() => void',
+    },
+    render: {
+      description: 'Custom render function. Receives query, filtered commands, selected index, and onSelect. When provided, replaces the default palette UI entirely.',
+      type: '(props: CommandPaletteRenderProps) => React.ReactNode',
+    },
+  }}
+/>
+
+#### CommandPaletteRenderProps
+
+<TypeTable
+  type={{
+    query: {
+      description: 'Current search query string',
+      type: 'string',
+    },
+    filtered: {
+      description: 'Commands matching the current query',
+      type: 'RegisteredKeybinding[]',
+    },
+    selectedIndex: {
+      description: 'Index of the currently highlighted command',
+      type: 'number',
+    },
+    onSelect: {
+      description: 'Execute a command and close the palette',
+      type: '(cmd: RegisteredKeybinding) => void',
+    },
+  }}
+/>
+
+See [`RegisteredKeybinding`](/core/input#registeredkeybinding) on the Input page.
+
