@@ -44,11 +44,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        working-directory: documentation
 
-      - name: Update giggles to latest
-        run: pnpm update giggles
-        working-directory: documentation
+      - name: Build giggles
+        run: pnpm build
 
       - name: Check formatting
         run: pnpm exec prettier --check .
