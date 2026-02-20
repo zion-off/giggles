@@ -15,11 +15,12 @@ type ViewportProps<T> = {
   items: T[];
   maxVisible: number;
   showLineNumbers?: boolean;
+  gap?: number;
   paginatorStyle?: PaginatorStyle;
   render?: (props: ViewportRenderProps<T>) => React.ReactNode;
 };
 
-export function Viewport<T>({ items, maxVisible, showLineNumbers, paginatorStyle, render }: ViewportProps<T>) {
+export function Viewport<T>({ items, maxVisible, showLineNumbers, gap, paginatorStyle, render }: ViewportProps<T>) {
   const focus = useFocus();
   const [scrollOffset, setScrollOffset] = useState(0);
 
@@ -46,6 +47,7 @@ export function Viewport<T>({ items, maxVisible, showLineNumbers, paginatorStyle
     <VirtualList
       items={items}
       scrollOffset={scrollOffset}
+      gap={gap}
       maxVisible={maxVisible}
       paginatorStyle={paginatorStyle}
       render={({ item, index }) => {
