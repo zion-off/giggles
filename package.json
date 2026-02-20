@@ -74,5 +74,10 @@
     "ink-link": "^5.0.0",
     "marked": "^17.0.3",
     "prismjs": "^1.30.0"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "ink-web@0.1.11": "patches/ink-web@0.1.11.patch"
+    }
   }
 }
