@@ -8,11 +8,11 @@ import { Terminal } from '@/components/terminal';
 import FileListExample from '@/components/examples/input/file-list';
 import FocusTrapExample from '@/components/examples/input/focus-trap';
 
-The input system routes keyboard events to focused components and prevents input leaking.
+The input system routes keyboard events to the focused component and its ancestors.
 
-Key events are dispatched along the active branch of the focus tree — from the focused node upward to the root. Each node on the path can register keybindings with `useKeybindings`, and the first matching binding handles the event. This means a focused child's bindings take priority over its parent's, and components outside the active branch never receive input.
+Register handlers with `useKeybindings` — when a key is pressed, the focused component's bindings are checked first, then its parent's, and so on. The first matching binding wins; unmatched keys keep moving up. Components outside the focused path never receive input.
 
-For modal-like scenarios where input should be isolated, `FocusTrap` stops events from bubbling past a boundary.
+For modal-like scenarios, `FocusTrap` locks input inside a subtree — nothing outside it is reachable until the trap unmounts.
 
 ```tsx title="Basic Usage"
 import { useKeybindings, useFocus } from 'giggles';
@@ -107,7 +107,7 @@ Each value can be a plain handler function or a named binding object. Named bind
 <TypeTable
   type={{
     '[key: string]': {
-      description: 'Key name mapped to a handler function or named binding object',
+      description: 'Key name mapped to a handler function or named binding object. See Key Names below for valid key strings.',
       type: 'KeyHandler | { action: KeyHandler; name: string; when?: "focused" | "mounted" }',
     },
   }}
@@ -117,6 +117,24 @@ The `when` field controls when the binding is considered available:
 - `"focused"` (default) — active only when the registering component is the focused leaf
 - `"mounted"` — active whenever the component is mounted, regardless of focus. Fires even if the component is not in the current focus path.
 
+#### Key Names
+
+Use these strings as keys in the bindings object:
+
+| Key string | Triggers on |
+|---|---|
+| `up`, `down`, `left`, `right` | Arrow keys |
+| `enter` | Return / Enter |
+| `escape` | Escape |
+| `tab` | Tab |
+| `shift+tab` | Shift + Tab |
+| `backspace` | Backspace or Delete (⌫) |
+| `delete` | Forward delete (⌦) |
+| `pageup`, `pagedown` | Page Up / Page Down |
+| `home`, `end` | Home / End |
+| `ctrl+c`, `ctrl+q`, … | Ctrl + any letter |
+| `a`, `j`, `?`, … | Any printable character |
+
 #### KeybindingOptions
 
 Capture mode intercepts all input at the component, preventing it from bubbling to parents. Named bindings are still checked first — any key matching a named binding fires that handler. Remaining keys fall through to `onKeypress`. Use `passthrough` to let specific keys bypass capture and continue bubbling to parent nodes.
@@ -124,7 +142,7 @@ Capture mode intercepts all input at the component, preventing it from bubbling 
 <TypeTable
   type={{
     capture: {
-      description: 'Enable capture mode — unmatched keystrokes go to onKeypress instead of bubbling',
+      description: 'When enabled, unmatched keystrokes go to onKeypress instead of being handled by parent components',
       type: 'boolean',
       default: 'false',
     },
@@ -133,7 +151,7 @@ Capture mode intercepts all input at the component, preventing it from bubbling 
       type: '(input: string, key: Key) => void',
     },
     passthrough: {
-      description: 'Key names that should skip capture and continue bubbling to parent nodes. Useful for letting keys like escape reach parent components.',
+      description: 'Key names that bypass capture mode and are handled by parent components instead. Useful for letting keys like escape reach parent components.',
       type: 'string[]',
     },
     layer: {
@@ -247,16 +265,6 @@ function App() {
     },
   }}
 />
-
-### Key Names
-
-Supported key names for bindings:
-
-- **Special keys**: `enter`, `escape`, `tab`, `backspace`, `delete`, `up`, `down`, `left`, `right`, `pageup`, `pagedown`, `home`, `end`
-- **Character keys**: `a`, `b`, `j`, `k`, `?`, etc.
-- **Modified keys**: `ctrl+c`, `ctrl+q`, `shift+tab`, etc.
-
-Key normalization handles variants like `ctrl+c`, `Ctrl-C`, `^c` automatically.
 
 ## Examples
 

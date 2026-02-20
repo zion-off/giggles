@@ -12,7 +12,7 @@ import HorizontalTabsExample from '@/components/examples/focus/horizontal-tabs';
 
 The focus system provides components and hooks for managing keyboard navigation.
 
-Giggles maintains a focus tree — each call to `useFocus` registers a node, and `FocusGroup` organizes them into navigable groups. Only one node is focused at a time, and the path from that node to the root forms the active branch. The input system uses this active branch to determine which components receive key events.
+Giggles maintains a focus tree — each call to `useFocus` registers a node, and `FocusGroup` organizes them into navigable groups. Only one node is focused at a time, and only components on the path from that node to the root receive key events.
 
 Components read their focus state through the `FocusHandle` returned by `useFocus`. For grouped navigation, wrap children in a `FocusGroup` to enable arrow-key or j/k movement between siblings. Focus can also be controlled declaratively with the `value` prop.
 
@@ -120,7 +120,7 @@ Creates a navigable group of focusable children.
       type: 'string',
     },
     keybindings: {
-      description: 'Custom keybindings registered on this group node',
+      description: 'Keybindings active while any child of the group is focused',
       type: 'Keybindings',
     },
     children: {
