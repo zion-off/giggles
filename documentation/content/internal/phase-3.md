@@ -19,9 +19,7 @@ UI components and command palette built on the core framework.
 | Spinner         | No          | Not Started |
 | Badge           | No          | Not Started |
 | Markdown        | No          | Not Started |
-| Modal           | No          | Not Started |
-| Dialog          | No          | Not Started |
-| Toast           | No          | Not Started |
+| Modal           | No          | Done        |
 | StatusBar       | No          | Not Started |
 | KeyHints        | No          | Not Started |
 
