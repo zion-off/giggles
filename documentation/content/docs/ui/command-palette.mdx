@@ -59,6 +59,7 @@ The example below shows `useKeybindingRegistry` used directly to build a `KeyHin
     onClose: {
       description: 'Called when the palette should close (Escape key or after executing a command)',
       type: '() => void',
+      required: true,
     },
     render: {
       description: 'Custom render function. Receives query, filtered commands, selected index, and onSelect. When provided, replaces the default palette UI entirely.',
@@ -74,18 +75,22 @@ The example below shows `useKeybindingRegistry` used directly to build a `KeyHin
     query: {
       description: 'Current search query string',
       type: 'string',
+      required: true,
     },
     filtered: {
       description: 'Commands matching the current query',
       type: 'RegisteredKeybinding[]',
+      required: true,
     },
     selectedIndex: {
       description: 'Index of the currently highlighted command',
       type: 'number',
+      required: true,
     },
     onSelect: {
       description: 'Execute a command and close the palette',
       type: '(cmd: RegisteredKeybinding) => void',
+      required: true,
     },
   }}
 />

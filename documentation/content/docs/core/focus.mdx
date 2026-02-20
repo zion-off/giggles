@@ -69,14 +69,17 @@ type FocusHandle = {
     id: {
       description: 'Unique identifier for this focus node (internal React ID)',
       type: 'string',
+      required: true,
     },
     focused: {
       description: 'Whether this component is currently focused',
       type: 'boolean',
+      required: true,
     },
     focus: {
       description: 'Programmatically focus this component',
       type: '() => void',
+      required: true,
     },
   }}
 />
@@ -123,6 +126,7 @@ Creates a navigable group of focusable children.
     children: {
       description: 'Focusable child components',
       type: 'React.ReactNode',
+      required: true,
     },
   }}
 />
@@ -140,6 +144,7 @@ function useFocusState<T extends string>(initial: T): [T, (value: T) => void]
     initial: {
       description: 'Initial focused value',
       type: 'T extends string',
+      required: true,
     },
   }}
 />

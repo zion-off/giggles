@@ -56,10 +56,12 @@ function useTerminalSize(): TerminalSize
     rows: {
       description: 'Number of rows in the terminal',
       type: 'number',
+      required: true,
     },
     columns: {
       description: 'Number of columns in the terminal',
       type: 'number',
+      required: true,
     },
   }}
 />
@@ -79,6 +81,7 @@ Opts into ANSI focus reporting (`\x1b[?1004h`). The terminal emits a sequence wh
     callback: {
       description: 'Called with true when the terminal gains focus, false when it loses focus',
       type: '(focused: boolean) => void',
+      required: true,
     },
   }}
 />
@@ -100,6 +103,7 @@ function useShellOut(): { run: (command: string) => Promise<{ exitCode: number }
     run: {
       description: 'Runs a shell command with full terminal control. Returns the exit code when the process exits.',
       type: '(command: string) => Promise<{ exitCode: number }>',
+      required: true,
     },
   }}
 />
