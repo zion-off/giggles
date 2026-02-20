@@ -2,6 +2,7 @@ import React, { createContext, useContext } from 'react';
 
 export type GigglesTheme = {
   accentColor: string;
+  borderColor: string;
   selectedColor: string;
   hintColor: string;
   hintDimColor: string;
@@ -14,6 +15,7 @@ export type GigglesTheme = {
 
 const defaultTheme: GigglesTheme = {
   accentColor: '#6B9FD4',
+  borderColor: '#5C5C5C',
   selectedColor: '#8FBF7F',
   hintColor: '#8A8A8A',
   hintDimColor: '#5C5C5C',

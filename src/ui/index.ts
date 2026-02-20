@@ -23,3 +23,5 @@ export type { PaginatorStyle } from './Paginator';
 
 export { Viewport } from './Viewport';
 export type { ViewportRenderProps } from './Viewport';
+
+export { Modal } from './Modal';
