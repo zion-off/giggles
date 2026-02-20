@@ -1,0 +1,68 @@
+---
+title: Markdown
+description: API reference for the Markdown component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+A terminal markdown renderer.
+
+Markdown parses a string and renders it with styled Ink components. Supports headings, bold, italic, inline code, code blocks, links, images, blockquotes, ordered and unordered lists, tables, horizontal rules, and strikethrough. Tables are rendered using box-drawing characters. Links are clickable in terminals that support OSC 8.
+
+Colors are pulled from the theme — `accentColor` for inline code and links, `borderColor` for code block borders and table frames.
+
+```tsx title="Basic Usage"
+import { Markdown } from 'giggles/markdown';
+
+function HelpScreen() {
+  const helpText = `# Shortcuts
+
+  - **q** to quit
+  - **?** for help
+
+  > Press any key to continue.`;
+
+  return <Markdown>{helpText}</Markdown>;
+}
+```
+
+## API Reference
+
+### Markdown
+
+<TypeTable
+  type={{
+    children: {
+      description: 'Markdown string to render',
+      type: 'string',
+      required: true,
+    },
+  }}
+/>
+
+## Examples
+
+### Code blocks
+
+````tsx title="Code Block"
+const md = `
+\`\`\`ts
+const x = 42;
+\`\`\`
+`;
+
+<Markdown>{md}</Markdown>
+````
+
+### Tables
+
+```tsx title="Table"
+const md = `
+| Command | Description |
+| ------- | ----------- |
+| q       | Quit        |
+| ?       | Help        |
+`;
+
+<Markdown>{md}</Markdown>
+```

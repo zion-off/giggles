@@ -1,0 +1,156 @@
+---
+title: CodeBlock
+description: API reference for the CodeBlock component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Terminal } from '@/components/terminal';
+import CodeBlockExample from '@/components/examples/ui/codeblock';
+
+A syntax-highlighted code block powered by Prism.
+
+CodeBlock tokenizes source code and renders each token with a color based on its type — keywords, strings, comments, functions, and more. Languages are not bundled by default. Import the Prism grammar for any language you need, and CodeBlock picks it up automatically. If a language isn't loaded, the code renders as plain text.
+
+Prism ships with `javascript`, `css`, `markup`, and `clike` built into the core — those work without any imports.
+
+```tsx title="Basic Usage"
+import { CodeBlock } from 'giggles/ui';
+import 'prismjs/components/prism-typescript';
+
+function Preview() {
+  const code = `const x: number = 42;`;
+
+  return <CodeBlock language="typescript">{code}</CodeBlock>;
+}
+```
+
+<Terminal>
+  <CodeBlockExample />
+</Terminal>
+
+<Callout>
+  Import language grammars after importing CodeBlock (or any `giggles/ui` component) so that the Prism core is loaded first.
+</Callout>
+
+## API Reference
+
+### CodeBlock
+
+<TypeTable
+  type={{
+    children: {
+      description: 'Source code string to render',
+      type: 'string',
+      required: true,
+    },
+    language: {
+      description: 'Prism language identifier (e.g. "typescript", "python", "rust"). The grammar must be imported separately.',
+      type: 'string',
+    },
+    showBorder: {
+      description: 'Whether to render a border around the code block',
+      type: 'boolean',
+      default: 'true',
+    },
+    tokenColors: {
+      description: 'Override individual token colors',
+      type: 'Partial\<TokenColors\>',
+    },
+  }}
+/>
+
+### TokenColors
+
+<TypeTable
+  type={{
+    keyword: {
+      description: 'Keywords, tags, booleans',
+      type: 'string',
+      default: "'#C678DD'",
+    },
+    string: {
+      description: 'Strings, template strings, attribute values',
+      type: 'string',
+      default: "'#98C379'",
+    },
+    number: {
+      description: 'Numeric literals',
+      type: 'string',
+      default: "'#D19A66'",
+    },
+    comment: {
+      description: 'Comments, docstrings',
+      type: 'string',
+      default: "'#5C6370'",
+    },
+    function: {
+      description: 'Function names, attribute names',
+      type: 'string',
+      default: "'#61AFEF'",
+    },
+    operator: {
+      description: 'Operators, arrows',
+      type: 'string',
+      default: "'#56B6C2'",
+    },
+    punctuation: {
+      description: 'Brackets, semicolons, commas',
+      type: 'string',
+      default: "'#ABB2BF'",
+    },
+    builtin: {
+      description: 'Built-in types, constants, symbols',
+      type: 'string',
+      default: "'#E5C07B'",
+    },
+    className: {
+      description: 'Class and type names',
+      type: 'string',
+      default: "'#E5C07B'",
+    },
+    inserted: {
+      description: 'Inserted lines in diffs',
+      type: 'string',
+      default: "'#98C379'",
+    },
+    deleted: {
+      description: 'Deleted lines in diffs',
+      type: 'string',
+      default: "'#E06C75'",
+    },
+  }}
+/>
+
+## Examples
+
+### Without border
+
+```tsx title="Borderless"
+<CodeBlock language="javascript" showBorder={false}>
+  {`console.log("hello");`}
+</CodeBlock>
+```
+
+### Custom token colors
+
+```tsx title="Custom Colors"
+<CodeBlock
+  language="typescript"
+  tokenColors={{ keyword: '#FF79C6', string: '#F1FA8C' }}
+>
+  {code}
+</CodeBlock>
+```
+
+### Diff
+
+```tsx title="Diff"
+import 'prismjs/components/prism-diff';
+
+const diff = `- const name = "old";
++ const name = "new";
+  const x = 42;`;
+
+<CodeBlock language="diff">{diff}</CodeBlock>
+```
