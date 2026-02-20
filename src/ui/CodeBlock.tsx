@@ -1,0 +1,133 @@
+import Prism from 'prismjs';
+import React from 'react';
+import { Box, Text } from 'ink';
+import { useTheme } from '../core/theme';
+
+export type TokenColors = {
+  keyword: string;
+  string: string;
+  number: string;
+  comment: string;
+  function: string;
+  operator: string;
+  punctuation: string;
+  builtin: string;
+  className: string;
+  inserted: string;
+  deleted: string;
+};
+
+const defaultTokenColors: TokenColors = {
+  keyword: '#C678DD',
+  string: '#98C379',
+  number: '#D19A66',
+  comment: '#5C6370',
+  function: '#61AFEF',
+  operator: '#56B6C2',
+  punctuation: '#ABB2BF',
+  builtin: '#E5C07B',
+  className: '#E5C07B',
+  inserted: '#98C379',
+  deleted: '#E06C75'
+};
+
+type CodeBlockProps = {
+  children: string;
+  language?: string;
+  showBorder?: boolean;
+  tokenColors?: Partial<TokenColors>;
+};
+
+export function CodeBlock({ children, language, showBorder = true, tokenColors }: CodeBlockProps) {
+  const theme = useTheme();
+  const colors = { ...defaultTokenColors, ...tokenColors };
+  const grammar = language ? Prism.languages[language] : undefined;
+
+  const content = grammar ? renderTokens(Prism.tokenize(children, grammar), colors) : <Text>{children}</Text>;
+
+  if (!showBorder) {
+    return (
+      <Box>
+        <Text>{content}</Text>
+      </Box>
+    );
+  }
+
+  return (
+    <Box paddingX={1} borderStyle="single" borderColor={theme.borderColor}>
+      <Text>{content}</Text>
+    </Box>
+  );
+}
+
+function renderTokens(tokens: Array<string | Prism.Token>, colors: TokenColors): React.ReactNode {
+  return tokens.map((token, idx) => {
+    if (typeof token === 'string') {
+      return <Text key={idx}>{token}</Text>;
+    }
+
+    const color = getTokenColor(token.type, colors);
+    const content = Array.isArray(token.content)
+      ? renderTokens(token.content, colors)
+      : typeof token.content === 'string'
+      ? token.content
+      : renderTokens([token.content], colors);
+
+    return color ? (
+      <Text key={idx} color={color}>
+        {content}
+      </Text>
+    ) : (
+      <Text key={idx}>{content}</Text>
+    );
+  });
+}
+
+function getTokenColor(type: string, colors: TokenColors): string | undefined {
+  switch (type) {
+    case 'keyword':
+    case 'tag':
+    case 'boolean':
+    case 'important':
+      return colors.keyword;
+    case 'string':
+    case 'char':
+    case 'template-string':
+    case 'attr-value':
+      return colors.string;
+    case 'number':
+      return colors.number;
+    case 'comment':
+    case 'prolog':
+    case 'doctype':
+    case 'cdata':
+      return colors.comment;
+    case 'function':
+    case 'function-variable':
+      return colors.function;
+    case 'operator':
+    case 'arrow':
+      return colors.operator;
+    case 'punctuation':
+      return colors.punctuation;
+    case 'builtin':
+    case 'constant':
+    case 'symbol':
+      return colors.builtin;
+    case 'class-name':
+    case 'maybe-class-name':
+      return colors.className;
+    case 'attr-name':
+      return colors.function;
+    case 'inserted-sign':
+    case 'inserted':
+      return colors.inserted;
+    case 'deleted-sign':
+    case 'deleted':
+      return colors.deleted;
+    case 'unchanged':
+      return colors.comment;
+    default:
+      return undefined;
+  }
+}
