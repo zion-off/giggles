@@ -14,7 +14,7 @@
     "fumadocs-core": "16.6.1",
     "fumadocs-mdx": "14.2.7",
     "fumadocs-ui": "16.6.1",
-    "giggles": "^0.3.7",
+    "giggles": "workspace:*",
     "ink": "^6.7.0",
     "ink-web": "^0.1.11",
     "lucide-react": "^0.563.0",
