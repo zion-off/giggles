@@ -63,10 +63,12 @@ function useKeybindings(
     focus: {
       description: 'Focus handle from useFocus()',
       type: '{ id: string }',
+      required: true,
     },
     bindings: {
       description: 'Map of key names to handler functions',
       type: 'Keybindings',
+      required: true,
     },
     options: {
       description: 'Optional configuration for capture mode and layers',
@@ -88,10 +90,12 @@ type KeyHandler = (input: string, key: Key) => void
     input: {
       description: 'The character string for the key pressed',
       type: 'string',
+      required: true,
     },
     key: {
       description: 'Ink Key object with boolean properties (downArrow, return, escape, etc.)',
       type: 'Key',
+      required: true,
     },
   }}
 />
@@ -168,14 +172,17 @@ function HelpScreen() {
     all: {
       description: 'All named bindings registered across the entire app',
       type: 'RegisteredKeybinding[]',
+      required: true,
     },
     available: {
       description: 'Named bindings currently reachable — focused/ancestor bindings from the active focus path, plus all mounted bindings',
       type: 'RegisteredKeybinding[]',
+      required: true,
     },
     local: {
       description: 'Named bindings registered by the component that passed its focus handle. Empty if no focus handle provided.',
       type: 'RegisteredKeybinding[]',
+      required: true,
     },
   }}
 />
@@ -187,14 +194,17 @@ function HelpScreen() {
     nodeId: {
       description: 'Internal focus node ID of the registering component',
       type: 'string',
+      required: true,
     },
     key: {
       description: 'The key name the binding is registered under',
       type: 'string',
+      required: true,
     },
     handler: {
       description: 'The handler function',
       type: 'KeyHandler',
+      required: true,
     },
     name: {
       description: 'Human-readable label (only present on named bindings)',
@@ -233,6 +243,7 @@ function App() {
     children: {
       description: 'Components that should trap input',
       type: 'React.ReactNode',
+      required: true,
     },
   }}
 />

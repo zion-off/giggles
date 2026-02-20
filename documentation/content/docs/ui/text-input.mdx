@@ -57,10 +57,12 @@ function SearchForm() {
     value: {
       description: 'Current input value (controlled)',
       type: 'string',
+			required: true,
     },
     onChange: {
       description: 'Called with the new value on every edit',
       type: '(value: string) => void',
+			required: true,
     },
     onSubmit: {
       description: 'Called with the current value when Enter is pressed. When not provided, Enter passes through to parent bindings.',
@@ -103,22 +105,27 @@ The `render` prop receives pre-split text segments around the cursor.
     value: {
       description: 'Current input value',
       type: 'string',
+      required: true,
     },
     focused: {
       description: 'Whether the input is currently focused',
       type: 'boolean',
+      required: true,
     },
     before: {
       description: 'Text before the cursor',
       type: 'string',
+      required: true,
     },
     cursorChar: {
       description: 'Character at the cursor position, or a space if at the end',
       type: 'string',
+      required: true,
     },
     after: {
       description: 'Text after the cursor',
       type: 'string',
+      required: true,
     },
   }}
 />

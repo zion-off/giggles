@@ -53,6 +53,7 @@ Manages a stack of screens. Only the top screen is visible; others remain mounte
     initialScreen: {
       description: 'Name of the screen to display first. Must match a Screen child.',
       type: 'string',
+      required: true,
     },
     initialParams: {
       description: 'Params to pass to the initial screen',
@@ -66,6 +67,7 @@ Manages a stack of screens. Only the top screen is visible; others remain mounte
     children: {
       description: 'Screen components defining available routes',
       type: 'React.ReactNode',
+      required: true,
     },
   }}
 />
@@ -83,10 +85,12 @@ Declarative route definition. Renders nothing — used by Router to register scr
     name: {
       description: 'Unique name for this screen',
       type: 'string',
+      required: true,
     },
     component: {
       description: 'Component to render when this screen is active',
       type: 'React.ComponentType',
+      required: true,
     },
   }}
 />
@@ -106,30 +110,37 @@ function useNavigation(): NavigationContextValue
     currentRoute: {
       description: 'The current screen route (name, params, id)',
       type: 'ScreenRoute',
+      required: true,
     },
     active: {
       description: 'Whether this screen is the top of the stack',
       type: 'boolean',
+      required: true,
     },
     canGoBack: {
       description: 'Whether the stack has more than one screen',
       type: 'boolean',
+      required: true,
     },
     push: {
       description: 'Push a new screen onto the stack',
       type: '(name: string, params?: Record<string, unknown>) => void',
+      required: true,
     },
     pop: {
       description: 'Remove the top screen from the stack. No-op if only one screen remains.',
       type: '() => void',
+      required: true,
     },
     replace: {
       description: 'Replace the top screen with a new one',
       type: '(name: string, params?: Record<string, unknown>) => void',
+      required: true,
     },
     reset: {
       description: 'Clear the stack and set a single screen',
       type: '(name: string, params?: Record<string, unknown>) => void',
+      required: true,
     },
   }}
 />
