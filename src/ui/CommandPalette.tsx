@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Text } from 'ink';
 import { useFocus } from '../core/focus';
 import { FocusTrap, useKeybindingRegistry, useKeybindings } from '../core/input';
 import type { Key, RegisteredKeybinding } from '../core/input';
-import type { PaginatorStyle } from './Paginator';
-import { VirtualList } from './VirtualList';
 
 const EMPTY_KEY: Key = {
   upArrow: false,
@@ -37,9 +35,8 @@ export type CommandPaletteRenderProps = {
 };
 
 type CommandPaletteProps = {
-  onClose: () => void;
-  maxVisible?: number;
-  paginatorStyle?: PaginatorStyle;
+  onClose?: () => void;
+  interactive?: boolean;
   render?: (props: CommandPaletteRenderProps) => React.ReactNode;
 };
 
@@ -54,8 +51,9 @@ function fuzzyMatch(name: string, query: string): boolean {
   return qi === lowerQuery.length;
 }
 
-function Inner({ onClose, maxVisible, paginatorStyle, render }: CommandPaletteProps) {
+function Inner({ onClose, render }: { onClose: () => void; render?: CommandPaletteProps['render'] }) {
   const focus = useFocus();
+
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const registry = useKeybindingRegistry();
@@ -76,8 +74,8 @@ function Inner({ onClose, maxVisible, paginatorStyle, render }: CommandPalettePr
         const cmd = filtered[clampedIndex];
         if (cmd) onSelect(cmd);
       },
-      up: () => setSelectedIndex((i) => Math.max(0, i - 1)),
-      down: () => setSelectedIndex((i) => Math.max(0, Math.min(filtered.length - 1, i + 1))),
+      left: () => setSelectedIndex((i) => (i - 1 + filtered.length) % filtered.length),
+      right: () => setSelectedIndex((i) => (i + 1) % filtered.length),
       backspace: () => {
         setQuery((q) => q.slice(0, -1));
         setSelectedIndex(0);
@@ -99,40 +97,67 @@ function Inner({ onClose, maxVisible, paginatorStyle, render }: CommandPalettePr
   }
 
   return (
-    <Box flexDirection="column" borderStyle="round" width={40}>
-      <Box paddingX={1}>
-        <Text dimColor>{'> '}</Text>
-        <Text>{query}</Text>
-        <Text inverse> </Text>
-      </Box>
-      <Box flexDirection="column">
-        {filtered.length === 0 ? (
-          <Box paddingX={1}>
-            <Text dimColor>No commands found</Text>
-          </Box>
-        ) : (
-          <VirtualList
-            items={filtered}
-            highlightIndex={clampedIndex}
-            maxVisible={maxVisible}
-            paginatorStyle={paginatorStyle}
-            render={({ item: cmd, index }) => (
-              <Box key={`${cmd.nodeId}-${cmd.key}`} justifyContent="space-between" paddingX={1}>
-                <Text inverse={index === clampedIndex}>{cmd.name}</Text>
-                <Text dimColor>{cmd.key}</Text>
-              </Box>
-            )}
-          />
-        )}
-      </Box>
+    <Box flexDirection="column">
+      {query.length > 0 && (
+        <Text>
+          <Text dimColor>&gt; </Text>
+          <Text>{query}</Text>
+          <Text inverse> </Text>
+        </Text>
+      )}
+      {filtered.length === 0 ? (
+        <Text dimColor>No commands found</Text>
+      ) : (
+        <Box flexWrap="wrap">
+          {filtered.map((cmd, index) => {
+            const highlighted = index === clampedIndex;
+            const keyColor = highlighted ? '#D4D4D4' : '#8A8A8A';
+            const labelColor = highlighted ? '#A0A0A0' : '#5C5C5C';
+            return (
+              <Text key={`${cmd.nodeId}-${cmd.key}`}>
+                <Text color={keyColor} bold>
+                  {cmd.key}
+                </Text>
+                <Text color={labelColor}> {cmd.name}</Text>
+                {index < filtered.length - 1 && <Text color="#5C5C5C"> • </Text>}
+              </Text>
+            );
+          })}
+        </Box>
+      )}
     </Box>
   );
 }
 
-export function CommandPalette({ onClose, maxVisible, paginatorStyle, render }: CommandPaletteProps) {
+function HintsBar() {
+  const registry = useKeybindingRegistry();
+  const commands = registry.available;
+
+  if (commands.length === 0) return null;
+
+  return (
+    <Box flexWrap="wrap">
+      {commands.map((cmd, index) => (
+        <Text key={`${cmd.nodeId}-${cmd.key}`}>
+          <Text color="#8A8A8A" bold>
+            {cmd.key}
+          </Text>
+          <Text color="#5C5C5C"> {cmd.name}</Text>
+          {index < commands.length - 1 && <Text color="#5C5C5C"> • </Text>}
+        </Text>
+      ))}
+    </Box>
+  );
+}
+
+export function CommandPalette({ onClose, interactive = true, render }: CommandPaletteProps) {
+  if (!interactive) {
+    return <HintsBar />;
+  }
+
   return (
     <FocusTrap>
-      <Inner onClose={onClose} maxVisible={maxVisible} paginatorStyle={paginatorStyle} render={render} />
+      <Inner onClose={onClose!} render={render} />
     </FocusTrap>
   );
 }
