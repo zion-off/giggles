@@ -7,32 +7,21 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Terminal } from '@/components/terminal';
 import CommandPaletteExample from '@/components/examples/ui/command-palette';
 
-An overlay that collects all named keybindings registered across the app and lets the user search and execute them by name.
+A compact key hints bar that collects all named keybindings registered across the app. In interactive mode, it captures input and lets the user fuzzy-search and execute commands — type to filter, left/right arrow keys to navigate, Enter to execute, Escape to close. In non-interactive mode, it displays available keybindings for the currently focused context.
 
-Components register commands by passing a `name` field to `useKeybindings`. The palette fuzzy-matches these against the search query. It wraps itself in a `FocusTrap`, so all input is captured while open and focus is restored when it closes.
+Components register commands by passing a `name` field to `useKeybindings`.
 
-```tsx title="Basic Usage"
+```tsx title="Interactive (Search & Execute)"
 import { useKeybindings, useFocus } from 'giggles';
 import { CommandPalette } from 'giggles/ui';
 import { useState } from 'react';
-
-function FileList() {
-  const focus = useFocus();
-
-  useKeybindings(focus, {
-    d: { action: deleteSelected, name: 'Delete file' },
-    r: { action: renameSelected, name: 'Rename file' },
-    j: () => moveDown(), // no name = won't appear in palette
-    k: () => moveUp(),
-  });
-}
 
 function App() {
   const focus = useFocus();
   const [showPalette, setShowPalette] = useState(false);
 
   useKeybindings(focus, {
-    'ctrl+k': { action: () => setShowPalette(true), name: 'Open command palette', when: 'mounted' },
+    'ctrl+k': { action: () => setShowPalette(true), name: 'Open palette', when: 'mounted' },
   });
 
   return (
@@ -44,7 +33,18 @@ function App() {
 }
 ```
 
-The example below shows `useKeybindingRegistry` used directly to build a `KeyHints` bar — the same registry that `CommandPalette` uses internally. Switch focus between panels with `j`/`k` to see the available commands update.
+```tsx title="Non-Interactive (Hints Bar)"
+import { CommandPalette } from 'giggles/ui';
+
+function App() {
+  return (
+    <Box flexDirection="column">
+      <Content />
+      <CommandPalette interactive={false} />
+    </Box>
+  );
+}
+```
 
 <Terminal>
   <CommandPaletteExample />
@@ -57,21 +57,16 @@ The example below shows `useKeybindingRegistry` used directly to build a `KeyHin
 <TypeTable
   type={{
     onClose: {
-      description: 'Called when the palette should close (Escape key or after executing a command)',
+      description: 'Called when the palette should close (Escape key or after executing a command). Required when interactive.',
       type: '() => void',
-      required: true,
     },
-    maxVisible: {
-      description: 'Maximum number of commands visible at once. When set, the list is windowed.',
-      type: 'number',
-    },
-    paginatorStyle: {
-      description: 'Style of the scroll indicator when the list is windowed',
-      type: "'arrows' | 'scrollbar' | 'counter'",
-      default: "'arrows'",
+    interactive: {
+      description: 'When true, captures input with a FocusTrap for searching and executing commands. When false, renders a static hints bar showing available keybindings.',
+      type: 'boolean',
+      default: 'true',
     },
     render: {
-      description: 'Custom render function. Receives query, filtered commands, selected index, and onSelect. When provided, replaces the default palette UI entirely.',
+      description: 'Custom render function. Receives query, filtered commands, selected index, and onSelect. When provided, replaces the default palette UI entirely. Only used in interactive mode.',
       type: '(props: CommandPaletteRenderProps) => React.ReactNode',
     },
   }}
@@ -105,4 +100,3 @@ The example below shows `useKeybindingRegistry` used directly to build a `KeyHin
 />
 
 See [`RegisteredKeybinding`](/core/input#registeredkeybinding) on the Input page.
-

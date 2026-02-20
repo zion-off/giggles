@@ -1,7 +1,9 @@
 'use client';
 
-import { FocusGroup, GigglesProvider, useFocus, useKeybindingRegistry, useKeybindings } from 'giggles';
+import { FocusGroup, GigglesProvider, useFocus, useKeybindings } from 'giggles';
+import { CommandPalette } from 'giggles/ui';
 import { Box, Text } from 'ink-web';
+import { useState } from 'react';
 
 function FileList() {
   const focus = useFocus();
@@ -13,11 +15,9 @@ function FileList() {
   });
 
   return (
-    <Box flexDirection="column">
-      <Text bold color={focus.focused ? 'cyan' : 'white'}>
-        {focus.focused ? '> ' : '  '}File List
-      </Text>
-    </Box>
+    <Text bold={focus.focused} dimColor={!focus.focused}>
+      {focus.focused ? '> ' : '  '}File List
+    </Text>
   );
 }
 
@@ -30,33 +30,18 @@ function Sidebar() {
   });
 
   return (
-    <Box flexDirection="column">
-      <Text bold color={focus.focused ? 'cyan' : 'white'}>
-        {focus.focused ? '> ' : '  '}Sidebar
-      </Text>
-    </Box>
-  );
-}
-
-function KeyHints() {
-  const registry = useKeybindingRegistry();
-
-  return (
-    <Box gap={2} flexWrap="wrap">
-      {registry.available.map((cmd) => (
-        <Box key={`${cmd.nodeId}-${cmd.key}`} gap={1}>
-          <Text inverse> {cmd.key} </Text>
-          <Text dimColor>{cmd.name}</Text>
-        </Box>
-      ))}
-    </Box>
+    <Text bold={focus.focused} dimColor={!focus.focused}>
+      {focus.focused ? '> ' : '  '}Sidebar
+    </Text>
   );
 }
 
 function App() {
   const focus = useFocus();
+  const [showPalette, setShowPalette] = useState(false);
 
   useKeybindings(focus, {
+    'ctrl+k': { action: () => setShowPalette(true), name: 'Open palette', when: 'mounted' },
     q: { action: () => {}, name: 'Quit', when: 'mounted' }
   });
 
@@ -66,10 +51,8 @@ function App() {
         <Sidebar />
         <FileList />
       </FocusGroup>
-      <Box borderStyle="single" paddingX={1}>
-        <KeyHints />
-      </Box>
-      <Text dimColor>j/k to switch panels</Text>
+      {showPalette && <CommandPalette onClose={() => setShowPalette(false)} />}
+      <Text dimColor>Tab to switch panels, Ctrl+K for palette</Text>
     </Box>
   );
 }

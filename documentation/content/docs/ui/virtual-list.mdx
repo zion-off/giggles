@@ -79,14 +79,19 @@ function LogViewer({ lines, scrollIndex }: { lines: string[]; scrollIndex: numbe
       description: 'Direct control over which item appears at the top of the visible window. Use this for viewport-style scrolling.',
       type: 'number',
     },
+    gap: {
+      description: 'Vertical spacing between items (in lines)',
+      type: 'number',
+      default: '0',
+    },
     maxVisible: {
       description: 'Maximum number of items visible at once. When omitted, all items render.',
       type: 'number',
     },
     paginatorStyle: {
       description: 'Style of the scroll indicator shown when items overflow',
-      type: "'arrows' | 'scrollbar' | 'counter'",
-      default: "'arrows'",
+      type: "'dots' | 'arrows' | 'scrollbar' | 'counter' | 'none'",
+      default: "'dots'",
     },
   }}
 />

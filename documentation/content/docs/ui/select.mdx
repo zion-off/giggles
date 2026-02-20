@@ -102,14 +102,19 @@ function FileTypePicker() {
       type: "'vertical' | 'horizontal'",
       default: "'vertical'",
     },
+    gap: {
+      description: 'Vertical spacing between options (in lines)',
+      type: 'number',
+      default: '0',
+    },
     maxVisible: {
       description: 'Maximum number of options visible at once. When set, the list scrolls to keep the highlighted option in view.',
       type: 'number',
     },
     paginatorStyle: {
       description: 'Style of the scroll indicator when maxVisible is set',
-      type: "'arrows' | 'scrollbar' | 'counter'",
-      default: "'arrows'",
+      type: "'dots' | 'arrows' | 'scrollbar' | 'counter' | 'none'",
+      default: "'dots'",
     },
     wrap: {
       description: 'Wrap navigation from the last item back to the first (and vice versa)',

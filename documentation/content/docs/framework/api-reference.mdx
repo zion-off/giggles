@@ -7,7 +7,7 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 
 ## GigglesProvider
 
-Root provider for giggles applications. Wraps your app in the necessary context providers and sets up the input router.
+Root provider for giggles applications. Wrap your app in this to enable focus, input, and theming.
 
 ```tsx title="Basic Setup"
 import { render } from 'ink';
@@ -27,5 +27,105 @@ render(
       type: 'React.ReactNode',
       required: true,
     },
+    theme: {
+      description: 'Partial theme overrides. Merged with the default theme.',
+      type: 'Partial<GigglesTheme>',
+    },
   }}
 />
+
+## ThemeProvider
+
+Override theme values for a subtree. Nest multiple providers to apply different themes to different parts of the app. Merges with the parent theme, so you only need to specify the values you want to change.
+
+```tsx title="Nested Themes"
+import { GigglesProvider, ThemeProvider } from 'giggles';
+
+render(
+  <GigglesProvider theme={{ accentColor: '#6B9FD4' }}>
+    <Sidebar />
+    <ThemeProvider theme={{ accentColor: '#C97066' }}>
+      <MainPanel />
+    </ThemeProvider>
+  </GigglesProvider>
+);
+```
+
+<TypeTable
+  type={{
+    theme: {
+      description: 'Partial theme overrides. Merged with the parent theme.',
+      type: 'Partial<GigglesTheme>',
+    },
+    children: {
+      description: 'Components that inherit this theme',
+      type: 'React.ReactNode',
+      required: true,
+    },
+  }}
+/>
+
+## GigglesTheme
+
+<TypeTable
+  type={{
+    accentColor: {
+      description: 'Color for highlighted items, active indicators, and scroll elements',
+      type: 'string',
+      default: "'#6B9FD4'",
+    },
+    selectedColor: {
+      description: 'Color for checked/selected state indicators',
+      type: 'string',
+      default: "'#8FBF7F'",
+    },
+    hintColor: {
+      description: 'Color for key labels in CommandPalette hints',
+      type: 'string',
+      default: "'#8A8A8A'",
+    },
+    hintDimColor: {
+      description: 'Color for command names and separators in CommandPalette hints',
+      type: 'string',
+      default: "'#5C5C5C'",
+    },
+    hintHighlightColor: {
+      description: 'Color for the highlighted key label in interactive CommandPalette',
+      type: 'string',
+      default: "'#D4D4D4'",
+    },
+    hintHighlightDimColor: {
+      description: 'Color for the highlighted command name in interactive CommandPalette',
+      type: 'string',
+      default: "'#A0A0A0'",
+    },
+    indicator: {
+      description: 'Character used for focus indicators',
+      type: 'string',
+      default: "'▸'",
+    },
+    checkedIndicator: {
+      description: 'Character shown for selected items in MultiSelect',
+      type: 'string',
+      default: "'✓'",
+    },
+    uncheckedIndicator: {
+      description: 'Character shown for unselected items in MultiSelect',
+      type: 'string',
+      default: "'○'",
+    },
+  }}
+/>
+
+## useTheme
+
+Returns the current `GigglesTheme` from the nearest `ThemeProvider`. Use this in custom `render` functions to stay consistent with the app theme.
+
+```tsx title="Usage"
+import { useTheme } from 'giggles';
+
+function CustomOption({ highlighted }: { highlighted: boolean }) {
+  const theme = useTheme();
+  return <Text color={highlighted ? theme.accentColor : undefined}>...</Text>;
+}
+```
