@@ -3,6 +3,8 @@ import { Box, Text } from 'ink';
 import { useFocus } from '../core/focus';
 import { FocusTrap, useKeybindingRegistry, useKeybindings } from '../core/input';
 import type { Key, RegisteredKeybinding } from '../core/input';
+import type { PaginatorStyle } from './Paginator';
+import { VirtualList } from './VirtualList';
 
 const EMPTY_KEY: Key = {
   upArrow: false,
@@ -36,6 +38,8 @@ export type CommandPaletteRenderProps = {
 
 type CommandPaletteProps = {
   onClose: () => void;
+  maxVisible?: number;
+  paginatorStyle?: PaginatorStyle;
   render?: (props: CommandPaletteRenderProps) => React.ReactNode;
 };
 
@@ -50,7 +54,7 @@ function fuzzyMatch(name: string, query: string): boolean {
   return qi === lowerQuery.length;
 }
 
-function Inner({ onClose, render }: CommandPaletteProps) {
+function Inner({ onClose, maxVisible, paginatorStyle, render }: CommandPaletteProps) {
   const focus = useFocus();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -107,22 +111,28 @@ function Inner({ onClose, render }: CommandPaletteProps) {
             <Text dimColor>No commands found</Text>
           </Box>
         ) : (
-          filtered.map((cmd, i) => (
-            <Box key={`${cmd.nodeId}-${cmd.key}`} justifyContent="space-between" paddingX={1}>
-              <Text inverse={i === clampedIndex}>{cmd.name}</Text>
-              <Text dimColor>{cmd.key}</Text>
-            </Box>
-          ))
+          <VirtualList
+            items={filtered}
+            highlightIndex={clampedIndex}
+            maxVisible={maxVisible}
+            paginatorStyle={paginatorStyle}
+            render={({ item: cmd, index }) => (
+              <Box key={`${cmd.nodeId}-${cmd.key}`} justifyContent="space-between" paddingX={1}>
+                <Text inverse={index === clampedIndex}>{cmd.name}</Text>
+                <Text dimColor>{cmd.key}</Text>
+              </Box>
+            )}
+          />
         )}
       </Box>
     </Box>
   );
 }
 
-export function CommandPalette({ onClose, render }: CommandPaletteProps) {
+export function CommandPalette({ onClose, maxVisible, paginatorStyle, render }: CommandPaletteProps) {
   return (
     <FocusTrap>
-      <Inner onClose={onClose} render={render} />
+      <Inner onClose={onClose} maxVisible={maxVisible} paginatorStyle={paginatorStyle} render={render} />
     </FocusTrap>
   );
 }
