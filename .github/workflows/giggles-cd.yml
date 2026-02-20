@@ -1,19 +1,17 @@
-name: publish to npm
+name: giggles / cd
 
 on:
-  workflow_call:
   workflow_run:
     workflows: ['giggles / ci']
     types: [completed]
     branches: [main]
 
 concurrency:
-  group: ${{ github.workflow_ref }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   check:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}

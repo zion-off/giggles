@@ -5,18 +5,14 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 on:
-  workflow_call:
-  workflow_dispatch:
   workflow_run:
-    workflows: ["documentation / ci"]
-    branches:
-      - main
-    types:
-      - completed
+    workflows: ['documentation / ci']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow_ref }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   deploy-production:
@@ -25,7 +21,7 @@ jobs:
     environment:
       name: docs
       url: https://giggles.zzzzion.com
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v4
 

@@ -1,11 +1,24 @@
 name: giggles / ci
 
 on:
-  workflow_call:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'documentation/**'
+      - 'tools/**'
+      - '.github/workflows/documentation-*'
+      - '.github/workflows/create-giggles-app-*'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'documentation/**'
+      - 'tools/**'
+      - '.github/workflows/documentation-*'
+      - '.github/workflows/create-giggles-app-*'
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow_ref }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
