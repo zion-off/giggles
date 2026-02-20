@@ -86,12 +86,10 @@ export function TextInput({ label, value, onChange, onSubmit, placeholder, rende
   const displayValue = value.length > 0 ? value : placeholder ?? '';
   const isPlaceholder = value.length === 0;
 
-  const prefix = label != null ? `${label} ` : '';
-
   if (focus.focused) {
     return (
       <Text>
-        {prefix}
+        {label != null && <Text bold>{label} </Text>}
         {before}
         <Text inverse>{cursorChar}</Text>
         {after}
@@ -100,9 +98,9 @@ export function TextInput({ label, value, onChange, onSubmit, placeholder, rende
   }
 
   return (
-    <Text>
-      {prefix}
-      <Text dimColor={isPlaceholder}>{displayValue}</Text>
+    <Text dimColor>
+      {label != null && <Text>{label} </Text>}
+      {isPlaceholder ? <Text dimColor>{displayValue}</Text> : displayValue}
     </Text>
   );
 }

@@ -21,7 +21,7 @@ export function Confirm({ message, defaultValue = true, onSubmit }: ConfirmProps
 
   return (
     <Text dimColor={!focus.focused}>
-      {message} ({hint})
+      {message} <Text dimColor>({hint})</Text>
     </Text>
   );
 }
