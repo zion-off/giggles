@@ -3,6 +3,7 @@ import { Box, Text } from 'ink';
 import { GigglesError } from '../core/GigglesError';
 import { useFocus } from '../core/focus';
 import { useKeybindings } from '../core/input';
+import { useTheme } from '../core/theme';
 import type { PaginatorStyle } from './Paginator';
 import type { SelectOption } from './Select';
 import { VirtualList } from './VirtualList';
@@ -23,6 +24,7 @@ type AutocompleteProps<T> = {
   label?: string;
   placeholder?: string;
   filter?: (query: string, option: SelectOption<T>) => boolean;
+  gap?: number;
   maxVisible?: number;
   paginatorStyle?: PaginatorStyle;
   wrap?: boolean;
@@ -46,6 +48,7 @@ export function Autocomplete<T>({
   label,
   placeholder,
   filter = defaultFilter,
+  gap,
   maxVisible,
   paginatorStyle,
   wrap = true,
@@ -61,6 +64,7 @@ export function Autocomplete<T>({
   }
 
   const focus = useFocus();
+  const theme = useTheme();
   const [query, setQuery] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(0);
   const cursorRef = useRef(0);
@@ -156,26 +160,25 @@ export function Autocomplete<T>({
   const cursorChar = query[cursor] ?? ' ';
   const after = query.slice(cursor + 1);
 
-  const prefix = label != null ? `${label} ` : '';
-
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" gap={1}>
       {focus.focused ? (
         <Text>
-          {prefix}
+          {label != null && <Text bold>{label} </Text>}
           {before}
           <Text inverse>{cursorChar}</Text>
           {after}
         </Text>
       ) : (
         <Text dimColor>
-          {prefix}
+          {label != null && <Text>{label} </Text>}
           {query.length > 0 ? query : placeholder ?? ''}
         </Text>
       )}
       <VirtualList
         items={filtered}
         highlightIndex={safeIndex}
+        gap={gap}
         maxVisible={maxVisible}
         paginatorStyle={paginatorStyle}
         render={({ item: option, index }) => {
@@ -186,10 +189,16 @@ export function Autocomplete<T>({
             return render({ option, focused: focus.focused, highlighted, selected });
           }
 
+          const active = highlighted && focus.focused;
+
           return (
-            <Text dimColor={!focus.focused}>
-              {highlighted ? '>' : ' '} {option.label}
-            </Text>
+            <Box>
+              <Text dimColor={!focus.focused && !highlighted}>
+                <Text color={active ? theme.accentColor : undefined} bold={highlighted}>
+                  {option.label}
+                </Text>
+              </Text>
+            </Box>
           );
         }}
       />

@@ -3,6 +3,7 @@ import { Box, Text } from 'ink';
 import { GigglesError } from '../core/GigglesError';
 import { useFocus } from '../core/focus';
 import { useKeybindings } from '../core/input';
+import { useTheme } from '../core/theme';
 import type { PaginatorStyle } from './Paginator';
 import type { SelectOption } from './Select';
 import { VirtualList } from './VirtualList';
@@ -22,6 +23,7 @@ type MultiSelectProps<T> = {
   onHighlight?: (value: T) => void;
   label?: string;
   direction?: 'vertical' | 'horizontal';
+  gap?: number;
   maxVisible?: number;
   paginatorStyle?: PaginatorStyle;
   wrap?: boolean;
@@ -36,6 +38,7 @@ export function MultiSelect<T>({
   onHighlight,
   label,
   direction = 'vertical',
+  gap,
   maxVisible,
   paginatorStyle,
   wrap = true,
@@ -51,6 +54,7 @@ export function MultiSelect<T>({
   }
 
   const focus = useFocus();
+  const theme = useTheme();
   const [highlightIndex, setHighlightIndex] = useState(0);
 
   const safeIndex = options.length === 0 ? -1 : Math.min(highlightIndex, options.length - 1);
@@ -103,10 +107,19 @@ export function MultiSelect<T>({
       return render({ option, focused: focus.focused, highlighted, selected });
     }
 
+    const active = highlighted && focus.focused;
+
     return (
-      <Text key={String(option.value)} dimColor={!focus.focused}>
-        {highlighted ? '>' : ' '} [{selected ? 'x' : ' '}] {option.label}
-      </Text>
+      <Box key={String(option.value)}>
+        <Text dimColor={!focus.focused && !highlighted}>
+          <Text color={selected ? theme.selectedColor : undefined} bold={selected}>
+            {selected ? theme.checkedIndicator : theme.uncheckedIndicator}
+          </Text>{' '}
+          <Text color={active ? theme.accentColor : undefined} bold={highlighted}>
+            {option.label}
+          </Text>
+        </Text>
+      </Box>
     );
   };
 
@@ -121,6 +134,7 @@ export function MultiSelect<T>({
         <VirtualList
           items={options}
           highlightIndex={safeIndex}
+          gap={gap}
           maxVisible={maxVisible}
           paginatorStyle={paginatorStyle}
           render={renderOption}

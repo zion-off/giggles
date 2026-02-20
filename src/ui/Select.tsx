@@ -3,6 +3,7 @@ import { Box, Text } from 'ink';
 import { GigglesError } from '../core/GigglesError';
 import { useFocus } from '../core/focus';
 import { useKeybindings } from '../core/input';
+import { useTheme } from '../core/theme';
 import type { PaginatorStyle } from './Paginator';
 import { VirtualList } from './VirtualList';
 
@@ -27,6 +28,7 @@ type SelectProps<T> = {
   label?: string;
   immediate?: boolean;
   direction?: 'vertical' | 'horizontal';
+  gap?: number;
   maxVisible?: number;
   paginatorStyle?: PaginatorStyle;
   wrap?: boolean;
@@ -42,6 +44,7 @@ export function Select<T>({
   label,
   immediate,
   direction = 'vertical',
+  gap,
   maxVisible,
   paginatorStyle,
   wrap = true,
@@ -57,6 +60,7 @@ export function Select<T>({
   }
 
   const focus = useFocus();
+  const theme = useTheme();
   const [highlightIndex, setHighlightIndex] = useState(0);
 
   const safeIndex = options.length === 0 ? -1 : Math.min(highlightIndex, options.length - 1);
@@ -112,10 +116,16 @@ export function Select<T>({
       return render({ option, focused: focus.focused, highlighted, selected });
     }
 
+    const active = highlighted && focus.focused;
+
     return (
-      <Text key={String(option.value)} dimColor={!focus.focused}>
-        {highlighted ? '>' : ' '} {option.label}
-      </Text>
+      <Box key={String(option.value)}>
+        <Text dimColor={!focus.focused && !highlighted}>
+          <Text color={active ? theme.accentColor : undefined} bold={highlighted}>
+            {option.label}
+          </Text>
+        </Text>
+      </Box>
     );
   };
 
@@ -130,6 +140,7 @@ export function Select<T>({
         <VirtualList
           items={options}
           highlightIndex={safeIndex}
+          gap={gap}
           maxVisible={maxVisible}
           paginatorStyle={paginatorStyle}
           render={renderOption}
