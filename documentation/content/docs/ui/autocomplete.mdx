@@ -99,14 +99,19 @@ function CountryPicker() {
       description: 'Custom filter function. Receives the current query and an option, returns whether to include it. Defaults to smart case substring matching.',
       type: '(query: string, option: SelectOption<T>) => boolean',
     },
+    gap: {
+      description: 'Vertical spacing between options (in lines)',
+      type: 'number',
+      default: '0',
+    },
     maxVisible: {
       description: 'Maximum number of options visible at once. When set, the list scrolls to keep the highlighted option in view.',
       type: 'number',
     },
     paginatorStyle: {
       description: 'Style of the scroll indicator when maxVisible is set',
-      type: "'arrows' | 'scrollbar' | 'counter'",
-      default: "'arrows'",
+      type: "'dots' | 'arrows' | 'scrollbar' | 'counter' | 'none'",
+      default: "'dots'",
     },
     wrap: {
       description: 'Wrap navigation from the last item back to the first (and vice versa)',

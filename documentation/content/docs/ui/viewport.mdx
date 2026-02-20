@@ -66,10 +66,15 @@ type LogEntry = { level: string; message: string };
       type: 'boolean',
       default: 'false',
     },
+    gap: {
+      description: 'Vertical spacing between items (in lines)',
+      type: 'number',
+      default: '0',
+    },
     paginatorStyle: {
       description: 'Style of the scroll indicator',
-      type: "'arrows' | 'scrollbar' | 'counter'",
-      default: "'arrows'",
+      type: "'dots' | 'arrows' | 'scrollbar' | 'counter' | 'none'",
+      default: "'dots'",
     },
     render: {
       description: 'Custom render function for each item. When omitted, items are rendered as text using String(item).',
