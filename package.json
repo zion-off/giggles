@@ -1,6 +1,6 @@
 {
   "name": "giggles",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -21,6 +21,10 @@
     "./ui": {
       "import": "./dist/ui/index.js",
       "types": "./dist/ui/index.d.ts"
+    },
+    "./markdown": {
+      "import": "./dist/markdown/index.js",
+      "types": "./dist/markdown/index.d.ts"
     }
   },
   "keywords": [
@@ -50,6 +54,7 @@
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/node": "^22.0.0",
+    "@types/prismjs": "^1.26.6",
     "@types/react": "^19.2.13",
     "eslint": "^9.0.0",
     "eslint-plugin-react": "^7.32.2",
@@ -64,6 +69,10 @@
     "typescript-eslint": "^8.0.0"
   },
   "dependencies": {
-    "execa": "^9.6.1"
+    "cli-table3": "^0.6.5",
+    "execa": "^9.6.1",
+    "ink-link": "^5.0.0",
+    "marked": "^17.0.3",
+    "prismjs": "^1.30.0"
   }
 }

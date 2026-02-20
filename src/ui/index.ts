@@ -25,3 +25,12 @@ export { Viewport } from './Viewport';
 export type { ViewportRenderProps } from './Viewport';
 
 export { Modal } from './Modal';
+
+export { Badge } from './Badge';
+export type { BadgeProps, BadgeVariant } from './Badge';
+
+export { Panel } from './Panel';
+export type { PanelProps } from './Panel';
+
+export { CodeBlock } from './CodeBlock';
+export type { TokenColors } from './CodeBlock';
