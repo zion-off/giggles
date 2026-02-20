@@ -10,12 +10,12 @@ UI components and command palette built on the core framework.
 | TextInput       | Yes         | Done        |
 | Select          | Yes         | Done        |
 | MultiSelect     | Yes         | Done        |
-| Confirm         | No          | Not Started |
-| Autocomplete    | Yes         | Not Started |
-| Split           | No          | Not Started |
-| Tabs            | No          | Not Started |
+| Confirm         | No          | Done        |
+| Autocomplete    | Yes         | Done        |
 | Table           | Yes         | Not Started |
-| VirtualList     | Yes         | Not Started |
+| VirtualList     | Yes         | Done        |
+| Paginator       | No          | Done        |
+| Viewport        | Yes         | Done        |
 | Spinner         | No          | Not Started |
 | Badge           | No          | Not Started |
 | Markdown        | No          | Not Started |
@@ -23,7 +23,6 @@ UI components and command palette built on the core framework.
 | Dialog          | No          | Not Started |
 | Toast           | No          | Not Started |
 | StatusBar       | No          | Not Started |
-| Breadcrumb      | No          | Not Started |
 | KeyHints        | No          | Not Started |
 
 ---
@@ -287,10 +286,9 @@ Established by Select/MultiSelect. Apply to any component that navigates a list 
 ### Planned Components
 
 - **Input**: `Select`, `MultiSelect`, `Confirm`, `Autocomplete`
-- **Layout**: `Split`, `Tabs`
 - **Display**: `Table`, `VirtualList`, `Spinner`, `Badge`, `Markdown`
 - **Overlay**: `Modal`, `Dialog`, `Toast`
-- **Chrome**: `StatusBar`, `Breadcrumb`, `KeyHints`
+- **Chrome**: `StatusBar`, `KeyHints`
 
 Each component handles responsive behavior internally (adapts to available space, scrolls when necessary, truncates intelligently). Developers describe layout with flexbox; components measure and adapt.
 

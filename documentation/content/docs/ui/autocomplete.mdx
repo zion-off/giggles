@@ -1,0 +1,171 @@
+---
+title: Autocomplete
+description: API reference for the Autocomplete component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Terminal } from '@/components/terminal';
+import AutocompleteExample from '@/components/examples/ui/autocomplete';
+
+A searchable select list. Type to filter options, navigate with arrow keys, and confirm with Enter.
+
+Filtering uses smart case matching by default — all-lowercase queries are case-insensitive, but if any uppercase character is present the search becomes case-sensitive. Provide a custom `filter` function to override this behavior.
+
+The `value` prop represents the selected option, not the search query. The search query is managed internally and resets the highlight index whenever it changes.
+
+```tsx title="Basic Usage"
+import { Autocomplete } from 'giggles/ui';
+import { useState } from 'react';
+
+const countries = [
+  { label: 'Argentina', value: 'ar' },
+  { label: 'Brazil', value: 'br' },
+  { label: 'Canada', value: 'ca' },
+];
+
+function CountryPicker() {
+  const [country, setCountry] = useState('ar');
+
+  return (
+    <Autocomplete
+      label="Country:"
+      placeholder="Search..."
+      options={countries}
+      value={country}
+      onChange={setCountry}
+    />
+  );
+}
+```
+
+<Terminal>
+  <AutocompleteExample />
+</Terminal>
+
+```tsx title="Custom Filter"
+<Autocomplete
+  options={items}
+  value={selected}
+  onChange={setSelected}
+  filter={(query, option) =>
+    option.label.startsWith(query)
+  }
+/>
+```
+
+<Callout>
+  Option values must be unique. Duplicate values will throw a `GigglesError`. Use primitive types (strings, numbers) for option values — object references are compared with `===`.
+</Callout>
+
+## API Reference
+
+### Autocomplete
+
+<TypeTable
+  type={{
+    options: {
+      description: 'List of options to choose from',
+      type: 'SelectOption<T>[]',
+      required: true,
+    },
+    value: {
+      description: 'Currently selected value (controlled)',
+      type: 'T',
+      required: true,
+    },
+    onChange: {
+      description: 'Called with the new value when an option is confirmed with Enter',
+      type: '(value: T) => void',
+      required: true,
+    },
+    onSubmit: {
+      description: 'Called with the selected value after onChange when Enter is pressed',
+      type: '(value: T) => void',
+    },
+    onHighlight: {
+      description: 'Called when the highlight moves to a different option',
+      type: '(value: T) => void',
+    },
+    label: {
+      description: 'Text displayed before the search input',
+      type: 'string',
+    },
+    placeholder: {
+      description: 'Text shown when the search input is empty and unfocused',
+      type: 'string',
+    },
+    filter: {
+      description: 'Custom filter function. Receives the current query and an option, returns whether to include it. Defaults to smart case substring matching.',
+      type: '(query: string, option: SelectOption<T>) => boolean',
+    },
+    maxVisible: {
+      description: 'Maximum number of options visible at once. When set, the list scrolls to keep the highlighted option in view.',
+      type: 'number',
+    },
+    paginatorStyle: {
+      description: 'Style of the scroll indicator when maxVisible is set',
+      type: "'arrows' | 'scrollbar' | 'counter'",
+      default: "'arrows'",
+    },
+    wrap: {
+      description: 'Wrap navigation from the last item back to the first (and vice versa)',
+      type: 'boolean',
+      default: 'true',
+    },
+    render: {
+      description: 'Custom render function for each option row. Replaces the default rendering entirely.',
+      type: '(props: AutocompleteRenderProps<T>) => React.ReactNode',
+    },
+  }}
+/>
+
+### Keybindings
+
+| Key | Action |
+| --- | --- |
+| `↑` / `↓` | Highlight previous/next option |
+| `←` / `→` | Move cursor in search input |
+| `Home` / `End` | Jump to start/end of search input |
+| `Enter` | Confirm highlighted option |
+| `Tab` / `Shift+Tab` | Move to next/previous component |
+
+### AutocompleteRenderProps
+
+<TypeTable
+  type={{
+    option: {
+      description: 'The option being rendered',
+      type: 'SelectOption<T>',
+      required: true,
+    },
+    focused: {
+      description: 'Whether the Autocomplete component has focus',
+      type: 'boolean',
+      required: true,
+    },
+    highlighted: {
+      description: 'Whether this option is the current highlight',
+      type: 'boolean',
+      required: true,
+    },
+    selected: {
+      description: 'Whether this option matches the current value',
+      type: 'boolean',
+      required: true,
+    },
+  }}
+/>
+
+```tsx title="Custom Render"
+<Autocomplete
+  options={options}
+  value={selected}
+  onChange={setSelected}
+  render={({ option, highlighted, selected }) => (
+    <Text color={highlighted ? 'cyan' : 'white'} bold={selected}>
+      {highlighted ? '→' : ' '} {option.label}
+    </Text>
+  )}
+/>
+```

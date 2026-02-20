@@ -102,6 +102,20 @@ function FileTypePicker() {
       type: "'vertical' | 'horizontal'",
       default: "'vertical'",
     },
+    maxVisible: {
+      description: 'Maximum number of options visible at once. When set, the list scrolls to keep the highlighted option in view.',
+      type: 'number',
+    },
+    paginatorStyle: {
+      description: 'Style of the scroll indicator when maxVisible is set',
+      type: "'arrows' | 'scrollbar' | 'counter'",
+      default: "'arrows'",
+    },
+    wrap: {
+      description: 'Wrap navigation from the last item back to the first (and vice versa)',
+      type: 'boolean',
+      default: 'true',
+    },
     render: {
       description: 'Custom render function for each option. Replaces the default rendering entirely.',
       type: '(props: SelectRenderProps<T>) => React.ReactNode',

@@ -1,0 +1,113 @@
+---
+title: Viewport
+description: API reference for the Viewport component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Terminal } from '@/components/terminal';
+import ViewportExample from '@/components/examples/ui/viewport';
+
+A scrollable pane for displaying content that exceeds the visible area. Navigate with `j`/`k`, jump with `g`/`G`, page with `PgUp`/`PgDn`.
+
+Pass any array of items — strings, objects, or structured data. For strings, the default rendering displays the text directly. Set `showLineNumbers` to add a line number gutter. For non-string items, use the `render` prop to control how each item appears. For a non-interactive windowed list without keybindings, see [VirtualList](/ui/virtual-list).
+
+```tsx title="Basic Usage"
+import { Viewport } from 'giggles/ui';
+
+const lines = fileContent.split('\n');
+
+function FileViewer() {
+  return <Viewport items={lines} maxVisible={20} showLineNumbers />;
+}
+```
+
+<Terminal>
+  <ViewportExample />
+</Terminal>
+
+```tsx title="Custom Render"
+type LogEntry = { level: string; message: string };
+
+<Viewport<LogEntry>
+  items={logEntries}
+  maxVisible={15}
+  paginatorStyle="scrollbar"
+  render={({ item, focused }) => (
+    <Text dimColor={!focused}>
+      <Text color={item.level === 'error' ? 'red' : 'yellow'}>[{item.level}]</Text> {item.message}
+    </Text>
+  )}
+/>
+```
+
+<Callout>
+  Viewport requires a parent `FocusGroup` to receive focus and respond to keybindings.
+</Callout>
+
+## API Reference
+
+### Viewport
+
+<TypeTable
+  type={{
+    items: {
+      description: 'Array of items to display',
+      type: 'T[]',
+      required: true,
+    },
+    maxVisible: {
+      description: 'Number of rows visible at once',
+      type: 'number',
+      required: true,
+    },
+    showLineNumbers: {
+      description: 'Show line numbers in the gutter. Only applies to the default rendering — ignored when render is provided.',
+      type: 'boolean',
+      default: 'false',
+    },
+    paginatorStyle: {
+      description: 'Style of the scroll indicator',
+      type: "'arrows' | 'scrollbar' | 'counter'",
+      default: "'arrows'",
+    },
+    render: {
+      description: 'Custom render function for each item. When omitted, items are rendered as text using String(item).',
+      type: '(props: ViewportRenderProps<T>) => React.ReactNode',
+    },
+  }}
+/>
+
+### Keybindings
+
+| Key | Action |
+| --- | --- |
+| `j` / `↓` | Scroll down one line |
+| `k` / `↑` | Scroll up one line |
+| `PgDn` | Scroll down one page |
+| `PgUp` | Scroll up one page |
+| `g` | Jump to top |
+| `G` | Jump to bottom |
+| `Tab` / `Shift+Tab` | Move to next/previous component |
+
+### ViewportRenderProps
+
+<TypeTable
+  type={{
+    item: {
+      description: 'The item being rendered',
+      type: 'T',
+      required: true,
+    },
+    index: {
+      description: 'The index of this item in the original items array',
+      type: 'number',
+      required: true,
+    },
+    focused: {
+      description: 'Whether the Viewport has focus',
+      type: 'boolean',
+      required: true,
+    },
+  }}
+/>

@@ -1,0 +1,85 @@
+---
+title: Paginator
+description: API reference for the Paginator component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Terminal } from '@/components/terminal';
+import PaginatorArrowsExample from '@/components/examples/ui/paginator-arrows';
+import PaginatorScrollbarExample from '@/components/examples/ui/paginator-scrollbar';
+import PaginatorCounterExample from '@/components/examples/ui/paginator-counter';
+
+A scroll position indicator for windowed lists. Supports three display styles: arrows, scrollbar, and counter.
+
+Paginator is a pure display component — it has no focus or interactivity. Pass it the total item count, current scroll offset, and number of visible items. It computes and renders the appropriate indicator. VirtualList uses Paginator internally, but you can also use it directly in custom scrollable layouts.
+
+When the total number of items fits within the visible window, Paginator renders nothing.
+
+```tsx title="Standalone Usage"
+import { Paginator } from 'giggles/ui';
+
+<Paginator total={100} offset={20} visible={10} style="scrollbar" />
+```
+
+### Arrows
+
+Shows `↑` and `↓` indicators above and below the list when there are items outside the visible window.
+
+<Terminal>
+  <PaginatorArrowsExample />
+</Terminal>
+
+### Scrollbar
+
+Shows a vertical bar beside the list with a thumb that tracks scroll position.
+
+<Terminal>
+  <PaginatorScrollbarExample />
+</Terminal>
+
+### Counter
+
+Shows a text range like `1–10 of 50` below the list.
+
+<Terminal>
+  <PaginatorCounterExample />
+</Terminal>
+
+## API Reference
+
+### Paginator
+
+<TypeTable
+  type={{
+    total: {
+      description: 'Total number of items in the list',
+      type: 'number',
+      required: true,
+    },
+    offset: {
+      description: 'Index of the first visible item (scroll position)',
+      type: 'number',
+      required: true,
+    },
+    visible: {
+      description: 'Number of items currently visible',
+      type: 'number',
+      required: true,
+    },
+    style: {
+      description: 'Display style. Arrows show ↑/↓ indicators, scrollbar shows a vertical thumb, counter shows a text range.',
+      type: "'arrows' | 'scrollbar' | 'counter'",
+      default: "'arrows'",
+    },
+    position: {
+      description: 'Used by the arrows style to render above or below the list. Ignored by scrollbar and counter styles.',
+      type: "'above' | 'below'",
+    },
+  }}
+/>
+
+### PaginatorStyle
+
+```tsx title="Type Definition"
+type PaginatorStyle = 'arrows' | 'scrollbar' | 'counter';
+```
