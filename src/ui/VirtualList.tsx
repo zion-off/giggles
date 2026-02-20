@@ -9,6 +9,7 @@ export type VirtualListRenderProps<T> = {
 
 type VirtualListBase<T> = {
   items: T[];
+  gap?: number;
   maxVisible?: number;
   paginatorStyle?: PaginatorStyle;
   render: (props: VirtualListRenderProps<T>) => React.ReactNode;
@@ -21,15 +22,16 @@ export function VirtualList<T>({
   items,
   highlightIndex,
   scrollOffset: controlledOffset,
+  gap = 0,
   maxVisible,
-  paginatorStyle = 'arrows',
+  paginatorStyle = 'dots',
   render
 }: VirtualListProps<T>) {
   const [internalOffset, setInternalOffset] = useState(0);
 
   if (maxVisible == null || items.length <= maxVisible) {
     return (
-      <Box flexDirection="column">
+      <Box flexDirection="column" gap={gap}>
         {items.map((item, index) => (
           <React.Fragment key={index}>{render({ item, index })}</React.Fragment>
         ))}
@@ -66,13 +68,14 @@ export function VirtualList<T>({
     total: items.length,
     offset,
     visible: maxVisible,
+    gap,
     style: paginatorStyle
   };
 
   if (paginatorStyle === 'scrollbar') {
     return (
       <Box flexDirection="row" gap={1}>
-        <Box flexDirection="column">
+        <Box flexDirection="column" gap={gap} flexGrow={1}>
           {visible.map((item, i) => {
             const index = offset + i;
             return <React.Fragment key={index}>{render({ item, index })}</React.Fragment>;
@@ -84,7 +87,7 @@ export function VirtualList<T>({
   }
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" gap={gap}>
       <Paginator {...paginatorProps} position="above" />
       {visible.map((item, i) => {
         const index = offset + i;
