@@ -1,0 +1,61 @@
+---
+title: Badge
+description: API reference for the Badge component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Terminal } from '@/components/terminal';
+import BadgeExample from '@/components/examples/ui/badge';
+
+A styled inline label with powerline-inspired glyph borders.
+
+Badge renders text with a colored background and optional decorative edges. Three variants are available: `round` uses rounded powerline glyphs, `arrow` uses angled glyphs, and `plain` renders a simple padded block with no glyphs.
+
+Colors default to the theme's `accentColor` for the background and black for the text. Override with the `color` and `background` props.
+
+```tsx title="Basic Usage"
+import { Badge } from 'giggles/ui';
+
+function StatusBar() {
+  return (
+    <Box gap={1}>
+      <Badge>stable</Badge>
+      <Badge background="#E06C75">error</Badge>
+      <Badge variant="arrow">deploy</Badge>
+    </Box>
+  );
+}
+```
+
+<Terminal>
+  <BadgeExample />
+</Terminal>
+
+## API Reference
+
+### Badge
+
+<TypeTable
+  type={{
+    children: {
+      description: 'Text content of the badge',
+      type: 'string',
+      required: true,
+    },
+    color: {
+      description: 'Text color',
+      type: 'string',
+      default: "'#000000'",
+    },
+    background: {
+      description: 'Background color',
+      type: 'string',
+      default: 'theme.accentColor',
+    },
+    variant: {
+      description: 'Glyph style for the badge edges',
+      type: "'round' | 'arrow' | 'plain'",
+      default: "'round'",
+    },
+  }}
+/>

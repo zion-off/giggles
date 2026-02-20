@@ -1,0 +1,84 @@
+---
+title: Panel
+description: API reference for the Panel component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Terminal } from '@/components/terminal';
+import PanelExample from '@/components/examples/ui/panel';
+
+A bordered content container with an optional inline title.
+
+Panel renders a rounded border with an optional title integrated into the top edge. It fills the available width by default, or accepts a fixed `width`. Long titles are automatically truncated to fit. An optional `footer` is pinned to the bottom of the panel, useful for status text or counts.
+
+```tsx title="Basic Usage"
+import { Panel } from 'giggles/ui';
+
+function FileList() {
+  return (
+    <Panel title="Files" footer={<Text dimColor>3 items</Text>}>
+      <Text>index.ts</Text>
+      <Text>utils.ts</Text>
+      <Text>types.ts</Text>
+    </Panel>
+  );
+}
+```
+
+<Terminal>
+  <PanelExample />
+</Terminal>
+
+## API Reference
+
+### Panel
+
+<TypeTable
+  type={{
+    children: {
+      description: 'Content rendered inside the panel',
+      type: 'React.ReactNode',
+      required: true,
+    },
+    title: {
+      description: 'Title displayed in the top border. Long titles are truncated to fit the panel width.',
+      type: 'string',
+    },
+    width: {
+      description: 'Fixed width in columns. When omitted, the panel fills available space.',
+      type: 'number',
+    },
+    borderColor: {
+      description: 'Color of the border and title decoration',
+      type: 'string',
+      default: 'theme.borderColor',
+    },
+    footer: {
+      description: 'Content pinned to the bottom of the panel',
+      type: 'React.ReactNode',
+    },
+  }}
+/>
+
+## Examples
+
+### Side-by-side panels
+
+```tsx title="Side-by-Side Panels"
+<Box gap={1}>
+  <Panel title="Source">
+    <Text>main.ts</Text>
+  </Panel>
+  <Panel title="Output">
+    <Text>main.js</Text>
+  </Panel>
+</Box>
+```
+
+### Fixed width
+
+```tsx title="Fixed Width"
+<Panel title="Sidebar" width={30}>
+  <Text>Navigation content</Text>
+</Panel>
+```
