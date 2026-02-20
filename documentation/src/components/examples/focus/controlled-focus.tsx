@@ -26,13 +26,14 @@ function Form() {
   };
 
   return (
-    <Box flexDirection="column">
-      <Text bold>Form (n to advance)</Text>
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
+      <Text bold>Form</Text>
       <FocusGroup value={field} navigable={false} keybindings={{ n: advance }}>
         <Field id="name" label="Name" />
         <Field id="email" label="Email" />
         <Field id="submit" label="Submit" />
       </FocusGroup>
+      <Text dimColor>n to advance</Text>
     </Box>
   );
 }

@@ -13,7 +13,7 @@ function Home() {
   });
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <Text bold>Home</Text>
       <Text dimColor>s = settings, d = detail</Text>
     </Box>
@@ -29,7 +29,7 @@ function Settings() {
   });
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <Text bold>Settings</Text>
       <Text dimColor>q = back</Text>
     </Box>
@@ -45,7 +45,7 @@ function Detail() {
   });
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <Text bold>Detail (id: {String(currentRoute.params?.id)})</Text>
       <Text dimColor>q = back</Text>
     </Box>

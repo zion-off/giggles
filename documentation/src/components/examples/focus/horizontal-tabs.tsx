@@ -17,8 +17,8 @@ function Tab({ label }: { label: string }) {
 export default function HorizontalTabsExample() {
   return (
     <GigglesProvider>
-      <Box flexDirection="column">
-        <Text bold>Tabs (h/l to navigate)</Text>
+      <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
+        <Text bold>Tabs</Text>
         <Box>
           <FocusGroup direction="horizontal">
             <Tab label="General" />
@@ -26,6 +26,7 @@ export default function HorizontalTabsExample() {
             <Tab label="Appearance" />
           </FocusGroup>
         </Box>
+        <Text dimColor>h/l to navigate</Text>
       </Box>
     </GigglesProvider>
   );

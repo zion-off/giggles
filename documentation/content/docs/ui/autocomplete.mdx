@@ -43,17 +43,6 @@ function CountryPicker() {
   <AutocompleteExample />
 </Terminal>
 
-```tsx title="Custom Filter"
-<Autocomplete
-  options={items}
-  value={selected}
-  onChange={setSelected}
-  filter={(query, option) =>
-    option.label.startsWith(query)
-  }
-/>
-```
-
 <Callout>
   Option values must be unique. Duplicate values will throw a `GigglesError`. Use primitive types (strings, numbers) for option values — object references are compared with `===`.
 </Callout>
@@ -161,6 +150,23 @@ function CountryPicker() {
     },
   }}
 />
+
+## Examples
+
+### Custom filter
+
+```tsx title="Custom Filter"
+<Autocomplete
+  options={items}
+  value={selected}
+  onChange={setSelected}
+  filter={(query, option) =>
+    option.label.startsWith(query)
+  }
+/>
+```
+
+### Custom render
 
 ```tsx title="Custom Render"
 <Autocomplete

@@ -15,14 +15,17 @@ function FileList() {
   });
 
   return (
-    <Box flexDirection="column">
-      <Text bold>Files (j/k to select)</Text>
-      {files.map((file, i) => (
-        <Text key={file} color={i === selected ? 'green' : 'white'}>
-          {i === selected ? '> ' : '  '}
-          {file}
-        </Text>
-      ))}
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
+      <Text bold>Files</Text>
+      <Box flexDirection="column">
+        {files.map((file, i) => (
+          <Text key={file} color={i === selected ? 'green' : 'white'}>
+            {i === selected ? '> ' : '  '}
+            {file}
+          </Text>
+        ))}
+      </Box>
+      <Text dimColor>j/k to select</Text>
     </Box>
   );
 }

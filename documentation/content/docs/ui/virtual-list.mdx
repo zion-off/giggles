@@ -41,16 +41,6 @@ function LogViewer({ lines, scrollIndex }: { lines: string[]; scrollIndex: numbe
   <VirtualListExample />
 </Terminal>
 
-```tsx title="With Scrollbar"
-<VirtualList
-  items={items}
-  highlightIndex={currentIndex}
-  maxVisible={10}
-  paginatorStyle="scrollbar"
-  render={({ item }) => <Text>{item.label}</Text>}
-/>
-```
-
 <Callout>
   When `maxVisible` is not set, VirtualList renders all items without windowing. This is useful as a uniform rendering interface — components can always use VirtualList regardless of list size.
 </Callout>
@@ -112,3 +102,17 @@ function LogViewer({ lines, scrollIndex }: { lines: string[]; scrollIndex: numbe
     },
   }}
 />
+
+## Examples
+
+### With scrollbar
+
+```tsx title="With Scrollbar"
+<VirtualList
+  items={items}
+  highlightIndex={currentIndex}
+  maxVisible={10}
+  paginatorStyle="scrollbar"
+  render={({ item }) => <Text>{item.label}</Text>}
+/>
+```

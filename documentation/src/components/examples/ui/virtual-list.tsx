@@ -14,12 +14,9 @@ function Demo() {
   const [selected, setSelected] = useState(1);
 
   return (
-    <Box flexDirection="column" gap={1}>
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <Select options={items} value={selected} onChange={setSelected} maxVisible={8} />
-      <Text>
-        Selected: <Text color="cyan">{selected}</Text>
-      </Text>
-      <Text dimColor>j/k to navigate, Enter to select</Text>
+      <Text dimColor>Selected: {selected}</Text>
     </Box>
   );
 }

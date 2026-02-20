@@ -21,7 +21,7 @@ function Demo() {
   const [country, setCountry] = useState('us');
 
   return (
-    <Box flexDirection="column" gap={1}>
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <Autocomplete
         label="Country:"
         placeholder="Search..."
@@ -29,10 +29,7 @@ function Demo() {
         value={country}
         onChange={setCountry}
       />
-      <Text>
-        Selected: <Text color="cyan">{country}</Text>
-      </Text>
-      <Text dimColor>Type to filter, Up/Down to navigate, Enter to select</Text>
+      <Text dimColor>Selected: {country}</Text>
     </Box>
   );
 }

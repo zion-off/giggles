@@ -32,18 +32,18 @@ function App() {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <FocusGroup direction="vertical" keybindings={{ m: () => setShowModal(true) }}>
         <MenuItem label="New File" />
         <MenuItem label="Open File" />
         <MenuItem label="Save" />
       </FocusGroup>
-      <Text dimColor>m to open modal</Text>
       {showModal && (
         <FocusTrap>
           <Modal onClose={() => setShowModal(false)} />
         </FocusTrap>
       )}
+      <Text dimColor>m to open modal</Text>
     </Box>
   );
 }

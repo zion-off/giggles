@@ -46,7 +46,7 @@ function App() {
   });
 
   return (
-    <Box flexDirection="column" gap={1}>
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <FocusGroup>
         <Sidebar />
         <FileList />

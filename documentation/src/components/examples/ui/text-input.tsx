@@ -10,12 +10,12 @@ function Form() {
   const [email, setEmail] = useState('');
 
   return (
-    <Box flexDirection="column" gap={1}>
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <FocusGroup direction="vertical">
         <TextInput label="Username:" value={username} onChange={setUsername} placeholder="john_doe" />
         <TextInput label="Email:   " value={email} onChange={setEmail} placeholder="john@example.com" />
       </FocusGroup>
-      <Text dimColor>Tab / shift+tab to switch fields</Text>
+      <Text dimColor>Tab / Shift+Tab to switch fields</Text>
     </Box>
   );
 }

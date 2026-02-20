@@ -16,12 +16,9 @@ function Demo() {
   const [lang, setLang] = useState('ts');
 
   return (
-    <Box flexDirection="column" gap={1}>
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <Select options={languages} value={lang} onChange={setLang} />
-      <Text>
-        Selected: <Text color="cyan">{lang}</Text>
-      </Text>
-      <Text dimColor>j/k to navigate, Enter to select</Text>
+      <Text dimColor>Selected: {lang}</Text>
     </Box>
   );
 }

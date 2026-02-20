@@ -30,16 +30,6 @@ function DeletePrompt() {
   <ConfirmExample />
 </Terminal>
 
-```tsx title="Default to No"
-<Confirm
-  message="Reset all settings?"
-  defaultValue={false}
-  onSubmit={(yes) => {
-    if (yes) resetSettings();
-  }}
-/>
-```
-
 ## API Reference
 
 ### Confirm
@@ -72,3 +62,17 @@ function DeletePrompt() {
 | `n` | Decline (no) |
 | `Enter` | Accept default |
 | `Tab` / `Shift+Tab` | Move to next/previous component |
+
+## Examples
+
+### Default to no
+
+```tsx title="Default to No"
+<Confirm
+  message="Reset all settings?"
+  defaultValue={false}
+  onSubmit={(yes) => {
+    if (yes) resetSettings();
+  }}
+/>
+```

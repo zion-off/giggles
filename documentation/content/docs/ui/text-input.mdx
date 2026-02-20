@@ -26,28 +26,6 @@ function NameInput() {
   <TextInputExample />
 </Terminal>
 
-```tsx title="Form with Submit"
-import { TextInput } from 'giggles/ui';
-import { FocusGroup } from 'giggles';
-import { useState } from 'react';
-
-function SearchForm() {
-  const [query, setQuery] = useState('');
-
-  return (
-    <FocusGroup direction="vertical">
-      <TextInput
-        label="Search:"
-        value={query}
-        onChange={setQuery}
-        onSubmit={(value) => performSearch(value)}
-        placeholder="type to search..."
-      />
-    </FocusGroup>
-  );
-}
-```
-
 ## API Reference
 
 ### TextInput
@@ -129,6 +107,34 @@ The `render` prop receives pre-split text segments around the cursor.
     },
   }}
 />
+
+## Examples
+
+### Form with submit
+
+```tsx title="Form with Submit"
+import { TextInput } from 'giggles/ui';
+import { FocusGroup } from 'giggles';
+import { useState } from 'react';
+
+function SearchForm() {
+  const [query, setQuery] = useState('');
+
+  return (
+    <FocusGroup direction="vertical">
+      <TextInput
+        label="Search:"
+        value={query}
+        onChange={setQuery}
+        onSubmit={(value) => performSearch(value)}
+        placeholder="type to search..."
+      />
+    </FocusGroup>
+  );
+}
+```
+
+### Custom render
 
 ```tsx title="Custom Render"
 <TextInput

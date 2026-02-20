@@ -20,7 +20,7 @@ const lines = Array.from(
 
 function Demo() {
   return (
-    <Box flexDirection="column" gap={1}>
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <FocusGroup>
         <Viewport items={lines} maxVisible={8} showLineNumbers />
       </FocusGroup>
