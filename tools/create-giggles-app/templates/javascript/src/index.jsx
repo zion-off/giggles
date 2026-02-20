@@ -1,33 +1,29 @@
-import { FocusGroup, GigglesProvider, useFocus, useKeybindings } from 'giggles';
+import { GigglesProvider } from 'giggles';
+import { Select } from 'giggles/ui';
 import { useState } from 'react';
 import { Box, Text, render } from 'ink';
 
-function MenuItem({ label }) {
-  const focus = useFocus();
-  const [selected, setSelected] = useState(false);
+const menuItems = [
+  { label: 'New Game', value: 'new' },
+  { label: 'Continue', value: 'continue' },
+  { label: 'Settings', value: 'settings' },
+  { label: 'Quit', value: 'quit' }
+];
 
-  useKeybindings(focus, {
-    enter: () => setSelected(!selected)
-  });
+function App() {
+  const [choice, setChoice] = useState('new');
 
   return (
-    <Text color={focus.focused ? 'green' : 'white'}>
-      {focus.focused ? '> ' : '  '}
-      {label}
-      {selected ? ' ✓' : ''}
-    </Text>
+    <Box flexDirection="column" gap={1}>
+      <Text bold>My App</Text>
+      <Select options={menuItems} value={choice} onChange={setChoice} />
+      <Text dimColor>Selected: {choice}</Text>
+    </Box>
   );
 }
 
 render(
   <GigglesProvider>
-    <Box flexDirection="column">
-      <Text bold>My Menu (j/k to navigate, enter to select)</Text>
-      <FocusGroup direction="vertical">
-        <MenuItem label="Start Game" />
-        <MenuItem label="Settings" />
-        <MenuItem label="Exit" />
-      </FocusGroup>
-    </Box>
+    <App />
   </GigglesProvider>
 );
