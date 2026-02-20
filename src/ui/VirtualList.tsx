@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box } from 'ink';
 import { Paginator, type PaginatorStyle } from './Paginator';
 
@@ -28,8 +28,38 @@ export function VirtualList<T>({
   render
 }: VirtualListProps<T>) {
   const [internalOffset, setInternalOffset] = useState(0);
+  const offsetRef = useRef(0);
 
-  if (maxVisible == null || items.length <= maxVisible) {
+  const windowed = maxVisible != null && items.length > maxVisible;
+
+  let offset = 0;
+  if (windowed) {
+    const maxOffset = Math.max(0, items.length - maxVisible);
+
+    if (controlledOffset != null) {
+      offset = Math.min(controlledOffset, maxOffset);
+    } else {
+      offset = Math.min(internalOffset, maxOffset);
+
+      if (highlightIndex != null && highlightIndex >= 0) {
+        if (highlightIndex < offset) {
+          offset = highlightIndex;
+        } else if (highlightIndex >= offset + maxVisible) {
+          offset = highlightIndex - maxVisible + 1;
+        }
+      }
+    }
+  }
+
+  offsetRef.current = offset;
+
+  useEffect(() => {
+    if (windowed && offsetRef.current !== internalOffset) {
+      setInternalOffset(offsetRef.current);
+    }
+  }, [windowed, highlightIndex, controlledOffset, internalOffset]);
+
+  if (!windowed) {
     return (
       <Box flexDirection="column" gap={gap}>
         {items.map((item, index) => (
@@ -37,29 +67,6 @@ export function VirtualList<T>({
         ))}
       </Box>
     );
-  }
-
-  const maxOffset = Math.max(0, items.length - maxVisible);
-  let offset: number;
-
-  if (controlledOffset != null) {
-    // Direct offset control (used by Viewport)
-    offset = Math.min(controlledOffset, maxOffset);
-  } else {
-    // Auto-scroll based on highlightIndex (used by Select, etc.)
-    offset = Math.min(internalOffset, maxOffset);
-
-    if (highlightIndex != null && highlightIndex >= 0) {
-      if (highlightIndex < offset) {
-        offset = highlightIndex;
-      } else if (highlightIndex >= offset + maxVisible) {
-        offset = highlightIndex - maxVisible + 1;
-      }
-    }
-
-    if (offset !== internalOffset) {
-      setInternalOffset(offset);
-    }
   }
 
   const visible = items.slice(offset, offset + maxVisible);

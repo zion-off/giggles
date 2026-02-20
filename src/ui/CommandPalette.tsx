@@ -3,6 +3,7 @@ import { Box, Text } from 'ink';
 import { useFocus } from '../core/focus';
 import { FocusTrap, useKeybindingRegistry, useKeybindings } from '../core/input';
 import type { Key, RegisteredKeybinding } from '../core/input';
+import { useTheme } from '../core/theme';
 
 const EMPTY_KEY: Key = {
   upArrow: false,
@@ -53,12 +54,14 @@ function fuzzyMatch(name: string, query: string): boolean {
 
 function Inner({ onClose, render }: { onClose: () => void; render?: CommandPaletteProps['render'] }) {
   const focus = useFocus();
+  const theme = useTheme();
 
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const registry = useKeybindingRegistry();
 
-  const filtered = registry.all.filter((cmd) => fuzzyMatch(cmd.name!, query));
+  const named = registry.all.filter((cmd) => cmd.name != null);
+  const filtered = named.filter((cmd) => fuzzyMatch(cmd.name!, query));
   const clampedIndex = Math.min(selectedIndex, Math.max(0, filtered.length - 1));
 
   const onSelect = (cmd: RegisteredKeybinding) => {
@@ -111,15 +114,15 @@ function Inner({ onClose, render }: { onClose: () => void; render?: CommandPalet
         <Box flexWrap="wrap">
           {filtered.map((cmd, index) => {
             const highlighted = index === clampedIndex;
-            const keyColor = highlighted ? '#D4D4D4' : '#8A8A8A';
-            const labelColor = highlighted ? '#A0A0A0' : '#5C5C5C';
+            const keyColor = highlighted ? theme.hintHighlightColor : theme.hintColor;
+            const labelColor = highlighted ? theme.hintHighlightDimColor : theme.hintDimColor;
             return (
               <Text key={`${cmd.nodeId}-${cmd.key}`}>
                 <Text color={keyColor} bold>
                   {cmd.key}
                 </Text>
                 <Text color={labelColor}> {cmd.name}</Text>
-                {index < filtered.length - 1 && <Text color="#5C5C5C"> • </Text>}
+                {index < filtered.length - 1 && <Text color={theme.hintDimColor}> • </Text>}
               </Text>
             );
           })}
@@ -131,7 +134,8 @@ function Inner({ onClose, render }: { onClose: () => void; render?: CommandPalet
 
 function HintsBar() {
   const registry = useKeybindingRegistry();
-  const commands = registry.available;
+  const theme = useTheme();
+  const commands = registry.available.filter((cmd) => cmd.name != null);
 
   if (commands.length === 0) return null;
 
@@ -139,16 +143,18 @@ function HintsBar() {
     <Box flexWrap="wrap">
       {commands.map((cmd, index) => (
         <Text key={`${cmd.nodeId}-${cmd.key}`}>
-          <Text color="#8A8A8A" bold>
+          <Text color={theme.hintColor} bold>
             {cmd.key}
           </Text>
-          <Text color="#5C5C5C"> {cmd.name}</Text>
-          {index < commands.length - 1 && <Text color="#5C5C5C"> • </Text>}
+          <Text color={theme.hintDimColor}> {cmd.name}</Text>
+          {index < commands.length - 1 && <Text color={theme.hintDimColor}> • </Text>}
         </Text>
       ))}
     </Box>
   );
 }
+
+const noop = () => {};
 
 export function CommandPalette({ onClose, interactive = true, render }: CommandPaletteProps) {
   if (!interactive) {
@@ -157,7 +163,7 @@ export function CommandPalette({ onClose, interactive = true, render }: CommandP
 
   return (
     <FocusTrap>
-      <Inner onClose={onClose!} render={render} />
+      <Inner onClose={onClose ?? noop} render={render} />
     </FocusTrap>
   );
 }
