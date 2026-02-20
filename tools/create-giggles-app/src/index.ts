@@ -39,12 +39,12 @@ async function main() {
           message: 'project name?',
           placeholder: 'my-tui',
           initialValue: argName ?? '',
-          validate: (value) => {
+          validate: (value: string) => {
             if (!value.trim()) return 'project name is required.';
             if (/[^\w\-.]/.test(value)) return 'project name contains invalid characters.';
           }
         }),
-      location: ({ results }) =>
+      location: ({ results }: { results: { name?: string } }) =>
         p.text({
           message: 'where should we create the project?',
           placeholder: `./${results.name}`,
