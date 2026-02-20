@@ -18,8 +18,8 @@ importers:
         specifier: 16.6.1
         version: 16.6.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(fumadocs-core@16.6.1(@mdx-js/mdx@3.1.1)(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.14)(lucide-react@0.563.0(react@19.2.4))(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(zod@4.3.6))(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(tailwindcss@4.1.18)
       giggles:
-        specifier: ^0.3.0
-        version: 0.3.1(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
+        specifier: ^0.3.3
+        version: 0.3.3(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
       ink:
         specifier: ^6.7.0
         version: 6.7.0(@types/react@19.2.14)(react@19.2.4)
@@ -2277,8 +2277,8 @@ packages:
   get-tsconfig@4.13.6:
     resolution: {integrity: sha512-shZT/QMiSHc/YBLxxOkMtgSid5HFoauqCE3/exfsEcwg1WkeqjG+V40yBbBrsD+jW2HDXcs28xOfcbm2jI8Ddw==}
 
-  giggles@0.3.1:
-    resolution: {integrity: sha512-s6qykSB2q3wv0GjnpQcp1xqe34gcULjWe69cvkKfRMJA/kcCAdNE4qDVTAO52hIEWlirKdMdxMrZ0tl2MPLBkA==}
+  giggles@0.3.3:
+    resolution: {integrity: sha512-Ek9nHo4AN5LxIDa1iRHEBbgW73vbE15j5ZdXKrAgk2Cgwum8UI+w9EfGqqRYj6zxerNryUFVPTNvGNjHpn+slw==}
     engines: {node: '>=16'}
     peerDependencies:
       ink: ^6.0.0
@@ -6053,7 +6053,7 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  giggles@0.3.1(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react@19.2.4):
+  giggles@0.3.3(ink@6.7.0(@types/react@19.2.14)(react@19.2.4))(react@19.2.4):
     dependencies:
       execa: 9.6.1
       ink: 6.7.0(@types/react@19.2.14)(react@19.2.4)

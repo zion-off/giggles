@@ -6,6 +6,8 @@
   "pages": [
     "index",
     "command-palette",
-    "text-input"
+    "text-input",
+    "select",
+    "multi-select"
   ]
 }

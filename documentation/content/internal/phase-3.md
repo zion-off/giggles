@@ -8,8 +8,8 @@ UI components and command palette built on the core framework.
 | --------------- | ----------- | ----------- |
 | Command Palette | Yes         | Done        |
 | TextInput       | Yes         | Done        |
-| Select          | Yes         | Not Started |
-| MultiSelect     | Yes         | Not Started |
+| Select          | Yes         | Done        |
+| MultiSelect     | Yes         | Done        |
 | Confirm         | No          | Not Started |
 | Autocomplete    | Yes         | Not Started |
 | Split           | No          | Not Started |
@@ -238,6 +238,28 @@ Components are customizable through three levels, in order of reach:
 2. **Render prop** — Full control over how a component renders its content. Available on components marked with "Render Prop: Yes" in the progress table. Use this when the default rendering doesn't fit.
 3. **Build your own** — Use the framework's focus management, keybinding, and input hooks directly. This is always an option and doesn't require a primitives layer.
 
+### Standard Callbacks
+
+Interactive components use these callback names consistently:
+
+- `onChange(value)` — value changed (controlled component pattern)
+- `onSubmit(value)` — user confirmed/committed (optional; conditionally spread into keybindings)
+- `onHighlight(value)` — highlight/cursor moved to a new item (for preview panes, status updates)
+
+### Standard Props for List-like Components
+
+List-based components (Select, MultiSelect, Autocomplete, Table) share a common prop surface:
+
+- `options: SelectOption<T>[]` — items to choose from
+- `value` / `onChange` — controlled state (`T` for single-select, `T[]` for multi-select)
+- `onHighlight?: (value: T) => void` — highlight moved
+- `label?: string` — optional label, only used in default rendering
+- `direction?: 'vertical' | 'horizontal'` — navigation axis (default `'vertical'`)
+- `immediate?: boolean` — fire `onChange` on navigation instead of requiring `enter` to confirm
+- `render?` — full visual control per item
+
+Navigation keys follow direction: vertical = `j`/`k`/`up`/`down`, horizontal = `h`/`l`/`left`/`right`. `enter` confirms in both directions. List components are single focusable nodes that manage their own highlight index internally (not FocusGroups).
+
 ### Patterns for Capture-Mode Components
 
 Components that handle arbitrary text input (TextInput, Autocomplete, etc.) need `capture: true` on `useKeybindings` to intercept printable characters via `onKeypress`. Key patterns established by TextInput:
@@ -247,6 +269,20 @@ Components that handle arbitrary text input (TextInput, Autocomplete, etc.) need
 - **passthrough for focus navigation** — `['tab', 'shift+tab']` at minimum. Add `'enter'` and `'escape'` if the component doesn't need to consume them.
 - **Conditional named bindings** — use spread to add bindings based on props: `...(onSubmit && { enter: () => onSubmit(value) })`. Named bindings take priority over passthrough, so the same key can be in both.
 - **Cursor as ref** — Ink's renderer may not batch cross-component state updates. Use `useRef` for cursor position and `useReducer` for forcing re-renders on navigation-only changes.
+
+### Patterns for List-like Components
+
+Established by Select/MultiSelect. Apply to any component that navigates a list of items.
+
+- **Highlight index clamping** — Options can change between renders. Clamp the highlight index at the top of the component body, before any handlers read it. Pattern: `const safeIndex = options.length === 0 ? -1 : Math.min(highlightIndex, options.length - 1)`. Same principle as TextInput's cursor clamping.
+- **Empty options guard** — All handlers that access `options[index]` must early-return when `options.length === 0`.
+- **Duplicate value validation** — Throw `GigglesError` if any two options share the same `String(value)`. This also catches React key collisions.
+- **React keys** — Use `String(option.value)` as the key, not array index. Option values must be unique (enforced above), so this is safe and survives reordering.
+- **No side effects in state updaters** — Do not call `onChange`/`onHighlight` inside `setHighlightIndex(prev => ...)`. Compute the new index, call `setHighlightIndex(next)`, then call callbacks as separate statements. React may call updater functions twice in Strict Mode.
+- **`useKeybindings` re-registers on every render** — The bindings object is passed to `registerKeybindings` during render (not in a `useEffect`), so handlers always have fresh closures. No refs needed for keybinding handlers.
+- **Space key** — `normalizeKey` does not handle space specially. Bind it as `' '` (literal space string), not `'space'`.
+- **No capture mode** — List components don't handle printable text input, so they don't need `capture: true`. Tab/shift+tab bubble naturally without passthrough.
+- **Single focusable node** — List components manage their own highlight index with `useState`. They do NOT use FocusGroup (which would register each option as a separate focus node in the tree).
 
 ### Planned Components
 

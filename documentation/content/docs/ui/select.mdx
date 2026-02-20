@@ -1,0 +1,178 @@
+---
+title: Select
+description: API reference for the Select component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Terminal } from '@/components/terminal';
+import SelectExample from '@/components/examples/ui/select';
+
+A controlled single-select list. Navigate with `j`/`k` or arrow keys, confirm with Enter.
+
+By default, `onChange` fires when Enter is pressed. Set `immediate` to fire `onChange` on every highlight change instead — useful for previewing the selected option as you browse. Use `onSubmit` to handle the final confirmation separately.
+
+The `direction` prop controls both layout and navigation keys. Vertical uses `j`/`k`/`Up`/`Down`, horizontal uses `h`/`l`/`Left`/`Right`.
+
+```tsx title="Basic Usage"
+import { Select } from 'giggles/ui';
+import { useState } from 'react';
+
+const languages = [
+  { label: 'TypeScript', value: 'ts' },
+  { label: 'Rust', value: 'rs' },
+  { label: 'Go', value: 'go' },
+];
+
+function LanguagePicker() {
+  const [lang, setLang] = useState('ts');
+
+  return <Select options={languages} value={lang} onChange={setLang} />;
+}
+```
+
+<Terminal>
+  <SelectExample />
+</Terminal>
+
+```tsx title="Immediate Mode with Preview"
+function FileTypePicker() {
+  const [type, setType] = useState('json');
+  const [preview, setPreview] = useState('');
+
+  return (
+    <Box flexDirection="row" gap={2}>
+      <Select
+        options={fileTypes}
+        value={type}
+        onChange={setType}
+        onHighlight={(v) => setPreview(loadPreview(v))}
+        immediate
+      />
+      <Text>{preview}</Text>
+    </Box>
+  );
+}
+```
+
+<Callout>
+  Option values must be unique. Duplicate values will throw a `GigglesError`. Use primitive types (strings, numbers) for option values — object references are compared with `===`.
+</Callout>
+
+## API Reference
+
+### Select
+
+<TypeTable
+  type={{
+    options: {
+      description: 'List of options to choose from',
+      type: 'SelectOption<T>[]',
+      required: true,
+    },
+    value: {
+      description: 'Currently selected value (controlled)',
+      type: 'T',
+      required: true,
+    },
+    onChange: {
+      description: 'Called with the new value when a selection is made. Fires on Enter by default, or on every highlight change when immediate is set.',
+      type: '(value: T) => void',
+      required: true,
+    },
+    onSubmit: {
+      description: 'Called with the selected value when Enter is pressed. When immediate is set, this is the only way to distinguish confirmation from browsing.',
+      type: '(value: T) => void',
+    },
+    onHighlight: {
+      description: 'Called when the highlight moves to a different option',
+      type: '(value: T) => void',
+    },
+    label: {
+      description: 'Text displayed above the list',
+      type: 'string',
+    },
+    immediate: {
+      description: 'Fire onChange on every highlight change instead of waiting for Enter',
+      type: 'boolean',
+      default: 'false',
+    },
+    direction: {
+      description: 'Layout direction and navigation key scheme',
+      type: "'vertical' | 'horizontal'",
+      default: "'vertical'",
+    },
+    render: {
+      description: 'Custom render function for each option. Replaces the default rendering entirely.',
+      type: '(props: SelectRenderProps<T>) => React.ReactNode',
+    },
+  }}
+/>
+
+### Keybindings
+
+| Key | Action |
+| --- | --- |
+| `j` / `↓` | Highlight next (vertical) |
+| `k` / `↑` | Highlight previous (vertical) |
+| `l` / `→` | Highlight next (horizontal) |
+| `h` / `←` | Highlight previous (horizontal) |
+| `Enter` | Confirm selection |
+| `Tab` / `Shift+Tab` | Move to next/previous component |
+
+### SelectOption
+
+<TypeTable
+  type={{
+    label: {
+      description: 'Display text for the option',
+      type: 'string',
+      required: true,
+    },
+    value: {
+      description: 'Value passed to onChange when this option is selected. Must be unique across options. Use primitive types (strings, numbers) — objects are compared by reference.',
+      type: 'T',
+      required: true,
+    },
+  }}
+/>
+
+### SelectRenderProps
+
+<TypeTable
+  type={{
+    option: {
+      description: 'The option being rendered',
+      type: 'SelectOption<T>',
+      required: true,
+    },
+    focused: {
+      description: 'Whether the Select component has focus',
+      type: 'boolean',
+      required: true,
+    },
+    highlighted: {
+      description: 'Whether this option is the current highlight',
+      type: 'boolean',
+      required: true,
+    },
+    selected: {
+      description: 'Whether this option matches the current value',
+      type: 'boolean',
+      required: true,
+    },
+  }}
+/>
+
+```tsx title="Custom Render"
+<Select
+  options={options}
+  value={selected}
+  onChange={setSelected}
+  render={({ option, highlighted, selected }) => (
+    <Text color={highlighted ? 'cyan' : 'white'} bold={selected}>
+      {highlighted ? '→' : ' '} {option.label}
+    </Text>
+  )}
+/>
+```
