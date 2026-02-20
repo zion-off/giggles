@@ -20,20 +20,19 @@ export function InputRouter({ children }: { children: React.ReactNode }) {
 
     for (const nodeId of path) {
       const nodeBindings = getNodeBindings(nodeId);
-      if (!nodeBindings) continue;
-
-      const entry = nodeBindings.bindings.get(keyName);
-      if (entry && entry.when !== 'mounted') {
-        entry.handler(input, key);
-        return;
-      }
-
-      if (nodeBindings.capture && nodeBindings.onKeypress) {
-        if (nodeBindings.passthrough?.has(keyName)) {
-          continue;
+      if (nodeBindings) {
+        const entry = nodeBindings.bindings.get(keyName);
+        if (entry && entry.when !== 'mounted') {
+          entry.handler(input, key);
+          return;
         }
-        nodeBindings.onKeypress(input, key);
-        return;
+
+        if (nodeBindings.capture && nodeBindings.onKeypress) {
+          if (!nodeBindings.passthrough?.has(keyName)) {
+            nodeBindings.onKeypress(input, key);
+            return;
+          }
+        }
       }
 
       if (nodeId === trapNodeId) {
