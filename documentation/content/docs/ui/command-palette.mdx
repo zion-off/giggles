@@ -61,6 +61,15 @@ The example below shows `useKeybindingRegistry` used directly to build a `KeyHin
       type: '() => void',
       required: true,
     },
+    maxVisible: {
+      description: 'Maximum number of commands visible at once. When set, the list is windowed.',
+      type: 'number',
+    },
+    paginatorStyle: {
+      description: 'Style of the scroll indicator when the list is windowed',
+      type: "'arrows' | 'scrollbar' | 'counter'",
+      default: "'arrows'",
+    },
     render: {
       description: 'Custom render function. Receives query, filtered commands, selected index, and onSelect. When provided, replaces the default palette UI entirely.',
       type: '(props: CommandPaletteRenderProps) => React.ReactNode',
