@@ -51,8 +51,8 @@ export function FocusGroup({
   const navigationKeys = useMemo((): Keybindings => {
     if (!navigable) return {};
 
-    const next = () => navigateSibling('next', wrap);
-    const prev = () => navigateSibling('prev', wrap);
+    const next = () => navigateSibling('next', wrap, focus.id);
+    const prev = () => navigateSibling('prev', wrap, focus.id);
 
     const base =
       direction === 'vertical'
@@ -70,7 +70,7 @@ export function FocusGroup({
           };
 
     return { ...base, tab: next, 'shift+tab': prev };
-  }, [navigable, direction, wrap, navigateSibling]);
+  }, [navigable, direction, wrap, navigateSibling, focus.id]);
 
   const mergedBindings = useMemo(
     (): Keybindings => ({ ...navigationKeys, ...customBindings }),

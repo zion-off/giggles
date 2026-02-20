@@ -15,7 +15,7 @@ export type FocusContextValue = {
   isFocused: (id: string) => boolean;
   getFocusedId: () => string | null;
   getActiveBranchPath: () => string[];
-  navigateSibling: (direction: 'next' | 'prev', wrap?: boolean) => void;
+  navigateSibling: (direction: 'next' | 'prev', wrap?: boolean, groupId?: string) => void;
 };
 
 export const FocusContext = createContext<FocusContextValue | null>(null);
@@ -40,7 +40,13 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
       const nodes = nodesRef.current;
       const parent = nodes.get(parentId);
       if (parent && parent.childrenIds.length > 0) {
-        focusNode(parent.childrenIds[0]);
+        let target = parent.childrenIds[0];
+        let targetNode = nodes.get(target);
+        while (targetNode && targetNode.childrenIds.length > 0) {
+          target = targetNode.childrenIds[0];
+          targetNode = nodes.get(target);
+        }
+        focusNode(target);
       } else {
         pendingFocusFirstChildRef.current.add(parentId);
       }
@@ -131,19 +137,40 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
   }, [focusedId]);
 
   const navigateSibling = useCallback(
-    (direction: 'next' | 'prev', wrap: boolean = true) => {
-      const currentId = focusedId;
-      if (!currentId) return;
+    (direction: 'next' | 'prev', wrap: boolean = true, groupId?: string) => {
+      if (!focusedId) return;
 
       const nodes = nodesRef.current;
-      const currentNode = nodes.get(currentId);
-      if (!currentNode?.parentId) return;
+      let currentChildId: string | undefined;
+      let siblings: string[];
 
-      const parent = nodes.get(currentNode.parentId);
-      if (!parent || parent.childrenIds.length === 0) return;
+      if (groupId) {
+        const group = nodes.get(groupId);
+        if (!group || group.childrenIds.length === 0) return;
+        siblings = group.childrenIds;
 
-      const siblings = parent.childrenIds;
-      const currentIndex = siblings.indexOf(currentId);
+        // Walk up from focusedId to find which direct child of the group contains focus
+        let cursor: string | null = focusedId;
+        while (cursor) {
+          const node = nodes.get(cursor);
+          if (node?.parentId === groupId) {
+            currentChildId = cursor;
+            break;
+          }
+          cursor = node?.parentId ?? null;
+        }
+        if (!currentChildId) return;
+      } else {
+        const currentNode = nodes.get(focusedId);
+        if (!currentNode?.parentId) return;
+
+        const parent = nodes.get(currentNode.parentId);
+        if (!parent || parent.childrenIds.length === 0) return;
+        siblings = parent.childrenIds;
+        currentChildId = focusedId;
+      }
+
+      const currentIndex = siblings.indexOf(currentChildId);
       if (currentIndex === -1) return;
 
       let nextIndex: number;
@@ -158,9 +185,16 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
           direction === 'next' ? Math.min(currentIndex + 1, siblings.length - 1) : Math.max(currentIndex - 1, 0);
       }
 
-      focusNode(siblings[nextIndex]);
+      const targetId = siblings[nextIndex];
+      const target = nodes.get(targetId);
+
+      if (target && target.childrenIds.length > 0) {
+        focusFirstChild(targetId);
+      } else {
+        focusNode(targetId);
+      }
     },
-    [focusedId, focusNode]
+    [focusedId, focusNode, focusFirstChild]
   );
 
   return (
