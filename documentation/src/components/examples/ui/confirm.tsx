@@ -9,15 +9,12 @@ function Demo() {
   const [answer, setAnswer] = useState<boolean | null>(null);
 
   return (
-    <Box flexDirection="column" gap={1}>
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       {answer == null ? (
         <Confirm message="Delete this file?" onSubmit={setAnswer} />
       ) : (
-        <Text>
-          Answered: <Text color={answer ? 'green' : 'red'}>{answer ? 'Yes' : 'No'}</Text>
-        </Text>
+        <Text dimColor>Answered: {answer ? 'Yes' : 'No'}</Text>
       )}
-      <Text dimColor>y/n to answer, Enter for default</Text>
     </Box>
   );
 }

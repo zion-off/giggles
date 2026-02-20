@@ -34,21 +34,6 @@ function ToppingPicker() {
   <MultiSelectExample />
 </Terminal>
 
-```tsx title="With Submit"
-function FeaturePicker() {
-  const [features, setFeatures] = useState<string[]>([]);
-
-  return (
-    <MultiSelect
-      options={allFeatures}
-      value={features}
-      onChange={setFeatures}
-      onSubmit={(selected) => saveFeatures(selected)}
-    />
-  );
-}
-```
-
 <Callout>
   Option values must be unique. Duplicate values will throw a `GigglesError`. Use primitive types (strings, numbers) for option values — items are matched using `===`.
 </Callout>
@@ -155,6 +140,27 @@ function FeaturePicker() {
     },
   }}
 />
+
+## Examples
+
+### With submit
+
+```tsx title="With Submit"
+function FeaturePicker() {
+  const [features, setFeatures] = useState<string[]>([]);
+
+  return (
+    <MultiSelect
+      options={allFeatures}
+      value={features}
+      onChange={setFeatures}
+      onSubmit={(selected) => saveFeatures(selected)}
+    />
+  );
+}
+```
+
+### Custom render
 
 ```tsx title="Custom Render"
 <MultiSelect

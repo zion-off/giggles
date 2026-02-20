@@ -24,13 +24,14 @@ function MenuItem({ label }: { label: string }) {
 export default function UseFocusExample() {
   return (
     <GigglesProvider>
-      <Box flexDirection="column">
-        <Text bold>My Menu (j/k to navigate, enter to select)</Text>
+      <Box flexDirection="column" paddingX={2} paddingY={1}>
+        <Text bold>My Menu</Text>
         <FocusGroup direction="vertical">
           <MenuItem label="Start Game" />
           <MenuItem label="Settings" />
           <MenuItem label="Exit" />
         </FocusGroup>
+        <Text dimColor>j/k to navigate, Enter to select</Text>
       </Box>
     </GigglesProvider>
   );

@@ -26,21 +26,6 @@ function FileViewer() {
   <ViewportExample />
 </Terminal>
 
-```tsx title="Custom Render"
-type LogEntry = { level: string; message: string };
-
-<Viewport<LogEntry>
-  items={logEntries}
-  maxVisible={15}
-  paginatorStyle="scrollbar"
-  render={({ item, focused }) => (
-    <Text dimColor={!focused}>
-      <Text color={item.level === 'error' ? 'red' : 'yellow'}>[{item.level}]</Text> {item.message}
-    </Text>
-  )}
-/>
-```
-
 <Callout>
   Viewport requires a parent `FocusGroup` to receive focus and respond to keybindings.
 </Callout>
@@ -116,3 +101,22 @@ type LogEntry = { level: string; message: string };
     },
   }}
 />
+
+## Examples
+
+### Custom render
+
+```tsx title="Custom Render"
+type LogEntry = { level: string; message: string };
+
+<Viewport<LogEntry>
+  items={logEntries}
+  maxVisible={15}
+  paginatorStyle="scrollbar"
+  render={({ item, focused }) => (
+    <Text dimColor={!focused}>
+      <Text color={item.level === 'error' ? 'red' : 'yellow'}>[{item.level}]</Text> {item.message}
+    </Text>
+  )}
+/>
+```

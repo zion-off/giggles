@@ -35,26 +35,6 @@ function LanguagePicker() {
   <SelectExample />
 </Terminal>
 
-```tsx title="Immediate Mode with Preview"
-function FileTypePicker() {
-  const [type, setType] = useState('json');
-  const [preview, setPreview] = useState('');
-
-  return (
-    <Box flexDirection="row" gap={2}>
-      <Select
-        options={fileTypes}
-        value={type}
-        onChange={setType}
-        onHighlight={(v) => setPreview(loadPreview(v))}
-        immediate
-      />
-      <Text>{preview}</Text>
-    </Box>
-  );
-}
-```
-
 <Callout>
   Option values must be unique. Duplicate values will throw a `GigglesError`. Use primitive types (strings, numbers) for option values — object references are compared with `===`.
 </Callout>
@@ -182,6 +162,32 @@ function FileTypePicker() {
     },
   }}
 />
+
+## Examples
+
+### Immediate mode with preview
+
+```tsx title="Immediate Mode with Preview"
+function FileTypePicker() {
+  const [type, setType] = useState('json');
+  const [preview, setPreview] = useState('');
+
+  return (
+    <Box flexDirection="row" gap={2}>
+      <Select
+        options={fileTypes}
+        value={type}
+        onChange={setType}
+        onHighlight={(v) => setPreview(loadPreview(v))}
+        immediate
+      />
+      <Text>{preview}</Text>
+    </Box>
+  );
+}
+```
+
+### Custom render
 
 ```tsx title="Custom Render"
 <Select

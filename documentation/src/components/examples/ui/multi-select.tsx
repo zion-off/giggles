@@ -16,7 +16,7 @@ function Demo() {
   const [selected, setSelected] = useState<string[]>([]);
 
   return (
-    <Box flexDirection="column" gap={1}>
+    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <MultiSelect options={features} value={selected} onChange={setSelected} />
       <Text dimColor>j/k to navigate, Space to toggle</Text>
     </Box>

@@ -6,7 +6,8 @@ description: A framework for building interactive terminal user interfaces with 
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { Callout } from 'fumadocs-ui/components/callout';
-import UseFocusExample from '@/components/examples/focus/use-focus';
+import { Terminal } from '@/components/terminal';
+import GettingStartedExample from '@/components/examples/framework/getting-started';
 
 giggles is a framework for building interactive terminal user interfaces (TUIs) with React and Ink. It provides a declarative, composable system for handling focus navigation and keyboard input in terminal applications.
 
@@ -45,48 +46,43 @@ Here's a simple menu with keyboard navigation:
 ```tsx title="app.tsx"
 import { useState } from 'react';
 import { Box, Text, render } from 'ink';
-import { GigglesProvider, FocusGroup, useFocus, useKeybindings } from 'giggles';
+import { GigglesProvider } from 'giggles';
+import { Select } from 'giggles/ui';
 
-function MenuItem({ label }: { label: string }) {
-  const focus = useFocus();
-  const [selected, setSelected] = useState(false);
+const menuItems = [
+  { label: 'New Game', value: 'new' },
+  { label: 'Continue', value: 'continue' },
+  { label: 'Settings', value: 'settings' },
+  { label: 'Quit', value: 'quit' },
+];
 
-  useKeybindings(focus, {
-    enter: () => setSelected(!selected),
-  });
+function App() {
+  const [choice, setChoice] = useState('new');
 
   return (
-    <Text color={focus.focused ? 'green' : 'white'}>
-      {focus.focused ? '> ' : '  '}
-      {label}
-      {selected ? ' ✓' : ''}
-    </Text>
+    <Box flexDirection="column" gap={1}>
+      <Text bold>My App</Text>
+      <Select options={menuItems} value={choice} onChange={setChoice} />
+      <Text dimColor>Selected: {choice}</Text>
+    </Box>
   );
 }
 
 render(
   <GigglesProvider>
-    <Box flexDirection="column">
-      <Text bold>My Menu (j/k to navigate, enter to select)</Text>
-      <FocusGroup direction="vertical">
-        <MenuItem label="Start Game" />
-        <MenuItem label="Settings" />
-        <MenuItem label="Exit" />
-      </FocusGroup>
-    </Box>
+    <App />
   </GigglesProvider>
 );
 ```
 
 <Terminal>
-  <UseFocusExample />
+  <GettingStartedExample />
 </Terminal>
 
 <Callout type="info" title="What's happening">
 1. `GigglesProvider` wraps your app and provides focus + input context
-2. `FocusGroup` creates a navigable group (use `j`/`k` or arrow keys)
-3. `useFocus()` tells each `MenuItem` whether it's focused
-4. `useKeybindings()` binds keys to actions on the focused item
+2. `Select` handles focus, keyboard navigation, and rendering for you
+3. Use `j`/`k` or arrow keys to navigate, `Enter` to confirm
 </Callout>
 
 ## Next Steps
