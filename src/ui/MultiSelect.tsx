@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
 import { GigglesError } from '../core/GigglesError';
 import { useFocus } from '../core/focus';
@@ -54,9 +54,12 @@ export function MultiSelect<T>({
   const [highlightIndex, setHighlightIndex] = useState(0);
 
   const safeIndex = options.length === 0 ? -1 : Math.min(highlightIndex, options.length - 1);
-  if (safeIndex !== highlightIndex) {
-    setHighlightIndex(Math.max(0, safeIndex));
-  }
+
+  useEffect(() => {
+    if (safeIndex !== highlightIndex) {
+      setHighlightIndex(Math.max(0, safeIndex));
+    }
+  }, [safeIndex, highlightIndex]);
 
   const moveHighlight = (delta: number) => {
     if (options.length === 0) return;

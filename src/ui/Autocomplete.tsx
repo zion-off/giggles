@@ -1,4 +1,4 @@
-import React, { useReducer, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Box, Text } from 'ink';
 import { GigglesError } from '../core/GigglesError';
 import { useFocus } from '../core/focus';
@@ -66,12 +66,18 @@ export function Autocomplete<T>({
   const cursorRef = useRef(0);
   const [, forceRender] = useReducer((c: number) => c + 1, 0);
 
-  const filtered = query.length === 0 ? options : options.filter((opt) => filter(query, opt));
+  const filtered = useMemo(
+    () => (query.length === 0 ? options : options.filter((opt) => filter(query, opt))),
+    [options, query, filter]
+  );
 
   const safeIndex = filtered.length === 0 ? -1 : Math.min(highlightIndex, filtered.length - 1);
-  if (safeIndex >= 0 && safeIndex !== highlightIndex) {
-    setHighlightIndex(safeIndex);
-  }
+
+  useEffect(() => {
+    if (safeIndex >= 0 && safeIndex !== highlightIndex) {
+      setHighlightIndex(safeIndex);
+    }
+  }, [safeIndex, highlightIndex]);
 
   const cursor = Math.min(cursorRef.current, query.length);
   cursorRef.current = cursor;
