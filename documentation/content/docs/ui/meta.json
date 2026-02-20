@@ -1,13 +1,21 @@
 {
-  "title": "UI",
+  "title": "Components",
   "description": "Ready-to-use components",
   "icon": "LayoutGrid",
   "root": true,
   "pages": [
     "index",
-    "command-palette",
+    "---Input---",
     "text-input",
     "select",
-    "multi-select"
+    "multi-select",
+    "confirm",
+    "autocomplete",
+    "---Display---",
+    "virtual-list",
+    "viewport",
+    "paginator",
+    "---Overlay---",
+    "command-palette"
   ]
 }

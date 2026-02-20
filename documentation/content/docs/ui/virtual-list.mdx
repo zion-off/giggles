@@ -1,0 +1,109 @@
+---
+title: VirtualList
+description: API reference for the VirtualList component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Terminal } from '@/components/terminal';
+import VirtualListExample from '@/components/examples/ui/virtual-list';
+
+A windowed list that only renders visible items. Use it to efficiently display large datasets without mounting every item in the React tree.
+
+When `maxVisible` is set, only that many items render at a time. The list auto-scrolls to keep `highlightIndex` in view. When `maxVisible` is omitted, all items render with no windowing.
+
+VirtualList is a rendering primitive — it has no focus or keybindings. Parent components handle navigation and pass state down. For an interactive scrollable pane with built-in keybindings, see [Viewport](/ui/viewport).
+
+Two scrolling modes: `highlightIndex` auto-scrolls to keep a highlighted item in view, while `scrollOffset` gives direct control over which item appears at the top of the window. Use one or the other, not both.
+
+```tsx title="Basic Usage"
+import { VirtualList } from 'giggles/ui';
+import { Text } from 'ink';
+
+function LogViewer({ lines, scrollIndex }: { lines: string[]; scrollIndex: number }) {
+  return (
+    <VirtualList
+      items={lines}
+      highlightIndex={scrollIndex}
+      maxVisible={20}
+      render={({ item, index }) => (
+        <Text>
+          <Text dimColor>{String(index + 1).padStart(4)} </Text>
+          {item}
+        </Text>
+      )}
+    />
+  );
+}
+```
+
+<Terminal>
+  <VirtualListExample />
+</Terminal>
+
+```tsx title="With Scrollbar"
+<VirtualList
+  items={items}
+  highlightIndex={currentIndex}
+  maxVisible={10}
+  paginatorStyle="scrollbar"
+  render={({ item }) => <Text>{item.label}</Text>}
+/>
+```
+
+<Callout>
+  When `maxVisible` is not set, VirtualList renders all items without windowing. This is useful as a uniform rendering interface — components can always use VirtualList regardless of list size.
+</Callout>
+
+## API Reference
+
+### VirtualList
+
+<TypeTable
+  type={{
+    items: {
+      description: 'Array of items to render',
+      type: 'T[]',
+      required: true,
+    },
+    render: {
+      description: 'Render function called for each visible item',
+      type: '(props: VirtualListRenderProps<T>) => React.ReactNode',
+      required: true,
+    },
+    highlightIndex: {
+      description: 'Index of the currently highlighted item. The list auto-scrolls to keep this index visible. Use this for list selection components.',
+      type: 'number',
+    },
+    scrollOffset: {
+      description: 'Direct control over which item appears at the top of the visible window. Use this for viewport-style scrolling.',
+      type: 'number',
+    },
+    maxVisible: {
+      description: 'Maximum number of items visible at once. When omitted, all items render.',
+      type: 'number',
+    },
+    paginatorStyle: {
+      description: 'Style of the scroll indicator shown when items overflow',
+      type: "'arrows' | 'scrollbar' | 'counter'",
+      default: "'arrows'",
+    },
+  }}
+/>
+
+### VirtualListRenderProps
+
+<TypeTable
+  type={{
+    item: {
+      description: 'The item being rendered',
+      type: 'T',
+      required: true,
+    },
+    index: {
+      description: 'The index of this item in the original items array',
+      type: 'number',
+      required: true,
+    },
+  }}
+/>

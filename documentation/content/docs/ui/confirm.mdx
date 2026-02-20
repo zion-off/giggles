@@ -1,0 +1,74 @@
+---
+title: Confirm
+description: API reference for the Confirm component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Terminal } from '@/components/terminal';
+import ConfirmExample from '@/components/examples/ui/confirm';
+
+A yes/no prompt. Press `y` to confirm, `n` to decline, or Enter to accept the default.
+
+The `defaultValue` prop controls which option is pre-selected. The hint text updates to reflect this — `(Y/n)` when defaulting to yes, `(y/N)` when defaulting to no. Unlike Select, Confirm is a one-shot interaction: `onSubmit` fires once with a boolean and there's no controlled value state.
+
+```tsx title="Basic Usage"
+import { Confirm } from 'giggles/ui';
+
+function DeletePrompt() {
+  return (
+    <Confirm
+      message="Delete this file?"
+      onSubmit={(yes) => {
+        if (yes) deleteFile();
+      }}
+    />
+  );
+}
+```
+
+<Terminal>
+  <ConfirmExample />
+</Terminal>
+
+```tsx title="Default to No"
+<Confirm
+  message="Reset all settings?"
+  defaultValue={false}
+  onSubmit={(yes) => {
+    if (yes) resetSettings();
+  }}
+/>
+```
+
+## API Reference
+
+### Confirm
+
+<TypeTable
+  type={{
+    message: {
+      description: 'The question to display',
+      type: 'string',
+      required: true,
+    },
+    onSubmit: {
+      description: 'Called with true (yes) or false (no) when the user answers',
+      type: '(value: boolean) => void',
+      required: true,
+    },
+    defaultValue: {
+      description: 'Which option Enter selects. Affects the hint text shown.',
+      type: 'boolean',
+      default: 'true',
+    },
+  }}
+/>
+
+### Keybindings
+
+| Key | Action |
+| --- | --- |
+| `y` | Confirm (yes) |
+| `n` | Decline (no) |
+| `Enter` | Accept default |
+| `Tab` / `Shift+Tab` | Move to next/previous component |
