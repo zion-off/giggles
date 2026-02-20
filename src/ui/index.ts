@@ -9,3 +9,17 @@ export type { SelectOption, SelectRenderProps } from './Select';
 
 export { MultiSelect } from './MultiSelect';
 export type { MultiSelectRenderProps } from './MultiSelect';
+
+export { Confirm } from './Confirm';
+
+export { Autocomplete } from './Autocomplete';
+export type { AutocompleteRenderProps } from './Autocomplete';
+
+export { VirtualList } from './VirtualList';
+export type { VirtualListRenderProps } from './VirtualList';
+
+export { Paginator } from './Paginator';
+export type { PaginatorStyle } from './Paginator';
+
+export { Viewport } from './Viewport';
+export type { ViewportRenderProps } from './Viewport';
