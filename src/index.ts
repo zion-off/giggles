@@ -3,6 +3,8 @@
 // Core
 export { GigglesError } from './core/GigglesError';
 export { GigglesProvider } from './core/GigglesProvider';
+export { ThemeProvider, useTheme } from './core/theme';
+export type { GigglesTheme } from './core/theme';
 
 // Focus system
 export { FocusGroup, useFocus, useFocusState } from './core/focus';
