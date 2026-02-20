@@ -1,0 +1,87 @@
+---
+title: Modal
+description: API reference for the Modal component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Terminal } from '@/components/terminal';
+import ModalExample from '@/components/examples/ui/modal';
+
+A focus-trapping container with a border and optional title. When rendered, Modal captures all focus and keyboard input. Press Escape to close. When the modal unmounts, focus returns to the previously focused component.
+
+Render it conditionally — Modal takes over input the moment it mounts. Put any content inside: text, forms, lists, or other interactive components.
+
+```tsx title="Basic Usage"
+import { Modal } from 'giggles/ui';
+import { useState } from 'react';
+
+function App() {
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <>
+      <MainContent />
+      {showModal && (
+        <Modal title="Confirm" onClose={() => setShowModal(false)}>
+          <Text>Are you sure?</Text>
+        </Modal>
+      )}
+    </>
+  );
+}
+```
+
+<Terminal>
+  <ModalExample />
+</Terminal>
+
+<Callout>
+  Modal captures all input while open. The parent component's keybinding that opens the modal should use `when: 'mounted'` so it fires regardless of which child has focus.
+</Callout>
+
+## API Reference
+
+### Modal
+
+<TypeTable
+  type={{
+    children: {
+      description: 'Content rendered inside the modal',
+      type: 'React.ReactNode',
+      required: true,
+    },
+    onClose: {
+      description: 'Called when Escape is pressed',
+      type: '() => void',
+      required: true,
+    },
+    title: {
+      description: 'Bold text rendered at the top of the modal',
+      type: 'string',
+    },
+    borderStyle: {
+      description: 'Border style for the modal container',
+      type: "'single' | 'double' | 'round' | 'bold' | 'singleDouble' | 'doubleSingle' | 'classic' | 'arrow'",
+      default: "'round'",
+    },
+  }}
+/>
+
+### Keybindings
+
+| Key | Action |
+| --- | --- |
+| `Escape` | Close the modal |
+
+## Examples
+
+### Modal with interactive content
+
+```tsx title="Modal with Form"
+{showModal && (
+  <Modal title="New File" onClose={() => setShowModal(false)}>
+    <TextInput label="Filename:" value={name} onChange={setName} onSubmit={createFile} />
+  </Modal>
+)}
+```
