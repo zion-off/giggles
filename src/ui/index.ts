@@ -22,7 +22,7 @@ export { Paginator } from './Paginator';
 export type { PaginatorStyle } from './Paginator';
 
 export { Viewport } from './Viewport';
-export type { ViewportRenderProps } from './Viewport';
+export type { ViewportRef } from './Viewport';
 
 export { Modal } from './Modal';
 
@@ -34,3 +34,6 @@ export type { PanelProps } from './Panel';
 
 export { CodeBlock } from './CodeBlock';
 export type { TokenColors } from './CodeBlock';
+
+export { Spinner, spinners } from './Spinner';
+export type { SpinnerDef } from './Spinner';
