@@ -1,0 +1,82 @@
+---
+title: Spinner
+description: API reference for the Spinner component
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Terminal } from '@/components/terminal';
+import SpinnerExample from '@/components/examples/ui/spinner';
+
+An animated terminal spinner with a set of built-in presets. Ported from [Bubble Tea's spinner](https://github.com/charmbracelet/bubbles/blob/master/spinner/spinner.go).
+
+`Spinner` cycles through a list of frames at a fixed interval, rendering the current frame as colored text. The animation runs independently per instance, so multiple spinners on screen don't interfere with each other. The `spinner` prop accepts any `SpinnerDef` — use one of the built-in `spinners` presets or supply your own frames and interval.
+
+```tsx title="Basic Usage"
+import { Spinner, spinners } from 'giggles/ui';
+
+function LoadingState() {
+  return (
+    <Box gap={1}>
+      <Spinner />
+      <Text>Loading…</Text>
+    </Box>
+  );
+}
+
+// Custom spinner
+const pulse: SpinnerDef = { frames: ['◐', '◓', '◑', '◒'], interval: 120 };
+<Spinner spinner={pulse} color="#E06C75" />
+```
+
+<Terminal>
+  <SpinnerExample />
+</Terminal>
+
+## API Reference
+
+### Spinner
+
+<TypeTable
+  type={{
+    spinner: {
+      description: 'Spinner definition to use',
+      type: 'SpinnerDef',
+      default: 'spinners.line',
+    },
+    color: {
+      description: 'Color of the spinner text',
+      type: 'string',
+      default: 'theme.accentColor',
+    },
+  }}
+/>
+
+### SpinnerDef
+
+<TypeTable
+  type={{
+    frames: {
+      description: 'Array of strings to cycle through',
+      type: 'string[]',
+      required: true,
+    },
+    interval: {
+      description: 'Milliseconds between frame advances',
+      type: 'number',
+      required: true,
+    },
+  }}
+/>
+
+## Examples
+
+### Presets
+
+Twelve presets are available via the `spinners` object: `line`, `dot`, `miniDot`, `jump`, `pulse`, `points`, `globe`, `moon`, `monkey`, `meter`, `hamburger`, `ellipsis`.
+
+```tsx title="Using a Preset"
+import { Spinner, spinners } from 'giggles/ui';
+
+<Spinner spinner={spinners.dot} />
+<Spinner spinner={spinners.moon} color="yellow" />
+```

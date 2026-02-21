@@ -8,9 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 import { Terminal } from '@/components/terminal';
 import ViewportExample from '@/components/examples/ui/viewport';
 
-A scrollable pane for displaying content that exceeds the visible area. Navigate with `j`/`k`, jump with `g`/`G`, page with `PgUp`/`PgDn`.
+A scrollable container that clips content to a fixed height and scrolls by row. Navigate with `j`/`k`, jump with `g`/`G`, page with `PgUp`/`PgDn`. Inspired by [Bubble Tea's viewport](https://github.com/charmbracelet/bubbles/blob/master/viewport/viewport.go) and [ink-scroll-view](https://github.com/ByteLandTechnology/ink-scroll-view).
 
-Pass any array of items — strings, objects, or structured data. For strings, the default rendering displays the text directly. Set `showLineNumbers` to add a line number gutter. For non-string items, use the `render` prop to control how each item appears. For a non-interactive windowed list without keybindings, see [VirtualList](/ui/virtual-list).
+Pass any children — text, components, mixed content. Viewport measures each child's actual terminal height and scrolls in rows, so multi-line content works correctly. Use the ref to programmatically scroll or jump to a specific child with `scrollToItem`. For a virtualized item-count-based list, see [VirtualList](/ui/virtual-list).
 
 ```tsx title="Basic Usage"
 import { Viewport } from 'giggles/ui';
@@ -18,7 +18,13 @@ import { Viewport } from 'giggles/ui';
 const lines = fileContent.split('\n');
 
 function FileViewer() {
-  return <Viewport items={lines} maxVisible={20} showLineNumbers />;
+  return (
+    <Viewport height={20}>
+      {lines.map((line, i) => (
+        <Text key={i}>{line}</Text>
+      ))}
+    </Viewport>
+  );
 }
 ```
 
@@ -36,34 +42,71 @@ function FileViewer() {
 
 <TypeTable
   type={{
-    items: {
-      description: 'Array of items to display',
-      type: 'T[]',
-      required: true,
-    },
-    maxVisible: {
-      description: 'Number of rows visible at once',
+    height: {
+      description: 'Viewport height in terminal rows',
       type: 'number',
       required: true,
     },
-    showLineNumbers: {
-      description: 'Show line numbers in the gutter. Only applies to the default rendering — ignored when render is provided.',
+    children: {
+      description: 'Content to display inside the scrollable area',
+      type: 'React.ReactNode',
+    },
+    keybindings: {
+      description: 'Whether to bind scroll keybindings (j/k, arrows, page, g/G)',
       type: 'boolean',
-      default: 'false',
+      default: 'true',
     },
-    gap: {
-      description: 'Vertical spacing between items (in lines)',
-      type: 'number',
-      default: '0',
+  }}
+/>
+
+### ViewportRef
+
+Control scrolling programmatically via a ref.
+
+```tsx title="Programmatic Scrolling"
+import { useRef } from 'react';
+import { Viewport, ViewportRef } from 'giggles/ui';
+
+const ref = useRef<ViewportRef>(null);
+
+ref.current?.scrollToItem(5);
+ref.current?.scrollBy(3);
+ref.current?.scrollToTop();
+```
+
+<TypeTable
+  type={{
+    scrollTo: {
+      description: 'Scroll to an absolute row offset',
+      type: '(offset: number) => void',
     },
-    paginatorStyle: {
-      description: 'Style of the scroll indicator',
-      type: "'dots' | 'arrows' | 'scrollbar' | 'counter' | 'none'",
-      default: "'dots'",
+    scrollBy: {
+      description: 'Scroll by a relative number of rows',
+      type: '(delta: number) => void',
     },
-    render: {
-      description: 'Custom render function for each item. When omitted, items are rendered as text using String(item).',
-      type: '(props: ViewportRenderProps<T>) => React.ReactNode',
+    scrollToTop: {
+      description: 'Scroll to the top',
+      type: '() => void',
+    },
+    scrollToBottom: {
+      description: 'Scroll to the bottom',
+      type: '() => void',
+    },
+    scrollToItem: {
+      description: 'Scroll to make the child at the given index visible',
+      type: '(index: number) => void',
+    },
+    getScrollOffset: {
+      description: 'Get the current row offset',
+      type: '() => number',
+    },
+    getContentHeight: {
+      description: 'Get the total content height in rows',
+      type: '() => number',
+    },
+    getViewportHeight: {
+      description: 'Get the visible viewport height',
+      type: '() => number',
     },
   }}
 />
@@ -72,51 +115,26 @@ function FileViewer() {
 
 | Key | Action |
 | --- | --- |
-| `j` / `↓` | Scroll down one line |
-| `k` / `↑` | Scroll up one line |
+| `j` / `↓` | Scroll down one row |
+| `k` / `↑` | Scroll up one row |
 | `PgDn` | Scroll down one page |
 | `PgUp` | Scroll up one page |
 | `g` | Jump to top |
 | `G` | Jump to bottom |
 | `Tab` / `Shift+Tab` | Move to next/previous component |
 
-### ViewportRenderProps
-
-<TypeTable
-  type={{
-    item: {
-      description: 'The item being rendered',
-      type: 'T',
-      required: true,
-    },
-    index: {
-      description: 'The index of this item in the original items array',
-      type: 'number',
-      required: true,
-    },
-    focused: {
-      description: 'Whether the Viewport has focus',
-      type: 'boolean',
-      required: true,
-    },
-  }}
-/>
-
 ## Examples
 
-### Custom render
+### Mixed content
 
-```tsx title="Custom Render"
-type LogEntry = { level: string; message: string };
-
-<Viewport<LogEntry>
-  items={logEntries}
-  maxVisible={15}
-  paginatorStyle="scrollbar"
-  render={({ item, focused }) => (
-    <Text dimColor={!focused}>
-      <Text color={item.level === 'error' ? 'red' : 'yellow'}>[{item.level}]</Text> {item.message}
+```tsx title="Mixed Content"
+<Viewport height={15}>
+  <Text bold>Log Output</Text>
+  <Text dimColor>─────────</Text>
+  {entries.map((entry, i) => (
+    <Text key={i} color={entry.level === 'error' ? 'red' : 'yellow'}>
+      [{entry.level}] {entry.message}
     </Text>
-  )}
-/>
+  ))}
+</Viewport>
 ```
