@@ -11,10 +11,7 @@ on:
     paths:
       - 'documentation/**'
       - '.github/workflows/documentation-*'
-  workflow_run:
-    workflows: ['giggles / cd']
-    types: [completed]
-    branches: [main]
+  workflow_call:
   workflow_dispatch:
 
 concurrency:
@@ -23,7 +20,7 @@ concurrency:
 
 jobs:
   lint:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    if: ${{ github.event_name != 'workflow_run' }}
     name: lint & format
     runs-on: ubuntu-latest
 
