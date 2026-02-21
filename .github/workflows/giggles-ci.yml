@@ -8,6 +8,10 @@ on:
       - 'tools/**'
       - '.github/workflows/documentation-*'
       - '.github/workflows/create-giggles-app-*'
+      - 'README.md'
+      - '.editorconfig'
+      - '.gitattributes'
+      - '.gitignore'
   pull_request:
     branches: [main]
     paths-ignore:
@@ -15,6 +19,10 @@ on:
       - 'tools/**'
       - '.github/workflows/documentation-*'
       - '.github/workflows/create-giggles-app-*'
+      - 'README.md'
+      - '.editorconfig'
+      - '.gitattributes'
+      - '.gitignore'
   workflow_dispatch:
 
 concurrency:
