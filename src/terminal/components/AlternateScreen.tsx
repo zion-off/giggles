@@ -1,9 +1,17 @@
 import { ReactNode, useEffect, useState } from 'react';
+import { Box } from 'ink';
+import { useTerminalSize } from '../hooks/useTerminalSize';
 
 const isTTY = typeof process !== 'undefined' && process.stdout?.write;
 
-export function AlternateScreen({ children }: { children: ReactNode }) {
+type AlternateScreenProps = {
+  children: ReactNode;
+  fullScreen?: boolean;
+};
+
+export function AlternateScreen({ children, fullScreen = true }: AlternateScreenProps) {
   const [ready, setReady] = useState(!isTTY);
+  const { rows, columns } = useTerminalSize();
 
   useEffect(() => {
     if (!isTTY) return;
@@ -17,5 +25,14 @@ export function AlternateScreen({ children }: { children: ReactNode }) {
       process.stdout.write('\x1b[?1049l');
     };
   }, []);
-  return ready ? <>{children}</> : null;
+
+  if (!ready) return null;
+
+  return fullScreen ? (
+    <Box height={rows} width={columns}>
+      {children}
+    </Box>
+  ) : (
+    <>{children}</>
+  );
 }
