@@ -22,7 +22,11 @@ function Demo() {
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <FocusGroup>
-        <Viewport items={lines} maxVisible={8} showLineNumbers />
+        <Viewport height={8}>
+          {lines.map((line, i) => (
+            <Text key={i}>{line}</Text>
+          ))}
+        </Viewport>
       </FocusGroup>
       <Text dimColor>j/k to scroll, g/G for top/bottom</Text>
     </Box>
