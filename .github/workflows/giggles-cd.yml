@@ -80,3 +80,9 @@ jobs:
 
       - name: Publish to npm
         run: npm publish --access public
+
+  trigger-docs-ci:
+    needs: [publish]
+    if: needs.publish.result == 'success'
+    uses: ./.github/workflows/documentation-ci.yml
+    secrets: inherit
