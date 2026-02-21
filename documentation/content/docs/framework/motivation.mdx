@@ -1,0 +1,24 @@
+---
+title: Motivation
+description: One must imagine Sisyphys giggling
+---
+
+my first ink app was an ai chat app. one input field, one scrollable message list, and a slash command menu. it was perfect, and for some time i was in awe of how react was running in the terminal.
+
+that was a while ago. more recently, i noticed that i kept jumping between a bunch of things at work -- jira, github, teams, my notes, and what not. i already use a terminal ide and lazygit, and i wondered if i could bring the rest to my terminal too. so i started building a [terminal dashboard](https://www.npmjs.com/package/clairo) for personal use. git remotes, pull requests, jira views, notes, ai features, all in one place, across tabs and modals.
+
+when building it, i also added this little easter egg: a rubber duck in the bottom right corner that you could toggle on and off with `d`, and it would print out random quips when you did certain things in the tui, like opening a pr or changing the status of a jira ticket. you could hit `q` to get random sardonic quacks as well.
+
+it was incredible. but then one time when i was typing in a log entry or something, i saw the duck quack in the corner of the screen. i thought it was odd because i hadn't done anything to trigger a duck event, but it was a fleeting thought because i was already in the middle of something else. 
+
+it happened a few more times before it finally occured to me that my keypresses in an input field in a completely different part of the app were leaking through to the duck. the other problems i had encountered during development became obvious: how i had to do all sorts of gymnastics to manage focus between the different tabs, panels, and modals, manage navigation state and routing by hand, and deal with outdated ui components incompatible with newer ink versions. 
+
+and i wondered... is everyone doing all this plumbing themselves, everytime they build an ink app?
+
+ink is terrific at what it does, and it offers the perfect set of primitives that anyone can build on top of. but its ecosystem is very much a do-it-yourself one. you set up focus, navigation, and keybindings, and, besides the components that ink ships with, you build the rest of the ui components yourself. 
+
+since my first ink app, i had built a few more tuis with charmbracelet's [bubbletea](https://github.com/charmbracelet/bubbletea), [bubbles](https://github.com/charmbracelet/bubbles), and [lipgloss](https://github.com/charmbracelet/lipgloss), which offer a more batteries-included experience. its elm inspired architecture aligns perfectly with terminal apps, and their ui components allow you to end up with a great looking terminal app without taking on too many styling concerns. and i thought... i want this for ink and react.
+
+something that sits on top of ink and does the groundwork for me, so i can hit the ground running without having to worry about the low level circuitry. this is, essentially, how giggles was born. a framework with sensible defaults and the flexibility to customize and build on top of them whenever you need to. its the structural layer on top of ink, and you use both together to build your app.
+
+remember to giggle while you ink!
