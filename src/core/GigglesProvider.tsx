@@ -6,12 +6,13 @@ import { type GigglesTheme, ThemeProvider } from './theme';
 
 type GigglesProviderProps = {
   theme?: Partial<GigglesTheme>;
+  fullScreen?: boolean;
   children: React.ReactNode;
 };
 
-export function GigglesProvider({ theme, children }: GigglesProviderProps) {
+export function GigglesProvider({ theme, fullScreen, children }: GigglesProviderProps) {
   return (
-    <AlternateScreen>
+    <AlternateScreen fullScreen={fullScreen}>
       <ThemeProvider theme={theme}>
         <FocusProvider>
           <InputProvider>
