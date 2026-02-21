@@ -9,7 +9,7 @@ import PanelExample from '@/components/examples/ui/panel';
 
 A bordered content container with an optional inline title.
 
-Panel renders a rounded border with an optional title integrated into the top edge. It fills the available width by default, or accepts a fixed `width`. Long titles are automatically truncated to fit. An optional `footer` is pinned to the bottom of the panel, useful for status text or counts.
+Panel renders a rounded border with an optional title integrated into the top edge. Without a `width`, it fills available space using `flexGrow`. Pass a fixed number or a percentage string like `"50%"` via the `width` BoxProp to control sizing. Long titles are automatically truncated to fit. An optional `footer` is pinned to the bottom of the panel, useful for status text or counts.
 
 ```tsx title="Basic Usage"
 import { Panel } from 'giggles/ui';
@@ -44,18 +44,22 @@ function FileList() {
       description: 'Title displayed in the top border. Long titles are truncated to fit the panel width.',
       type: 'string',
     },
-    width: {
-      description: 'Fixed width in columns. When omitted, the panel fills available space.',
-      type: 'number',
-    },
-    borderColor: {
-      description: 'Color of the border and title decoration',
-      type: 'string',
-      default: 'theme.borderColor',
-    },
     footer: {
       description: 'Content pinned to the bottom of the panel',
       type: 'React.ReactNode',
+    },
+    width: {
+      description: 'Panel width. Accepts numbers or percentage strings like `"100%"`. Defaults to filling available space.',
+      type: 'number | string',
+    },
+    borderColor: {
+      description: 'Border color of the panel. Also controls the title decoration.',
+      type: 'string',
+      default: 'theme.borderColor',
+    },
+    '...boxProps': {
+      description: 'All Ink BoxProps are accepted and spread onto the root container.',
+      type: 'BoxProps',
     },
   }}
 />
@@ -80,5 +84,13 @@ function FileList() {
 ```tsx title="Fixed Width"
 <Panel title="Sidebar" width={30}>
   <Text>Navigation content</Text>
+</Panel>
+```
+
+### Percentage width
+
+```tsx title="Percentage Width"
+<Panel title="Main" width="100%">
+  <Text>Full-width content</Text>
 </Panel>
 ```

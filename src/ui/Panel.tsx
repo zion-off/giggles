@@ -1,20 +1,33 @@
 import React, { useState } from 'react';
-import { Box, Text, measureElement } from 'ink';
+import { Box, type BoxProps, Text, measureElement } from 'ink';
 import { useTheme } from '../core/theme';
+import { useTerminalSize } from '../terminal';
 
-export type PanelProps = {
+export type PanelProps = Omit<BoxProps, 'children'> & {
   children: React.ReactNode;
   title?: string;
-  width?: number;
-  borderColor?: string;
   footer?: React.ReactNode;
 };
 
-export function Panel({ children, title, width, borderColor, footer }: PanelProps) {
+function parsePercentage(value: string, total: number): number {
+  const pct = parseFloat(value);
+  return isNaN(pct) ? 0 : Math.floor((pct / 100) * total);
+}
+
+export function Panel({ children, title, width, borderColor, footer, ...boxProps }: PanelProps) {
   const theme = useTheme();
-  const color = borderColor ?? theme.borderColor;
-  const [measuredWidth, setMeasuredWidth] = useState(width ?? 0);
-  const effectiveWidth = width ?? measuredWidth;
+  const { columns } = useTerminalSize();
+  const color = (borderColor as string | undefined) ?? theme.borderColor;
+
+  const initialWidth =
+    typeof width === 'number'
+      ? width
+      : typeof width === 'string' && width.endsWith('%')
+      ? parsePercentage(width, columns)
+      : 0;
+
+  const [measuredWidth, setMeasuredWidth] = useState(initialWidth);
+  const effectiveWidth = typeof width === 'number' ? width : measuredWidth;
 
   const renderTopBorder = () => {
     if (effectiveWidth === 0) return null;
@@ -47,9 +60,10 @@ export function Panel({ children, title, width, borderColor, footer }: PanelProp
       ref={(node) => {
         if (node) {
           const { width: w } = measureElement(node);
-          if (w !== measuredWidth) setMeasuredWidth(w);
+          if (w > 0 && w !== measuredWidth) setMeasuredWidth(w);
         }
       }}
+      {...boxProps}
     >
       {renderTopBorder()}
       <Box flexDirection="column" flexGrow={1} borderStyle="round" borderTop={false} borderColor={color} paddingX={1}>
