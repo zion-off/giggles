@@ -74,7 +74,15 @@ function TokenRenderer({ token }: { token: Token }) {
         <Box flexDirection="column" marginY={1}>
           {token.items.map((item: Tokens.ListItem, idx: number) => (
             <Box key={idx}>
-              <Text>{token.ordered ? `${idx + 1}. ` : '• '}</Text>
+              <Text>
+                {token.ordered
+                  ? `${idx + 1}. `
+                  : item.checked === true
+                  ? `${theme.checkedIndicator} `
+                  : item.checked === false
+                  ? `${theme.uncheckedIndicator} `
+                  : `${theme.indicator} `}
+              </Text>
               <Box flexDirection="column">
                 {item.tokens.map((t: Token, i: number) => (
                   <TokenRenderer key={i} token={t} />
@@ -85,11 +93,24 @@ function TokenRenderer({ token }: { token: Token }) {
         </Box>
       );
 
+    case 'html': {
+      const stripped = (token as Tokens.HTML).text.replace(/<[^>]*>/g, '').trim();
+      return stripped ? <Text dimColor>{stripped}</Text> : null;
+    }
+
     case 'table':
       return <TableRenderer token={token as Tokens.Table} />;
 
     case 'hr':
       return <Text dimColor>{'─'.repeat(40)}</Text>;
+
+    case 'text': {
+      const textToken = token as Tokens.Text;
+      if (textToken.tokens && textToken.tokens.length > 0) {
+        return <Text>{renderInline(textToken.tokens, theme)}</Text>;
+      }
+      return <Text>{textToken.text}</Text>;
+    }
 
     case 'space':
       return null;
@@ -157,6 +178,14 @@ function renderInline(tokens: Token[] | undefined, theme: ReturnType<typeof useT
             [Image: {token.text || token.href}]
           </Text>
         );
+
+      case 'escape':
+        return <Text key={idx}>{token.text}</Text>;
+
+      case 'html': {
+        const stripped = (token as Tokens.Tag).text.replace(/<[^>]*>/g, '');
+        return stripped ? <Text key={idx}>{stripped}</Text> : null;
+      }
 
       case 'br':
         return <Text key={idx}>{'\n'}</Text>;
