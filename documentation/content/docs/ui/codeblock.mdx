@@ -6,6 +6,7 @@ description: API reference for the CodeBlock component
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Terminal } from '@/components/terminal';
+import { Swatch } from '@/components/swatch';
 import CodeBlockExample from '@/components/examples/ui/codeblock';
 
 A syntax-highlighted code block powered by Prism.
@@ -67,57 +68,72 @@ function Preview() {
     keyword: {
       description: 'Keywords, tags, booleans',
       type: 'string',
-      default: "'#C678DD'",
+      default: <Swatch color="#C678DD" />,
     },
     string: {
       description: 'Strings, template strings, attribute values',
       type: 'string',
-      default: "'#98C379'",
+      default: <Swatch color="#98C379" />,
     },
     number: {
       description: 'Numeric literals',
       type: 'string',
-      default: "'#D19A66'",
+      default: <Swatch color="#D19A66" />,
     },
     comment: {
       description: 'Comments, docstrings',
       type: 'string',
-      default: "'#5C6370'",
+      default: <Swatch color="#5C6370" />,
     },
     function: {
       description: 'Function names, attribute names',
       type: 'string',
-      default: "'#61AFEF'",
+      default: <Swatch color="#61AFEF" />,
     },
     operator: {
       description: 'Operators, arrows',
       type: 'string',
-      default: "'#56B6C2'",
+      default: <Swatch color="#56B6C2" />,
     },
     punctuation: {
       description: 'Brackets, semicolons, commas',
       type: 'string',
-      default: "'#ABB2BF'",
+      default: <Swatch color="#ABB2BF" />,
     },
     builtin: {
       description: 'Built-in types, constants, symbols',
       type: 'string',
-      default: "'#E5C07B'",
+      default: <Swatch color="#E5C07B" />,
     },
     className: {
-      description: 'Class and type names',
+      description: 'Class, type, and namespace names',
       type: 'string',
-      default: "'#E5C07B'",
+      default: <Swatch color="#E5C07B" />,
+    },
+    variable: {
+      description: 'Variables',
+      type: 'string',
+      default: <Swatch color="#E06C75" />,
+    },
+    property: {
+      description: 'Object properties',
+      type: 'string',
+      default: <Swatch color="#E06C75" />,
+    },
+    regex: {
+      description: 'Regular expressions',
+      type: 'string',
+      default: <Swatch color="#98C379" />,
     },
     inserted: {
       description: 'Inserted lines in diffs',
       type: 'string',
-      default: "'#98C379'",
+      default: <Swatch color="#98C379" />,
     },
     deleted: {
       description: 'Deleted lines in diffs',
       type: 'string',
-      default: "'#E06C75'",
+      default: <Swatch color="#E06C75" />,
     },
   }}
 />

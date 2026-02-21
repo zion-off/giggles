@@ -5,15 +5,16 @@ import { CodeBlock } from 'giggles/ui';
 import { Box, Text } from 'ink-web';
 import 'prismjs/components/prism-typescript';
 
-const code = `interface User {
-  name: string;
-  age: number;
-}
+const code = `
+import { CodeBlock } from 'giggles/ui';
+import 'prismjs/components/prism-typescript';
 
-function greet(user: User): string {
-  const message = \`Hello, \${user.name}!\`;
-  return message;
-}`;
+function Preview() {
+  const code = \`const x: number = 42;\`;
+
+  return <CodeBlock language="typescript">{code}</CodeBlock>;
+}
+`;
 
 function App() {
   return (

@@ -4,6 +4,7 @@ description: Framework API reference
 ---
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Swatch } from '@/components/swatch';
 
 ## GigglesProvider
 
@@ -72,52 +73,52 @@ render(
     accentColor: {
       description: 'Color for highlighted items, active indicators, and scroll elements',
       type: 'string',
-      default: "'#6B9FD4'",
+      default: <Swatch color="#6B9FD4" />,
     },
     borderColor: {
       description: 'Color for component borders (Modal, etc.)',
       type: 'string',
-      default: "'#5C5C5C'",
+      default: <Swatch color="#5C5C5C" />,
     },
     selectedColor: {
       description: 'Color for checked/selected state indicators',
       type: 'string',
-      default: "'#8FBF7F'",
+      default: <Swatch color="#8FBF7F" />,
     },
     hintColor: {
       description: 'Color for key labels in CommandPalette hints',
       type: 'string',
-      default: "'#8A8A8A'",
+      default: <Swatch color="#8A8A8A" />,
     },
     hintDimColor: {
       description: 'Color for command names and separators in CommandPalette hints',
       type: 'string',
-      default: "'#5C5C5C'",
+      default: <Swatch color="#5C5C5C" />,
     },
     hintHighlightColor: {
       description: 'Color for the highlighted key label in interactive CommandPalette',
       type: 'string',
-      default: "'#D4D4D4'",
+      default: <Swatch color="#D4D4D4" />,
     },
     hintHighlightDimColor: {
       description: 'Color for the highlighted command name in interactive CommandPalette',
       type: 'string',
-      default: "'#A0A0A0'",
+      default: <Swatch color="#A0A0A0" />,
     },
     indicator: {
       description: 'Character used for focus indicators',
       type: 'string',
-      default: "'▸'",
+      default: "'▶'",
     },
     checkedIndicator: {
       description: 'Character shown for selected items in MultiSelect',
       type: 'string',
-      default: "'✓'",
+      default: "'▣'",
     },
     uncheckedIndicator: {
       description: 'Character shown for unselected items in MultiSelect',
       type: 'string',
-      default: "'○'",
+      default: "'◻'",
     },
   }}
 />
