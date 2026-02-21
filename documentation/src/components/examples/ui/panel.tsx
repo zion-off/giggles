@@ -18,7 +18,7 @@ function App() {
 
 export default function PanelExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <App />
     </GigglesProvider>
   );

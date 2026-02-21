@@ -15,7 +15,7 @@ function MenuItem({ label }: { label: string }) {
 
 export default function NavigableMenuExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
         <Text bold>Menu</Text>
         <FocusGroup direction="vertical">

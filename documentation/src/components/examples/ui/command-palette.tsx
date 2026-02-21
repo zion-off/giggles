@@ -59,7 +59,7 @@ function App() {
 
 export default function CommandPaletteExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <App />
     </GigglesProvider>
   );

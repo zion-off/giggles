@@ -21,7 +21,7 @@ function Demo() {
 
 export default function ConfirmExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Demo />
     </GigglesProvider>
   );

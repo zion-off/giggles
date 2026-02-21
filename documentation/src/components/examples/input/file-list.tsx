@@ -32,7 +32,7 @@ function FileList() {
 
 export default function FileListExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <FileList />
     </GigglesProvider>
   );

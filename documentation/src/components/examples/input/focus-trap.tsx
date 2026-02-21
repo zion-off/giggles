@@ -50,7 +50,7 @@ function App() {
 
 export default function FocusTrapExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <App />
     </GigglesProvider>
   );

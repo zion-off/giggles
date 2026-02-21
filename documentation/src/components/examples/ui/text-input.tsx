@@ -22,7 +22,7 @@ function Form() {
 
 export default function TextInputExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Form />
     </GigglesProvider>
   );
