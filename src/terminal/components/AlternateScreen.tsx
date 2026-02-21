@@ -4,6 +4,15 @@ import { useTerminalSize } from '../hooks/useTerminalSize';
 
 const isTTY = typeof process !== 'undefined' && process.stdout?.write;
 
+function FullScreenBox({ children }: { children: ReactNode }) {
+  const { rows, columns } = useTerminalSize();
+  return (
+    <Box height={rows} width={columns}>
+      {children}
+    </Box>
+  );
+}
+
 type AlternateScreenProps = {
   children: ReactNode;
   fullScreen?: boolean;
@@ -11,7 +20,6 @@ type AlternateScreenProps = {
 
 export function AlternateScreen({ children, fullScreen = true }: AlternateScreenProps) {
   const [ready, setReady] = useState(!isTTY);
-  const { rows, columns } = useTerminalSize();
 
   useEffect(() => {
     if (!isTTY) return;
@@ -28,11 +36,5 @@ export function AlternateScreen({ children, fullScreen = true }: AlternateScreen
 
   if (!ready) return null;
 
-  return fullScreen ? (
-    <Box height={rows} width={columns}>
-      {children}
-    </Box>
-  ) : (
-    <>{children}</>
-  );
+  return fullScreen ? <FullScreenBox>{children}</FullScreenBox> : <>{children}</>;
 }

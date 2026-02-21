@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Box, type BoxProps, Text, measureElement } from 'ink';
 import { useTheme } from '../core/theme';
-import { useTerminalSize } from '../terminal';
 
 export type PanelProps = Omit<BoxProps, 'children'> & {
   children: React.ReactNode;
@@ -9,24 +8,11 @@ export type PanelProps = Omit<BoxProps, 'children'> & {
   footer?: React.ReactNode;
 };
 
-function parsePercentage(value: string, total: number): number {
-  const pct = parseFloat(value);
-  return isNaN(pct) ? 0 : Math.floor((pct / 100) * total);
-}
-
 export function Panel({ children, title, width, borderColor, footer, ...boxProps }: PanelProps) {
   const theme = useTheme();
-  const { columns } = useTerminalSize();
   const color = (borderColor as string | undefined) ?? theme.borderColor;
 
-  const initialWidth =
-    typeof width === 'number'
-      ? width
-      : typeof width === 'string' && width.endsWith('%')
-      ? parsePercentage(width, columns)
-      : 0;
-
-  const [measuredWidth, setMeasuredWidth] = useState(initialWidth);
+  const [measuredWidth, setMeasuredWidth] = useState(typeof width === 'number' ? width : 0);
   const effectiveWidth = typeof width === 'number' ? width : measuredWidth;
 
   const renderTopBorder = () => {
