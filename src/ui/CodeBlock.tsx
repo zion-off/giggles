@@ -13,6 +13,9 @@ export type TokenColors = {
   punctuation: string;
   builtin: string;
   className: string;
+  variable: string;
+  property: string;
+  regex: string;
   inserted: string;
   deleted: string;
 };
@@ -27,6 +30,9 @@ const defaultTokenColors: TokenColors = {
   punctuation: '#ABB2BF',
   builtin: '#E5C07B',
   className: '#E5C07B',
+  variable: '#E06C75',
+  property: '#E06C75',
+  regex: '#98C379',
   inserted: '#98C379',
   deleted: '#E06C75'
 };
@@ -116,9 +122,31 @@ function getTokenColor(type: string, colors: TokenColors): string | undefined {
       return colors.builtin;
     case 'class-name':
     case 'maybe-class-name':
+    case 'namespace':
       return colors.className;
+    case 'variable':
+      return colors.variable;
+    case 'property':
+    case 'string-property':
+      return colors.property;
+    case 'regex':
+    case 'regex-source':
+    case 'regex-delimiter':
+    case 'regex-flags':
+      return colors.regex;
+    case 'url':
+      return colors.string;
     case 'attr-name':
       return colors.function;
+    case 'entity':
+      return colors.builtin;
+    case 'atrule':
+      return colors.keyword;
+    case 'selector':
+      return colors.className;
+    case 'bold':
+    case 'italic':
+      return colors.keyword;
     case 'inserted-sign':
     case 'inserted':
       return colors.inserted;

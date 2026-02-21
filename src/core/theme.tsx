@@ -21,9 +21,9 @@ const defaultTheme: GigglesTheme = {
   hintDimColor: '#5C5C5C',
   hintHighlightColor: '#D4D4D4',
   hintHighlightDimColor: '#A0A0A0',
-  indicator: '▸',
-  checkedIndicator: '✓',
-  uncheckedIndicator: '○'
+  indicator: '▶',
+  checkedIndicator: '▣',
+  uncheckedIndicator: '◻'
 };
 
 const ThemeContext = createContext<GigglesTheme>(defaultTheme);
