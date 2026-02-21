@@ -1,19 +1,16 @@
 import React from 'react';
-import { Box, Text } from 'ink';
+import { Box, type BoxProps, Text } from 'ink';
 import { useFocus } from '../core/focus';
 import { FocusTrap, useKeybindings } from '../core/input';
 import { useTheme } from '../core/theme';
 
-type BorderStyle = 'single' | 'double' | 'round' | 'bold' | 'singleDouble' | 'doubleSingle' | 'classic' | 'arrow';
-
-type ModalProps = {
+type ModalProps = Omit<BoxProps, 'children'> & {
   children: React.ReactNode;
   onClose: () => void;
   title?: string;
-  borderStyle?: BorderStyle;
 };
 
-function ModalInner({ children, onClose, title, borderStyle = 'round' }: ModalProps) {
+function ModalInner({ children, onClose, title, ...boxProps }: ModalProps) {
   const focus = useFocus();
   const theme = useTheme();
 
@@ -25,9 +22,10 @@ function ModalInner({ children, onClose, title, borderStyle = 'round' }: ModalPr
     <Box
       flexDirection="column"
       alignSelf="flex-start"
-      borderStyle={borderStyle}
+      borderStyle="round"
       borderColor={theme.borderColor}
       paddingX={1}
+      {...boxProps}
     >
       {title != null && <Text bold>{title}</Text>}
       {children}
@@ -35,10 +33,10 @@ function ModalInner({ children, onClose, title, borderStyle = 'round' }: ModalPr
   );
 }
 
-export function Modal({ children, onClose, title, borderStyle }: ModalProps) {
+export function Modal({ children, onClose, title, ...boxProps }: ModalProps) {
   return (
     <FocusTrap>
-      <ModalInner onClose={onClose} title={title} borderStyle={borderStyle}>
+      <ModalInner onClose={onClose} title={title} {...boxProps}>
         {children}
       </ModalInner>
     </FocusTrap>

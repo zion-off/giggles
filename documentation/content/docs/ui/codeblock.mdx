@@ -49,14 +49,28 @@ function Preview() {
       description: 'Prism language identifier (e.g. "typescript", "python", "rust"). The grammar must be imported separately.',
       type: 'string',
     },
-    showBorder: {
-      description: 'Whether to render a border around the code block',
-      type: 'boolean',
-      default: 'true',
-    },
     tokenColors: {
       description: 'Override individual token colors',
       type: 'Partial\<TokenColors\>',
+    },
+    borderStyle: {
+      description: 'Border style of the root container.',
+      type: 'string',
+      default: '"round"',
+    },
+    paddingX: {
+      description: 'Horizontal padding inside the root container.',
+      type: 'number',
+      default: '1',
+    },
+    borderColor: {
+      description: 'Border color of the root container.',
+      type: 'string',
+      default: 'theme.borderColor',
+    },
+    '...boxProps': {
+      description: 'All Ink BoxProps are accepted and spread onto the root container.',
+      type: 'BoxProps',
     },
   }}
 />
@@ -143,7 +157,7 @@ function Preview() {
 ### Without border
 
 ```tsx title="Borderless"
-<CodeBlock language="javascript" showBorder={false}>
+<CodeBlock language="javascript" borderStyle={undefined}>
   {`console.log("hello");`}
 </CodeBlock>
 ```

@@ -61,9 +61,28 @@ function App() {
       type: 'string',
     },
     borderStyle: {
-      description: 'Border style for the modal container',
-      type: "'single' | 'double' | 'round' | 'bold' | 'singleDouble' | 'doubleSingle' | 'classic' | 'arrow'",
-      default: "'round'",
+      description: 'Border style of the modal container.',
+      type: 'string',
+      default: '"round"',
+    },
+    alignSelf: {
+      description: 'Aligns the modal along the cross axis.',
+      type: 'string',
+      default: '"flex-start"',
+    },
+    paddingX: {
+      description: 'Horizontal padding inside the modal container.',
+      type: 'number',
+      default: '1',
+    },
+    borderColor: {
+      description: 'Border color of the modal container.',
+      type: 'string',
+      default: 'theme.borderColor',
+    },
+    '...boxProps': {
+      description: 'All Ink BoxProps are accepted and spread onto the root container.',
+      type: 'BoxProps',
     },
   }}
 />

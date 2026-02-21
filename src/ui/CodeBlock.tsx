@@ -1,7 +1,7 @@
-import Prism from 'prismjs';
 import React from 'react';
-import { Box, Text } from 'ink';
+import { Box, type BoxProps, Text } from 'ink';
 import { useTheme } from '../core/theme';
+import Prism from 'prismjs';
 
 export type TokenColors = {
   keyword: string;
@@ -37,30 +37,21 @@ const defaultTokenColors: TokenColors = {
   deleted: '#E06C75'
 };
 
-type CodeBlockProps = {
+type CodeBlockProps = Omit<BoxProps, 'children'> & {
   children: string;
   language?: string;
-  showBorder?: boolean;
   tokenColors?: Partial<TokenColors>;
 };
 
-export function CodeBlock({ children, language, showBorder = true, tokenColors }: CodeBlockProps) {
+export function CodeBlock({ children, language, tokenColors, ...boxProps }: CodeBlockProps) {
   const theme = useTheme();
   const colors = { ...defaultTokenColors, ...tokenColors };
   const grammar = language ? Prism.languages[language] : undefined;
 
   const content = grammar ? renderTokens(Prism.tokenize(children, grammar), colors) : <Text>{children}</Text>;
 
-  if (!showBorder) {
-    return (
-      <Box>
-        <Text>{content}</Text>
-      </Box>
-    );
-  }
-
   return (
-    <Box paddingX={1} borderStyle="single" borderColor={theme.borderColor}>
+    <Box paddingX={1} borderStyle="round" borderColor={theme.borderColor} {...boxProps}>
       <Text>{content}</Text>
     </Box>
   );
