@@ -16,7 +16,7 @@ function Tab({ label }: { label: string }) {
 
 export default function HorizontalTabsExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
         <Text bold>Tabs</Text>
         <Box>

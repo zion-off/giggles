@@ -40,7 +40,7 @@ function Form() {
 
 export default function ControlledFocusExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Form />
     </GigglesProvider>
   );

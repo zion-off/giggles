@@ -25,7 +25,7 @@ function App() {
 
 export default function BadgeExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <App />
     </GigglesProvider>
   );

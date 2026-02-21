@@ -46,7 +46,7 @@ function App() {
 
 export default function SpinnerExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <App />
     </GigglesProvider>
   );

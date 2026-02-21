@@ -36,7 +36,7 @@ function Demo() {
 
 export default function AutocompleteExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Demo />
     </GigglesProvider>
   );

@@ -54,7 +54,7 @@ function Detail() {
 
 export default function BasicRouterExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Router initialScreen="home">
         <Screen name="home" component={Home} />
         <Screen name="settings" component={Settings} />

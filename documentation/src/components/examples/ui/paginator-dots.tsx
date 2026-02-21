@@ -23,7 +23,7 @@ function Demo() {
 
 export default function PaginatorDotsExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Demo />
     </GigglesProvider>
   );

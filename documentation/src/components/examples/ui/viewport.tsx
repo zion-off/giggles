@@ -35,7 +35,7 @@ function Demo() {
 
 export default function ViewportExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Demo />
     </GigglesProvider>
   );

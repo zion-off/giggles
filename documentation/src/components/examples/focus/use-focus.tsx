@@ -23,7 +23,7 @@ function MenuItem({ label }: { label: string }) {
 
 export default function UseFocusExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Box flexDirection="column" paddingX={2} paddingY={1}>
         <Text bold>My Menu</Text>
         <FocusGroup direction="vertical">

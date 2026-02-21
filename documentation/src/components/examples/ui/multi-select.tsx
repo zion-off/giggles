@@ -25,7 +25,7 @@ function Demo() {
 
 export default function MultiSelectExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Demo />
     </GigglesProvider>
   );

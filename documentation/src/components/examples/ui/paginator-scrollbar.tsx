@@ -23,7 +23,7 @@ function Demo() {
 
 export default function PaginatorScrollbarExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Demo />
     </GigglesProvider>
   );

@@ -23,7 +23,7 @@ function Demo() {
 
 export default function PaginatorCounterExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Demo />
     </GigglesProvider>
   );

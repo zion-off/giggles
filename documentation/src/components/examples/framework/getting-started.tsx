@@ -26,7 +26,7 @@ function Demo() {
 
 export default function GettingStartedExample() {
   return (
-    <GigglesProvider>
+    <GigglesProvider fullScreen={false}>
       <Demo />
     </GigglesProvider>
   );
