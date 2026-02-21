@@ -30,8 +30,8 @@ function Preview() {
   <CodeBlockExample />
 </Terminal>
 
-<Callout>
-  Import language grammars after importing CodeBlock (or any `giggles/ui` component) so that the Prism core is loaded first.
+<Callout type="warn">
+  Import language grammars after any `giggles/ui` import so that `prismjs` is initialized before grammars attempt to register themselves. The formatter setup in `create-giggles-app` automatically handles this ordering for you.
 </Callout>
 
 ## API Reference
