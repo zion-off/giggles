@@ -10,7 +10,7 @@
   "jsxSingleQuote": false,
   "bracketSameLine": false,
   "endOfLine": "lf",
-  "importOrder": ["^react$", "^react/(.*)$", "^ink", "^@/(.*)$", "^[./]"],
+  "importOrder": ["^react$", "^react/(.*)$", "^ink", "^giggles$", "^giggles/(.*)$", "^@/(.*)$", "^[./]", "^prism$", "^prism/(.*)$"],
   "importOrderSeparation": false,
   "importOrderSortSpecifiers": true,
   "plugins": ["@trivago/prettier-plugin-sort-imports"]
