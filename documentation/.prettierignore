@@ -1,7 +1,9 @@
 node_modules/
 .next/
+.open-next/
 out/
 build/
 .source/
 content/
+public/og/
 pnpm-lock.yaml
