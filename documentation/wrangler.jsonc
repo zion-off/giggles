@@ -14,11 +14,5 @@
       "pattern": "giggles.zzzzion.com",
       "custom_domain": true
     }
-  ],
-  "observability": {
-    "logs": {
-      "enabled": false,
-      "invocation_logs": true
-    }
-  }
+  ]
 }
