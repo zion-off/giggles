@@ -9,7 +9,7 @@ import React, {
   useState
 } from 'react';
 import { Box, DOMElement, measureElement } from 'ink';
-import { useFocus } from '../core/focus';
+import { useFocusNode } from '../core/focus';
 import { useKeybindings } from '../core/input';
 
 function MeasurableItem({
@@ -59,7 +59,7 @@ export const Viewport = forwardRef<ViewportRef, ViewportProps>(function Viewport
   { children, height, keybindings: enableKeybindings = true, footer },
   ref
 ) {
-  const focus = useFocus();
+  const focus = useFocusNode();
   const [scrollOffset, setScrollOffset] = useState(0);
 
   const contentHeightRef = useRef(0);

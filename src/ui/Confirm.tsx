@@ -1,5 +1,5 @@
 import { Text } from 'ink';
-import { useFocus } from '../core/focus';
+import { useFocusNode } from '../core/focus';
 import { useKeybindings } from '../core/input';
 
 type ConfirmProps = {
@@ -9,7 +9,7 @@ type ConfirmProps = {
 };
 
 export function Confirm({ message, defaultValue = true, onSubmit }: ConfirmProps) {
-  const focus = useFocus();
+  const focus = useFocusNode();
 
   useKeybindings(focus, {
     y: () => onSubmit(true),

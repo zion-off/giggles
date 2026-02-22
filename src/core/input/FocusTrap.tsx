@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useFocus } from '../focus';
+import { useFocusNode } from '../focus';
 import { FocusNodeContext, useFocusContext } from '../focus/FocusContext';
 import { useInputContext } from './InputContext';
 
@@ -8,7 +8,7 @@ type FocusTrapProps = {
 };
 
 export function FocusTrap({ children }: FocusTrapProps) {
-  const { id } = useFocus();
+  const { id } = useFocusNode();
   const { setTrap, clearTrap } = useInputContext();
   const { focusFirstChild, getFocusedId, focusNode } = useFocusContext();
   const previousFocusRef = useRef<string | null>(getFocusedId());

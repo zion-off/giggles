@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Text } from 'ink';
-import { useFocus } from '../core/focus';
+import { useFocusNode } from '../core/focus';
 import { FocusTrap, useKeybindingRegistry, useKeybindings } from '../core/input';
 import type { Key, RegisteredKeybinding } from '../core/input';
 import { useTheme } from '../core/theme';
@@ -53,7 +53,7 @@ function fuzzyMatch(name: string, query: string): boolean {
 }
 
 function Inner({ onClose, render }: { onClose: () => void; render?: CommandPaletteProps['render'] }) {
-  const focus = useFocus();
+  const focus = useFocusNode();
   const theme = useTheme();
 
   const [query, setQuery] = useState('');
