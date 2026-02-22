@@ -18,7 +18,7 @@ inspired by the [charmbracelet](https://github.com/charmbracelet) ecosystem, it 
 - built-in keybinding registry so your app can always show users what keys do what, in the current context — context-aware and accessible via a hook
 - a component library covering most TUI use cases, from text inputs and autocomplete to virtual lists for large datasets — with sensible defaults and render props for full customization
 - render markdown in the terminal, with full formatting and syntax-highlighted code block and diff support
-- hand off terminal control to external programs like `vim` or `less` and reclaim it cleanly when they exit (similar to `tea.ExecProcess` from charmbracelet/bubbletea)
+- hand off terminal control to external programs like `vim` or `less` and reclaim it cleanly when they exit, or spawn processes and stream their output directly into your UI
 - a consistent look out of the box, customizable from a single theme object
 
 ## your first TUI
