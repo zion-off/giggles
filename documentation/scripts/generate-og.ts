@@ -3,47 +3,103 @@ import { dirname, join, relative } from 'node:path';
 import { jsx, jsxs } from 'react/jsx-runtime';
 import { ImageResponse } from 'next/og';
 
-// Inlined from fumadocs-ui/og to avoid ESM/CJS interop issues in a build script
-function generate({
-  title,
-  description,
-  site,
-  primaryColor = 'rgba(255,150,255,0.3)',
-  primaryTextColor = 'rgb(255,150,255)'
-}: {
-  title: string;
-  description?: string;
-  site?: string;
-  primaryColor?: string;
-  primaryTextColor?: string;
-}) {
+// Mondrian palette (matches global.css theme variables)
+const M = {
+  red: '#e8180a',
+  blue: '#0d5fc9',
+  yellow: '#f9ce1f',
+  black: '#404040',
+  bg: '#eeeae2', // hsl(45, 20%, 92%)
+  fg: '#333333', // hsl(0, 0%, 20%)
+  muted: '#777777'
+};
+
+function ColorStrip({ weights }: { weights: [string, number][] }) {
+  return jsxs('div', {
+    style: { display: 'flex', width: '100%', height: '100%' },
+    children: weights.map(([color, flex], i) =>
+      jsx('div', { style: { display: 'flex', flex, backgroundColor: color } }, i)
+    )
+  });
+}
+
+// Fetches a font from Google Fonts as an ArrayBuffer (requests TTF via legacy UA)
+async function loadGoogleFont(family: string, weight: number): Promise<ArrayBuffer> {
+  const css = await fetch(
+    `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&display=swap`,
+    { headers: { 'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' } }
+  ).then((r) => r.text());
+  const url = css.match(/src: url\((.+?)\)/)?.[1];
+  if (!url) throw new Error(`Could not find font URL for ${family} ${weight}`);
+  return fetch(url).then((r) => r.arrayBuffer());
+}
+
+function generate({ title, description, site }: { title: string; description?: string; site?: string }) {
+  // Left column: red / blue / yellow blocks
+  const leftBlocks: [string, number][] = [
+    [M.red, 2],
+    [M.black, 0.15],
+    [M.blue, 3],
+    [M.black, 0.15],
+    [M.yellow, 2]
+  ];
+
   return jsxs('div', {
     style: {
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'row',
       width: '100%',
       height: '100%',
-      color: 'white',
-      padding: '4rem',
-      backgroundColor: '#0c0c0c',
-      backgroundImage: `linear-gradient(to top right, ${primaryColor}, transparent)`
+      backgroundColor: M.bg,
+      fontFamily: 'Geist Mono'
     },
     children: [
+      // Left Mondrian column
+      jsx('div', {
+        style: { display: 'flex', flexDirection: 'column', width: '10px', flexShrink: 0 },
+        children: jsx(ColorStrip, { weights: leftBlocks })
+      }),
+      // 1px black separator
+      jsx('div', { style: { display: 'flex', width: '1px', backgroundColor: M.black, flexShrink: 0 } }),
+
+      // Content area
       jsxs('div', {
         style: {
           display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: '16px',
-          marginBottom: '12px',
-          color: primaryTextColor
+          flexDirection: 'column',
+          flex: 1,
+          padding: '52px 72px',
+          justifyContent: 'space-between'
         },
-        children: [jsx('p', { style: { fontSize: '56px', fontWeight: 600 }, children: site })]
-      }),
-      jsx('p', { style: { fontWeight: 800, fontSize: '82px' }, children: title }),
-      jsx('p', {
-        style: { fontSize: '52px', color: 'rgba(240,240,240,0.8)' },
-        children: description
+        children: [
+          // Site name
+          jsxs('div', {
+            style: { display: 'flex', alignItems: 'center', gap: '10px' },
+            children: [
+              jsx('span', { style: { fontSize: '28px', color: M.fg, fontFamily: 'Barriecito' }, children: site }),
+              jsx('span', { style: { fontSize: '16px', color: M.red, fontFamily: 'Geist Mono' }, children: '█' })
+            ]
+          }),
+
+          // Title + description
+          jsxs('div', {
+            style: { display: 'flex', flexDirection: 'column', gap: '20px' },
+            children: [
+              jsx('p', {
+                style: { fontSize: '72px', fontWeight: 800, color: M.fg, lineHeight: 1.1, margin: 0 },
+                children: title
+              }),
+              description &&
+                jsx('p', {
+                  style: { fontSize: '32px', color: M.muted, margin: 0, lineHeight: 1.4 },
+                  children: description
+                })
+            ]
+          }),
+
+          // Spacer
+          jsx('div', { style: { display: 'flex' } })
+        ]
       })
     ]
   });
@@ -93,6 +149,18 @@ function fileToSlugSegments(filePath: string): string[] {
 }
 
 async function main() {
+  const [barriecito, geistMono400, geistMono800] = await Promise.all([
+    loadGoogleFont('Barriecito', 400),
+    loadGoogleFont('Geist Mono', 400),
+    loadGoogleFont('Geist Mono', 800)
+  ]);
+
+  const fonts = [
+    { name: 'Barriecito', data: barriecito, weight: 400 as const, style: 'normal' as const },
+    { name: 'Geist Mono', data: geistMono400, weight: 400 as const, style: 'normal' as const },
+    { name: 'Geist Mono', data: geistMono800, weight: 800 as const, style: 'normal' as const }
+  ];
+
   const files = getMdxFiles(contentDir);
   let count = 0;
 
@@ -102,9 +170,11 @@ async function main() {
     if (!fm.title) continue;
 
     const slugSegments = fileToSlugSegments(file);
+    // @ts-ignore — fonts is valid but lost through next/og's re-export type chain
     const response = new ImageResponse(generate({ title: fm.title, description: fm.description, site: 'giggles' }), {
       width: 1200,
-      height: 630
+      height: 630,
+      fonts
     });
 
     const buffer = await response.arrayBuffer();

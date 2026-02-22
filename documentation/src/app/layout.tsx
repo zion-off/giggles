@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Barriecito, Geist_Mono } from 'next/font/google';
 import './global.css';
 import { Provider } from './provider';
@@ -11,6 +12,10 @@ const barriecito = Barriecito({
   subsets: ['latin'],
   variable: '--font-barriecito'
 });
+
+export const metadata: Metadata = {
+  metadataBase: new URL('https://giggles.zzzzion.com')
+};
 
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
