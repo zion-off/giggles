@@ -29,8 +29,8 @@ async function loadGoogleFont(family: string, weight: number): Promise<ArrayBuff
     `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&display=swap`,
     { headers: { 'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' } }
   ).then((r) => r.text());
-  const url = css.match(/src: url\((.+?)\)/)?.[1];
-  if (!url) throw new Error(`Could not find font URL for ${family} ${weight}`);
+  const url = css.match(/url\((.+?)\)\s+format\(['"]truetype['"]\)/)?.[1];
+  if (!url) throw new Error(`Could not find TTF font URL for ${family} ${weight}`);
   return fetch(url).then((r) => r.arrayBuffer());
 }
 
