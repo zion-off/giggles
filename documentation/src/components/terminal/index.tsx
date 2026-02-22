@@ -39,7 +39,7 @@ export function Terminal({ children }: { children: ReactElement }) {
             />
             <button
               type="button"
-              aria-label={active ? 'Loading' : 'Try it yourself'}
+              aria-label={active ? 'Loading' : 'Run demo'}
               disabled={active}
               onClick={() => setActive(true)}
               className="size-3 rounded-full bg-[#28C840] cursor-pointer disabled:cursor-not-allowed transition-opacity hover:brightness-90"
@@ -66,7 +66,7 @@ export function Terminal({ children }: { children: ReactElement }) {
             disabled={active}
             className="text-xs px-2 py-1 rounded bg-fd-primary text-fd-primary-foreground font-medium hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50 disabled:cursor-wait"
           >
-            {active ? 'Loading…' : 'Try it yourself'}
+            {active ? 'Loading…' : 'Run demo'}
           </button>
         )}
       </div>
