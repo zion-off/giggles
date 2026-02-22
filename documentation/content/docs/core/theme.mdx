@@ -1,0 +1,108 @@
+---
+title: Theme
+description: API reference for theming
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Swatch } from '@/components/swatch';
+
+## ThemeProvider
+
+Override theme values for a subtree. Nest multiple providers to apply different themes to different parts of the app. Merges with the parent theme, so you only need to specify the values you want to change.
+
+```tsx title="Nested Themes"
+import { GigglesProvider, ThemeProvider } from 'giggles';
+
+render(
+  <GigglesProvider theme={{ accentColor: '#6B9FD4' }}>
+    <Sidebar />
+    <ThemeProvider theme={{ accentColor: '#C97066' }}>
+      <MainPanel />
+    </ThemeProvider>
+  </GigglesProvider>
+);
+```
+
+<TypeTable
+  type={{
+    theme: {
+      description: 'Partial theme overrides. Merged with the parent theme.',
+      type: 'Partial<GigglesTheme>',
+    },
+    children: {
+      description: 'Components that inherit this theme',
+      type: 'React.ReactNode',
+      required: true,
+    },
+  }}
+/>
+
+## GigglesTheme
+
+<TypeTable
+  type={{
+    accentColor: {
+      description: 'Color for highlighted items, active indicators, and scroll elements',
+      type: 'string',
+      default: <Swatch color="#6B9FD4" />,
+    },
+    borderColor: {
+      description: 'Color for component borders (Modal, etc.)',
+      type: 'string',
+      default: <Swatch color="#5C5C5C" />,
+    },
+    selectedColor: {
+      description: 'Color for checked/selected state indicators',
+      type: 'string',
+      default: <Swatch color="#8FBF7F" />,
+    },
+    hintColor: {
+      description: 'Color for key labels in CommandPalette hints',
+      type: 'string',
+      default: <Swatch color="#8A8A8A" />,
+    },
+    hintDimColor: {
+      description: 'Color for command names and separators in CommandPalette hints',
+      type: 'string',
+      default: <Swatch color="#5C5C5C" />,
+    },
+    hintHighlightColor: {
+      description: 'Color for the highlighted key label in interactive CommandPalette',
+      type: 'string',
+      default: <Swatch color="#D4D4D4" />,
+    },
+    hintHighlightDimColor: {
+      description: 'Color for the highlighted command name in interactive CommandPalette',
+      type: 'string',
+      default: <Swatch color="#A0A0A0" />,
+    },
+    indicator: {
+      description: 'Character used for focus indicators',
+      type: 'string',
+      default: "'▶'",
+    },
+    checkedIndicator: {
+      description: 'Character shown for selected items in MultiSelect',
+      type: 'string',
+      default: "'▣'",
+    },
+    uncheckedIndicator: {
+      description: 'Character shown for unselected items in MultiSelect',
+      type: 'string',
+      default: "'◻'",
+    },
+  }}
+/>
+
+## useTheme
+
+Returns the current `GigglesTheme` from the nearest `ThemeProvider`. Use this in custom `render` functions to stay consistent with the app theme.
+
+```tsx title="Usage"
+import { useTheme } from 'giggles';
+
+function CustomOption({ highlighted }: { highlighted: boolean }) {
+  const theme = useTheme();
+  return <Text color={highlighted ? theme.accentColor : undefined}>...</Text>;
+}
+```

@@ -1,11 +1,13 @@
 {
   "title": "Core",
   "description": "Focus, input, routing",
-  "icon": "Blocks",
+  "icon": "ToyBrick",
   "root": true,
   "pages": [
+    "giggles-provider",
     "focus",
     "input",
-    "router"
+    "router",
+    "theme"
   ]
 }

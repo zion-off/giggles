@@ -1,13 +1,12 @@
 {
   "title": "Framework",
   "description": "Getting started guide",
-  "icon": "BookOpen",
+  "icon": "Layers",
   "root": true,
   "defaultOpen": true,
   "pages": [
     "index",
     "motivation",
-    "core-concepts",
-    "api-reference"
+    "core-concepts"
   ]
 }

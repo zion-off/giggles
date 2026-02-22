@@ -1,53 +1,85 @@
 ---
 title: Core Concepts
-description: Understanding how giggles works
+description: How giggles works under the hood
 ---
+
+giggles is built around three systems that work together: the **focus tree**, the **input router**, and the **screen router**. Understanding how they relate makes the rest of the framework predictable.
 
 ## GigglesProvider
 
-All giggles applications must be wrapped in `GigglesProvider`. This root provider combines the focus and input systems, setting up the necessary context for your entire application.
+`GigglesProvider` is the root of every giggles app. It composes four providers in order:
 
-```tsx title="Basic Setup"
-import { render } from 'ink';
-import { GigglesProvider } from 'giggles';
-
-render(
-  <GigglesProvider>
-    <App />
-  </GigglesProvider>
-);
+```
+AlternateScreen → ThemeProvider → FocusProvider → InputProvider → InputRouter
 ```
 
-Without this provider, none of the focus or input features will work. The `Router` is composed separately, giving you control over where and whether to use screen navigation.
+`FocusProvider` and `InputProvider` are separate contexts — the focus tree tracks which component is active, while the input context stores the keybindings registered to each node. `InputRouter` sits at the top of your component tree and holds the single `useInput` listener that dispatches all keypresses. Nothing in your app calls `useInput` directly.
 
-[API Reference →](/framework/api-reference)
+## The Focus Tree
 
-## Focus System
+The focus system maintains a tree of nodes that mirrors your component tree. Each node has an `id`, a `parentId`, and a list of `childrenIds`. The tree is stored in a ref (not state) so structural changes don't cause re-renders — only the `focusedId` is state.
 
-giggles manages focus as a **tree structure**. Components can be focusable, and `FocusGroup` creates navigable lists. Focus moves through the tree based on your layout.
+### How nodes register
 
-- **FocusGroup**: Container for navigable items (horizontal or vertical)
-- **useFocus()**: Hook to access focus state and methods
-- **useFocusState()**: Observer hook for focus changes
+`useFocus()` generates a stable ID with React's `useId()`, then registers a node in the tree on mount and unregisters it on unmount:
 
-[Learn more: Focus →](/core/focus)
+```tsx
+const focus = useFocus();
+// focus.id — the node's ID
+// focus.focused — whether this node is currently focused
+// focus.focus() — imperatively move focus to this node
+```
 
-## Input Handling
+The parent ID is read from `FocusNodeContext` — a context that each focusable component sets for its subtree. This is how the tree knows who belongs to whom without any explicit prop passing.
 
-Input events flow through the focus tree. The focused component receives input first, then it bubbles up the tree until handled.
+When a node unmounts, focus automatically falls back to its `parentId`. The first node to register in the tree is focused automatically.
 
-- **useKeybindings()**: Bind keys to actions for a component
-- **FocusTrap**: Contain input within a section (for modals, dialogs)
-- **Key normalization**: `ctrl+c`, `Ctrl-C`, `^c` all work the same
+### FocusGroup
 
-[Learn more: Input →](/core/input)
+`FocusGroup` is a focus node that also manages navigation between its children. It registers itself in the tree, sets up keybindings for movement, and publishes its own ID to `FocusNodeContext` so its children register under it.
 
-## Screen Router
+For vertical groups, it binds `j`/`k`, `up`/`down`, `tab`/`shift+tab`. For horizontal groups, `h`/`l`, `left`/`right`, `tab`/`shift+tab`. Custom keybindings are merged on top. Navigation calls `navigateSibling`, which walks the sibling list and moves focus to the next or previous child — descending into the first leaf if the target has children of its own.
 
-giggles includes a **stack-based router** for navigating between screens. Screens stay mounted when pushed to preserve state, and each screen knows whether it's active via the navigation context.
+### Active branch path
 
-- **Router**: Manages a stack of screens, renders the top one
-- **Screen**: Declarative route definition
-- **useNavigation()**: Push, pop, replace, and reset screens
+When `InputRouter` needs to dispatch a keypress, it calls `getActiveBranchPath()` — which walks from the focused node up to the root and returns the full ancestor chain. This is the path that gets searched for a matching keybinding.
 
-[Learn more: Router →](/core/router)
+## Input Routing
+
+`InputContext` stores a `Map` of node IDs to their registered keybindings. `useKeybindings` writes into this map and cleans up on unmount.
+
+When a key is pressed, `InputRouter` does the following:
+
+1. Gets the currently focused node and its active branch path
+2. Walks the path from the focused node up toward the root
+3. For each node, checks if a keybinding matches the pressed key — if it does, calls the handler and stops
+4. If the node has `capture: true` and no matching binding, it swallows the key (unless it's in the `passthrough` set)
+5. If a `FocusTrap` is active, walking stops at the trap node — nothing above it receives the key
+6. After exhausting the path, checks any bindings registered with `when: 'mounted'` — these fire regardless of focus position, useful for global shortcuts like `ctrl+c`
+
+This means deeply nested components naturally take priority over their parents, capture mode enables text input fields to own all keypresses, and `FocusTrap` makes it impossible for keys to leak out of a modal.
+
+### Key normalization
+
+All key combinations are normalized before matching — `ctrl+c`, `Ctrl-C`, and `^c` all resolve to the same string, so keybinding definitions don't need to account for variations.
+
+## The Screen Router
+
+`Router` manages a stack of `ScreenRoute` entries using `useReducer`. The four operations map directly to stack mutations:
+
+- `push` — appends a new entry to the stack
+- `pop` — removes the top entry (no-op if only one screen)
+- `replace` — swaps the top entry without changing stack depth
+- `reset` — replaces the entire stack with a single entry
+
+`Screen` itself renders nothing — it's a declarative way to register a name and component with the router. The router reads `children` at render time to build a map of `name → component`.
+
+### How screens stay alive
+
+Each entry in the stack is rendered as a `ScreenEntry`. All entries render at all times, but non-top screens use `display="none"` (Ink's equivalent of `visibility: hidden`). React keeps them mounted and their state intact — no serialization or re-initialization when you navigate back.
+
+### Focus and navigation
+
+Each `ScreenEntry` registers itself as a focus node and wraps its subtree in a `FocusNodeContext`. When a screen becomes the top of the stack, it restores the last focused node from that screen (saved when the screen was pushed down). If no saved focus exists, it focuses the first focusable child. When a screen is pushed down, the currently focused ID is saved to a ref.
+
+`useNavigation()` reads from `NavigationContext`, which each `ScreenEntry` provides. This is how screen components access `push`, `pop`, `replace`, and `reset`, as well as `currentRoute`, `active`, and `canGoBack`.
