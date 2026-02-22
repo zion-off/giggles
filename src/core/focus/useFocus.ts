@@ -1,32 +1,18 @@
-import { useContext, useEffect, useId } from 'react';
-import { FocusBindContext } from './FocusBindContext';
+import { useContext } from 'react';
 import { FocusNodeContext, useFocusContext } from './FocusContext';
 import type { FocusHandle } from './types';
 
-export const useFocus = (id?: string): FocusHandle => {
-  const nodeId = useId();
+export const useFocus = (): FocusHandle => {
   const parentId = useContext(FocusNodeContext);
-  const bindContext = useContext(FocusBindContext);
-  const { focusNode, registerNode, unregisterNode, isFocused } = useFocusContext();
+  const { focusNode, isFocused } = useFocusContext();
 
-  useEffect(() => {
-    registerNode(nodeId, parentId);
-
-    if (id && bindContext) {
-      bindContext.register(id, nodeId);
-    }
-
-    return () => {
-      unregisterNode(nodeId);
-      if (id && bindContext) {
-        bindContext.unregister(id);
-      }
-    };
-  }, [nodeId, parentId, id, bindContext, registerNode, unregisterNode]);
+  if (parentId === null) {
+    return { id: '', focused: false, focus: () => {} };
+  }
 
   return {
-    id: nodeId,
-    focused: isFocused(nodeId),
-    focus: () => focusNode(nodeId)
+    id: parentId,
+    focused: isFocused(parentId),
+    focus: () => focusNode(parentId)
   };
 };

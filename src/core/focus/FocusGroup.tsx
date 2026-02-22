@@ -3,26 +3,23 @@ import { GigglesError } from '../GigglesError';
 import { type Keybindings, useKeybindings } from '../input';
 import { FocusBindContext } from './FocusBindContext';
 import { FocusNodeContext, useFocusContext } from './FocusContext';
-import { useFocus } from './useFocus';
+import { useFocusNode } from './useFocusNode';
+
+export type FocusGroupHelpers = {
+  next: () => void;
+  prev: () => void;
+  escape: () => void;
+};
 
 type FocusGroupProps = {
   children: React.ReactNode;
-  direction?: 'vertical' | 'horizontal';
   value?: string;
   wrap?: boolean;
-  navigable?: boolean;
-  keybindings?: Keybindings;
+  keybindings?: Keybindings | ((helpers: FocusGroupHelpers) => Keybindings);
 };
 
-export function FocusGroup({
-  children,
-  direction = 'vertical',
-  value,
-  wrap = true,
-  navigable = true,
-  keybindings: customBindings
-}: FocusGroupProps) {
-  const focus = useFocus();
+export function FocusGroup({ children, value, wrap = true, keybindings: customBindings }: FocusGroupProps) {
+  const focus = useFocusNode();
   const { focusNode, navigateSibling } = useFocusContext();
   const bindMapRef = useRef<Map<string, string>>(new Map());
 
@@ -48,36 +45,18 @@ export function FocusGroup({
 
   const bindContextValue = useMemo(() => (value ? { register, unregister } : null), [value, register, unregister]);
 
-  const navigationKeys = useMemo((): Keybindings => {
-    if (!navigable) return {};
+  const next = useCallback(() => navigateSibling('next', wrap, focus.id), [navigateSibling, wrap, focus.id]);
+  const prev = useCallback(() => navigateSibling('prev', wrap, focus.id), [navigateSibling, wrap, focus.id]);
+  const escape = useCallback(() => focusNode(focus.id), [focusNode, focus.id]);
 
-    const next = () => navigateSibling('next', wrap, focus.id);
-    const prev = () => navigateSibling('prev', wrap, focus.id);
+  const resolvedBindings = useMemo((): Keybindings => {
+    if (typeof customBindings === 'function') {
+      return customBindings({ next, prev, escape });
+    }
+    return customBindings ?? {};
+  }, [customBindings, next, prev, escape]);
 
-    const base =
-      direction === 'vertical'
-        ? {
-            j: next,
-            k: prev,
-            down: next,
-            up: prev
-          }
-        : {
-            l: next,
-            h: prev,
-            right: next,
-            left: prev
-          };
-
-    return { ...base, tab: next, 'shift+tab': prev };
-  }, [navigable, direction, wrap, navigateSibling, focus.id]);
-
-  const mergedBindings = useMemo(
-    (): Keybindings => ({ ...navigationKeys, ...customBindings }),
-    [navigationKeys, customBindings]
-  );
-
-  useKeybindings(focus, mergedBindings);
+  useKeybindings(focus, resolvedBindings);
 
   return (
     <FocusNodeContext.Provider value={focus.id}>

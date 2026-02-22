@@ -114,7 +114,15 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
 
   const isFocused = useCallback(
     (id: string) => {
-      return id === focusedId;
+      if (!focusedId) return false;
+      const nodes = nodesRef.current;
+      let cursor: string | null = focusedId;
+      while (cursor) {
+        if (cursor === id) return true;
+        const node = nodes.get(cursor);
+        cursor = node?.parentId ?? null;
+      }
+      return false;
     },
     [focusedId]
   );
