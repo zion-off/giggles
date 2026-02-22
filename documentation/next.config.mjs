@@ -18,7 +18,7 @@ const config = {
       {
         source: '/',
         destination: '/framework',
-        permanent: true
+        permanent: false
       }
     ];
   },
