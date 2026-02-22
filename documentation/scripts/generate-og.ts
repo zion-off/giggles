@@ -23,17 +23,6 @@ function ColorStrip({ weights }: { weights: [string, number][] }) {
   });
 }
 
-// Fetches a font from Google Fonts as an ArrayBuffer (requests TTF via legacy UA)
-async function loadGoogleFont(family: string, weight: number): Promise<ArrayBuffer> {
-  const css = await fetch(
-    `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&display=swap`,
-    { headers: { 'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)' } }
-  ).then((r) => r.text());
-  const url = css.match(/url\((.+?)\)\s+format\(['"]truetype['"]\)/)?.[1];
-  if (!url) throw new Error(`Could not find TTF font URL for ${family} ${weight}`);
-  return fetch(url).then((r) => r.arrayBuffer());
-}
-
 function generate({ title, description, site }: { title: string; description?: string; site?: string }) {
   // Left column: red / blue / yellow blocks
   const leftBlocks: [string, number][] = [
@@ -51,7 +40,7 @@ function generate({ title, description, site }: { title: string; description?: s
       width: '100%',
       height: '100%',
       backgroundColor: M.bg,
-      fontFamily: 'Geist Mono'
+      fontFamily: 'monospace'
     },
     children: [
       // Left Mondrian column
@@ -76,8 +65,11 @@ function generate({ title, description, site }: { title: string; description?: s
           jsxs('div', {
             style: { display: 'flex', alignItems: 'center', gap: '10px' },
             children: [
-              jsx('span', { style: { fontSize: '28px', color: M.fg, fontFamily: 'Barriecito' }, children: site }),
-              jsx('span', { style: { fontSize: '16px', color: M.red, fontFamily: 'Geist Mono' }, children: '█' })
+              jsx('span', {
+                style: { fontSize: '28px', color: M.fg, fontFamily: 'monospace', fontWeight: 700 },
+                children: site
+              }),
+              jsx('span', { style: { fontSize: '16px', color: M.red, fontFamily: 'monospace' }, children: '█' })
             ]
           }),
 
@@ -149,18 +141,6 @@ function fileToSlugSegments(filePath: string): string[] {
 }
 
 async function main() {
-  const [barriecito, geistMono400, geistMono800] = await Promise.all([
-    loadGoogleFont('Barriecito', 400),
-    loadGoogleFont('Geist Mono', 400),
-    loadGoogleFont('Geist Mono', 800)
-  ]);
-
-  const fonts = [
-    { name: 'Barriecito', data: barriecito, weight: 400 as const, style: 'normal' as const },
-    { name: 'Geist Mono', data: geistMono400, weight: 400 as const, style: 'normal' as const },
-    { name: 'Geist Mono', data: geistMono800, weight: 800 as const, style: 'normal' as const }
-  ];
-
   const files = getMdxFiles(contentDir);
   let count = 0;
 
@@ -170,11 +150,9 @@ async function main() {
     if (!fm.title) continue;
 
     const slugSegments = fileToSlugSegments(file);
-    // @ts-ignore — fonts is valid but lost through next/og's re-export type chain
     const response = new ImageResponse(generate({ title: fm.title, description: fm.description, site: 'giggles' }), {
       width: 1200,
-      height: 630,
-      fonts
+      height: 630
     });
 
     const buffer = await response.arrayBuffer();
