@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
 import { GigglesError } from '../core/GigglesError';
-import { useFocus } from '../core/focus';
+import { useFocusNode } from '../core/focus';
 import { useKeybindings } from '../core/input';
 import { useTheme } from '../core/theme';
 import type { PaginatorStyle } from './Paginator';
@@ -53,7 +53,7 @@ export function MultiSelect<T>({
     seen.add(key);
   }
 
-  const focus = useFocus();
+  const focus = useFocusNode();
   const theme = useTheme();
   const [highlightIndex, setHighlightIndex] = useState(0);
 

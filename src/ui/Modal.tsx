@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, type BoxProps, Text } from 'ink';
-import { useFocus } from '../core/focus';
+import { useFocusNode } from '../core/focus';
 import { FocusTrap, useKeybindings } from '../core/input';
 import { useTheme } from '../core/theme';
 
@@ -11,7 +11,7 @@ type ModalProps = Omit<BoxProps, 'children'> & {
 };
 
 function ModalInner({ children, onClose, title, ...boxProps }: ModalProps) {
-  const focus = useFocus();
+  const focus = useFocusNode();
   const theme = useTheme();
 
   useKeybindings(focus, {

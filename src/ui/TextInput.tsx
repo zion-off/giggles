@@ -1,6 +1,6 @@
 import React, { useReducer, useRef } from 'react';
 import { Text } from 'ink';
-import { useFocus } from '../core/focus';
+import { useFocusNode } from '../core/focus';
 import { useKeybindings } from '../core/input';
 
 export type TextInputRenderProps = {
@@ -21,7 +21,7 @@ type TextInputProps = {
 };
 
 export function TextInput({ label, value, onChange, onSubmit, placeholder, render }: TextInputProps) {
-  const focus = useFocus();
+  const focus = useFocusNode();
   const cursorRef = useRef(value.length);
   const [, forceRender] = useReducer((c: number) => c + 1, 0);
 
