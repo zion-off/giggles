@@ -1,0 +1,38 @@
+---
+title: GigglesProvider
+description: API reference for GigglesProvider
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+Root provider for giggles applications. Wrap your app in this to enable focus, input, and theming. By default it sizes the root container to fill the full terminal dimensions and updates automatically on resize. Set `fullScreen={false}` to opt out and let Ink determine the container size.
+
+```tsx title="Basic Setup"
+import { render } from 'ink';
+import { GigglesProvider } from 'giggles';
+
+render(
+  <GigglesProvider>
+    <App />
+  </GigglesProvider>
+);
+```
+
+<TypeTable
+  type={{
+    children: {
+      description: 'Your application components',
+      type: 'React.ReactNode',
+      required: true,
+    },
+    theme: {
+      description: 'Partial theme overrides. Merged with the default theme.',
+      type: 'Partial<GigglesTheme>',
+    },
+    fullScreen: {
+      description: 'Sizes the root container to fill the terminal dimensions, updating on resize.',
+      type: 'boolean',
+      default: 'true',
+    },
+  }}
+/>
