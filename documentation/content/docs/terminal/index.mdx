@@ -11,7 +11,7 @@ Hooks and components for reactive terminal dimensions, OS-level focus detection,
 These are imported from `giggles/terminal` — a separate entry point not included in the main bundle.
 
 ```tsx title="Import"
-import { useTerminalSize, useTerminalFocus, useShellOut } from 'giggles/terminal';
+import { useTerminalSize, useTerminalFocus, useShellOut, useSpawn } from 'giggles/terminal';
 ```
 
 ```tsx title="Shell Out Example"
@@ -108,6 +108,84 @@ function useShellOut(): { run: (command: string) => Promise<{ exitCode: number }
   }}
 />
 
+### useSpawn()
+
+Spawns a child process and streams its output into React state while the TUI stays live.
+
+```ts title="Type Signature"
+function useSpawn(): SpawnHandle
+```
+
+Unlike `useShellOut`, the TUI keeps rendering while the process runs — output arrives incrementally via `output`. Call `run()` to spawn a process; calling it again while a process is already running kills the previous one first. The process is killed automatically on unmount.
+
+**Returns:** `SpawnHandle`
+
+<TypeTable
+  type={{
+    run: {
+      description: 'Spawns a process. Kills any currently running process before starting the new one.',
+      type: '(command: string, args?: string[], options?: SpawnOptions) => void',
+      required: true,
+    },
+    output: {
+      description: 'Ordered list of lines received from the process. Cleared each time run() is called.',
+      type: 'SpawnOutputLine[]',
+      required: true,
+    },
+    running: {
+      description: 'True while the process is alive. Becomes false once the process exits, errors, or is killed.',
+      type: 'boolean',
+      required: true,
+    },
+    exitCode: {
+      description: 'The exit code once the process has exited. Null while running or if the process was killed by a signal.',
+      type: 'number | null',
+      required: true,
+    },
+    error: {
+      description: 'Set if the process failed to start or emitted a Node.js error event (e.g. ENOENT). Cleared on each run() call.',
+      type: 'Error | null',
+      required: true,
+    },
+    kill: {
+      description: 'Sends SIGTERM to the process and immediately sets running to false.',
+      type: '() => void',
+      required: true,
+    },
+  }}
+/>
+
+**`SpawnOutputLine`**
+
+<TypeTable
+  type={{
+    type: {
+      description: 'Which stream the data came from.',
+      type: "'stdout' | 'stderr'",
+      required: true,
+    },
+    data: {
+      description: 'Raw string chunk as received from the stream. May contain partial lines or ANSI escape codes.',
+      type: 'string',
+      required: true,
+    },
+  }}
+/>
+
+**Options**
+
+All options from Node's `child_process.spawn` are accepted, plus:
+
+<TypeTable
+  type={{
+    pty: {
+      description: 'Injects FORCE_COLOR=1 and TERM=xterm-256color into the child environment so tools that detect isTTY emit ANSI color codes.',
+      type: 'boolean',
+      default: 'false',
+    },
+  }}
+/>
+
 ## Examples
 
 ### Responsive layout
@@ -143,6 +221,35 @@ function Timer() {
   });
 
   return <Text>{paused ? 'Paused' : 'Running'}</Text>;
+}
+```
+
+### Stream command output
+
+```tsx title="Docker Logs"
+import { useFocus, useKeybindings } from 'giggles';
+import { useSpawn } from 'giggles/terminal';
+import { Box, Text } from 'ink';
+
+function DockerLogs({ container }: { container: string }) {
+  const focus = useFocus();
+  const { output, running, error, run, kill } = useSpawn();
+
+  useKeybindings(focus, {
+    r: () => run('docker', ['logs', '-f', container], { pty: true }),
+    k: kill,
+  });
+
+  return (
+    <Box flexDirection="column">
+      {error && <Text color="red">{error.message}</Text>}
+      {output.map((line, i) => (
+        <Text key={i}>{line.data}</Text>
+      ))}
+      {running && <Text dimColor>Tailing logs… (k to stop)</Text>}
+      {!running && !error && <Text dimColor>r to tail logs</Text>}
+    </Box>
+  );
 }
 ```
 
