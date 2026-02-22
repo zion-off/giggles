@@ -86,3 +86,9 @@ jobs:
     if: needs.publish.result == 'success'
     uses: ./.github/workflows/documentation-ci.yml
     secrets: inherit
+
+  trigger-docs-cd:
+    needs: [trigger-docs-ci]
+    if: needs.trigger-docs-ci.result == 'success'
+    uses: ./.github/workflows/documentation-cd.yml
+    secrets: inherit
