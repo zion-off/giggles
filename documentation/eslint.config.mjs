@@ -3,7 +3,16 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
-  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts', '.source/**', 'content/**'])
+  globalIgnores([
+    '.next/**',
+    '.open-next/**',
+    'out/**',
+    'build/**',
+    'next-env.d.ts',
+    '.source/**',
+    'content/**',
+    'public/og/**'
+  ])
 ]);
 
 export default eslintConfig;
