@@ -81,14 +81,14 @@ jobs:
       - name: Publish to npm
         run: npm publish --access public
 
-  trigger-docs-ci:
+  trigger-docs:
     needs: [publish]
     if: needs.publish.result == 'success'
-    uses: ./.github/workflows/documentation-ci.yml
-    secrets: inherit
-
-  trigger-docs-cd:
-    needs: [trigger-docs-ci]
-    if: needs.trigger-docs-ci.result == 'success'
-    uses: ./.github/workflows/documentation-cd.yml
-    secrets: inherit
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch documentation CI
+        run: gh workflow run documentation-ci.yml --repo ${{ github.repository }} --ref main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
