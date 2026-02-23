@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 import { GigglesError } from '../GigglesError';
+import { useStore } from './StoreContext';
 
 type FocusNode = {
   id: string;
@@ -21,20 +22,32 @@ export type FocusContextValue = {
 export const FocusContext = createContext<FocusContextValue | null>(null);
 
 export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
+  // Bridge: keep the external FocusStore in sync so store.dispatch can walk the
+  // correct active branch path even while old components register through
+  // FocusContext. This bridge is removed in chunk #6 when all components
+  // register directly in the store.
+  const store = useStore();
+
   const nodesRef = useRef<Map<string, FocusNode>>(new Map());
   const parentMapRef = useRef<Map<string, string | null>>(new Map());
   const pendingFocusFirstChildRef = useRef<Set<string>>(new Set());
   const [focusedId, setFocusedId] = useState<string | null>(null);
 
-  const focusNode = useCallback((id: string) => {
-    const nodes = nodesRef.current;
-    if (!nodes.has(id)) return;
+  const focusNode = useCallback(
+    (id: string) => {
+      const nodes = nodesRef.current;
+      if (!nodes.has(id)) return;
 
-    setFocusedId((current) => {
-      if (current === id) return current;
-      return id;
-    });
-  }, []);
+      // Sync to the store first so store.dispatch always sees current focus.
+      store.focusNode(id);
+
+      setFocusedId((current) => {
+        if (current === id) return current;
+        return id;
+      });
+    },
+    [store]
+  );
 
   const focusFirstChild = useCallback(
     (parentId: string) => {
@@ -90,34 +103,44 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
       if (nodes.size === 1) {
         focusNode(id);
       }
+
+      // Mirror in the store so its tree matches for dispatch.
+      store.registerNode(id, parentId);
     },
-    [focusNode]
+    [focusNode, store]
   );
 
-  const unregisterNode = useCallback((id: string) => {
-    const nodes = nodesRef.current;
-    const node = nodes.get(id);
+  const unregisterNode = useCallback(
+    (id: string) => {
+      const nodes = nodesRef.current;
+      const node = nodes.get(id);
 
-    if (!node) return;
-    if (node.parentId) {
-      const parent = nodes.get(node.parentId);
-      if (parent) {
-        parent.childrenIds = parent.childrenIds.filter((childId) => childId !== id);
+      if (!node) return;
+      if (node.parentId) {
+        const parent = nodes.get(node.parentId);
+        if (parent) {
+          parent.childrenIds = parent.childrenIds.filter((childId) => childId !== id);
+        }
       }
-    }
-    nodes.delete(id);
-    pendingFocusFirstChildRef.current.delete(id);
+      nodes.delete(id);
+      pendingFocusFirstChildRef.current.delete(id);
 
-    setFocusedId((current) => {
-      if (current !== id) return current;
-      let candidate = node.parentId;
-      while (candidate !== null) {
-        if (nodesRef.current.has(candidate)) return candidate;
-        candidate = parentMapRef.current.get(candidate) ?? null;
-      }
-      return null;
-    });
-  }, []);
+      setFocusedId((current) => {
+        if (current !== id) return current;
+        let candidate = node.parentId;
+        while (candidate !== null) {
+          if (nodesRef.current.has(candidate)) return candidate;
+          candidate = parentMapRef.current.get(candidate) ?? null;
+        }
+        return null;
+      });
+
+      // Mirror in the store. store.unregisterNode handles its own refocus
+      // so the store's focusedId stays consistent with FocusContext's.
+      store.unregisterNode(id);
+    },
+    [store]
+  );
 
   const isFocused = useCallback(
     (id: string) => {

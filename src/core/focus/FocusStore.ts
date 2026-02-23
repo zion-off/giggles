@@ -1,4 +1,5 @@
 import type { Key, KeyHandler, KeybindingOptions, Keybindings, RegisteredKeybinding } from '../input/types';
+import { normalizeKey } from '../input/normalizeKey';
 
 type FocusNode = {
   id: string;
@@ -416,6 +417,53 @@ export class FocusStore {
       }
     }
     return all;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Input dispatch
+  // ---------------------------------------------------------------------------
+
+  // Bridge target for InputRouter. Walks the active branch path with passive-scope
+  // skipping, capture mode, and trap boundary — the full dispatch algorithm.
+  dispatch(input: string, key: Key): void {
+    const keyName = normalizeKey(input, key);
+    if (!keyName) return;
+
+    const path = this.getActiveBranchPath();
+    const trapNodeId = this.trapNodeId;
+
+    for (const nodeId of path) {
+      // Passive scopes yield — skip them so their parent's bindings fire instead.
+      if (this.passiveSet.has(nodeId)) continue;
+
+      const nodeBindings = this.getNodeBindings(nodeId);
+      if (nodeBindings) {
+        if (nodeBindings.capture && nodeBindings.onKeypress) {
+          if (!nodeBindings.passthrough?.has(keyName)) {
+            nodeBindings.onKeypress(input, key);
+            return;
+          }
+        }
+
+        const entry = nodeBindings.bindings.get(keyName);
+        if (entry && entry.when !== 'mounted') {
+          entry.handler(input, key);
+          return;
+        }
+      }
+
+      if (nodeId === trapNodeId) {
+        return;
+      }
+    }
+
+    // Fall through to globally mounted bindings.
+    for (const binding of this.getAllBindings()) {
+      if (binding.key === keyName && binding.when === 'mounted') {
+        binding.handler(input, key);
+        return;
+      }
+    }
   }
 
   // ---------------------------------------------------------------------------
