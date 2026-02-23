@@ -11,7 +11,7 @@ function Form() {
 
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
-      <FocusGroup direction="vertical">
+      <FocusGroup keybindings={({ next, prev }) => ({ tab: next, 'shift+tab': prev })}>
         <TextInput label="Username:" value={username} onChange={setUsername} placeholder="john_doe" />
         <TextInput label="Email:   " value={email} onChange={setEmail} placeholder="john@example.com" />
       </FocusGroup>

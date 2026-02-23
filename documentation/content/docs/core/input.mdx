@@ -315,7 +315,7 @@ function App() {
 
   return (
     <Box flexDirection="column">
-      <FocusGroup direction="vertical" keybindings={{ m: () => setShowModal(true) }}>
+      <FocusGroup keybindings={({ next, prev }) => ({ up: prev, down: next, k: prev, j: next, m: () => setShowModal(true) })}>
         <MenuItem label="New File" />
         <MenuItem label="Open File" />
         <MenuItem label="Save" />
