@@ -7,8 +7,8 @@ export { ThemeProvider, useTheme } from './core/theme';
 export type { GigglesTheme } from './core/theme';
 
 // Focus system
-export { FocusGroup, useFocus, useFocusNode, useFocusState } from './core/focus';
-export type { FocusHandle, FocusGroupHelpers } from './core/focus';
+export { useFocusScope, FocusScope, useFocusNode } from './core/focus';
+export type { FocusScopeHandle, FocusScopeHelpers, FocusScopeOptions, FocusNodeHandle } from './core/focus';
 
 // Input system
 export { useKeybindings, FocusTrap, useKeybindingRegistry } from './core/input';

@@ -104,14 +104,14 @@ export function MultiSelect<T>({
     const selected = value.includes(option.value);
 
     if (render) {
-      return render({ option, focused: focus.focused, highlighted, selected });
+      return render({ option, focused: focus.hasFocus, highlighted, selected });
     }
 
-    const active = highlighted && focus.focused;
+    const active = highlighted && focus.hasFocus;
 
     return (
       <Box key={String(option.value)}>
-        <Text dimColor={!focus.focused && !highlighted}>
+        <Text dimColor={!focus.hasFocus && !highlighted}>
           <Text color={selected ? theme.selectedColor : undefined} bold={selected}>
             {selected ? theme.checkedIndicator : theme.uncheckedIndicator}
           </Text>{' '}

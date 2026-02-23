@@ -162,7 +162,7 @@ export function Autocomplete<T>({
 
   return (
     <Box flexDirection="column" gap={1}>
-      {focus.focused ? (
+      {focus.hasFocus ? (
         <Text>
           {label != null && <Text bold>{label} </Text>}
           {before}
@@ -186,14 +186,14 @@ export function Autocomplete<T>({
           const selected = option.value === value;
 
           if (render) {
-            return render({ option, focused: focus.focused, highlighted, selected });
+            return render({ option, focused: focus.hasFocus, highlighted, selected });
           }
 
-          const active = highlighted && focus.focused;
+          const active = highlighted && focus.hasFocus;
 
           return (
             <Box>
-              <Text dimColor={!focus.focused && !highlighted}>
+              <Text dimColor={!focus.hasFocus && !highlighted}>
                 <Text color={active ? theme.accentColor : undefined} bold={highlighted}>
                   {option.label}
                 </Text>

@@ -1,5 +1,5 @@
-import type { Key, KeyHandler, KeybindingOptions, Keybindings, RegisteredKeybinding } from '../input/types';
 import { normalizeKey } from '../input/normalizeKey';
+import type { Key, KeyHandler, KeybindingOptions, Keybindings, RegisteredKeybinding } from '../input/types';
 
 type FocusNode = {
   id: string;
