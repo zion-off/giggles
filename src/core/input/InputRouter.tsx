@@ -1,27 +1,30 @@
 import React from 'react';
 import { useInput } from 'ink';
 import { useFocusContext } from '../focus/FocusContext';
-import { useInputContext } from './InputContext';
+import { useStore } from '../focus/StoreContext';
 import { normalizeKey } from './normalizeKey';
 
 export function InputRouter({ children }: { children: React.ReactNode }) {
+  const store = useStore();
+  // Active branch path still comes from the old FocusContext while the focus
+  // tree lives there. This will move to store.getActiveBranchPath() in chunk #4
+  // when the focus tree itself is migrated.
   const { getFocusedId, getActiveBranchPath } = useFocusContext();
-  const { getNodeBindings, getTrapNodeId, getAllBindings } = useInputContext();
 
   useInput((input, key) => {
     const focusedId = getFocusedId();
     if (!focusedId) return;
 
     const path = getActiveBranchPath();
-    const trapNodeId = getTrapNodeId();
+    const trapNodeId = store.getTrapNodeId();
 
     const keyName = normalizeKey(input, key);
     if (!keyName) return;
 
     for (const nodeId of path) {
-      const nodeBindings = getNodeBindings(nodeId);
+      const nodeBindings = store.getNodeBindings(nodeId);
       if (nodeBindings) {
-        // Check capture mode first - if active and key is not in passthrough, capture it immediately
+        // Capture mode: if active and key is not in passthrough, consume immediately
         if (nodeBindings.capture && nodeBindings.onKeypress) {
           if (!nodeBindings.passthrough?.has(keyName)) {
             nodeBindings.onKeypress(input, key);
@@ -29,7 +32,6 @@ export function InputRouter({ children }: { children: React.ReactNode }) {
           }
         }
 
-        // Check named bindings (either no capture, or key is in passthrough set)
         const entry = nodeBindings.bindings.get(keyName);
         if (entry && entry.when !== 'mounted') {
           entry.handler(input, key);
@@ -43,7 +45,7 @@ export function InputRouter({ children }: { children: React.ReactNode }) {
     }
 
     // Fall through to mounted bindings (not in the focus path)
-    for (const binding of getAllBindings()) {
+    for (const binding of store.getAllBindings()) {
       if (binding.key === keyName && binding.when === 'mounted') {
         binding.handler(input, key);
         return;
