@@ -1,6 +1,6 @@
 'use client';
 
-import { FocusGroup, GigglesProvider, useFocusNode, useKeybindings } from 'giggles';
+import { FocusScope, GigglesProvider, useFocusNode, useFocusScope, useKeybindings } from 'giggles';
 import { CommandPalette } from 'giggles/ui';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
@@ -15,8 +15,8 @@ function FileList() {
   });
 
   return (
-    <Text bold={focus.focused} dimColor={!focus.focused}>
-      {focus.focused ? '> ' : '  '}File List
+    <Text bold={focus.hasFocus} dimColor={!focus.hasFocus}>
+      {focus.hasFocus ? '> ' : '  '}File List
     </Text>
   );
 }
@@ -30,8 +30,8 @@ function Sidebar() {
   });
 
   return (
-    <Text bold={focus.focused} dimColor={!focus.focused}>
-      {focus.focused ? '> ' : '  '}Sidebar
+    <Text bold={focus.hasFocus} dimColor={!focus.hasFocus}>
+      {focus.hasFocus ? '> ' : '  '}Sidebar
     </Text>
   );
 }
@@ -40,6 +40,10 @@ function App() {
   const focus = useFocusNode();
   const [showPalette, setShowPalette] = useState(false);
 
+  const scope = useFocusScope({
+    keybindings: ({ next, prev }) => ({ tab: next, 'shift+tab': prev })
+  });
+
   useKeybindings(focus, {
     'ctrl+k': { action: () => setShowPalette(true), name: 'Open palette', when: 'mounted' },
     q: { action: () => {}, name: 'Quit', when: 'mounted' }
@@ -47,10 +51,10 @@ function App() {
 
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
-      <FocusGroup keybindings={({ next, prev }) => ({ tab: next, 'shift+tab': prev })}>
+      <FocusScope handle={scope}>
         <Sidebar />
         <FileList />
-      </FocusGroup>
+      </FocusScope>
       {showPalette && <CommandPalette onClose={() => setShowPalette(false)} />}
       <Text dimColor>Tab to switch panels, Ctrl+K for palette</Text>
     </Box>
