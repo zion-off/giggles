@@ -22,6 +22,7 @@ export const FocusContext = createContext<FocusContextValue | null>(null);
 
 export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
   const nodesRef = useRef<Map<string, FocusNode>>(new Map());
+  const parentMapRef = useRef<Map<string, string | null>>(new Map());
   const pendingFocusFirstChildRef = useRef<Set<string>>(new Set());
   const [focusedId, setFocusedId] = useState<string | null>(null);
 
@@ -65,6 +66,7 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       nodes.set(id, node);
+      parentMapRef.current.set(id, parentId);
 
       if (parentId) {
         const parent = nodes.get(parentId);
@@ -108,7 +110,12 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
 
     setFocusedId((current) => {
       if (current !== id) return current;
-      return node.parentId ?? null;
+      let candidate = node.parentId;
+      while (candidate !== null) {
+        if (nodesRef.current.has(candidate)) return candidate;
+        candidate = parentMapRef.current.get(candidate) ?? null;
+      }
+      return null;
     });
   }, []);
 
