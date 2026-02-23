@@ -107,7 +107,7 @@ function App() {
       </FocusScope>
 
       {showModal && (
-        <Box position="absolute" left={5} top={2}>
+        <Box>
           <FocusTrap>
             <ConfirmDialog
               title="Confirm Action"
@@ -122,9 +122,9 @@ function App() {
         </Box>
       )}
 
-      <Text dimColor marginTop={1}>
-        {showModal ? 'Keys outside modal are blocked!' : '↑↓/jk: navigate • enter: select'}
-      </Text>
+      <Box marginTop={1}>
+        <Text dimColor>{showModal ? 'Keys outside modal are blocked!' : '↑↓/jk: navigate • enter: select'}</Text>
+      </Box>
     </Box>
   );
 }

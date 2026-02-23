@@ -1,6 +1,6 @@
 'use client';
 
-import { FocusGroup, GigglesProvider } from 'giggles';
+import { FocusScope, GigglesProvider, useFocusScope } from 'giggles';
 import { Viewport } from 'giggles/ui';
 import { Box, Text } from 'ink-web';
 
@@ -19,15 +19,17 @@ const lines = Array.from(
 );
 
 function Demo() {
+  const scope = useFocusScope();
+
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
-      <FocusGroup>
+      <FocusScope handle={scope}>
         <Viewport height={8}>
           {lines.map((line, i) => (
             <Text key={i}>{line}</Text>
           ))}
         </Viewport>
-      </FocusGroup>
+      </FocusScope>
       <Text dimColor>j/k to scroll, g/G for top/bottom</Text>
     </Box>
   );
