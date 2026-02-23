@@ -1,14 +1,11 @@
 'use client';
 
-import { FocusGroup, GigglesProvider, useFocus, useFocusNode } from 'giggles';
+import { FocusGroup, GigglesProvider, useFocus, useFocusNode, useTheme } from 'giggles';
 import { Box, Text } from 'ink-web';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-function FileItem({ name, indent = false, autoFocus = false }: { name: string; indent?: boolean; autoFocus?: boolean }) {
+function FileItem({ name, indent = false }: { name: string; indent?: boolean }) {
   const focus = useFocusNode();
-  useEffect(() => {
-    if (autoFocus) focus.focus();
-  }, []);
   return (
     <Text color={focus.focused ? 'green' : 'white'}>
       {indent ? '  ' : '  '}
@@ -22,7 +19,7 @@ function DirContent({
   name,
   files,
   open,
-  onClose,
+  onClose
 }: {
   name: string;
   files: string[];
@@ -30,11 +27,12 @@ function DirContent({
   onClose: () => void;
 }) {
   const { focused } = useFocus();
+  const { indicator, indicatorOpen } = useTheme();
   return (
     <Box flexDirection="column">
       <Text color={focused ? 'green' : 'white'}>
         {'  '}
-        {open ? '▼' : '▶'} {name}/
+        {open ? indicatorOpen : indicator} {name}/
       </Text>
       {open && (
         <FocusGroup
@@ -44,11 +42,11 @@ function DirContent({
             k: prev,
             down: next,
             up: prev,
-            h: onClose,
+            h: onClose
           })}
         >
-          {files.map((f, i) => (
-            <FileItem key={f} name={f} indent autoFocus={i === 0} />
+          {files.map((f) => (
+            <FileItem key={f} name={f} indent />
           ))}
         </FocusGroup>
       )}
@@ -60,7 +58,9 @@ function DirItem({ name, files }: { name: string; files: string[] }) {
   const [open, setOpen] = useState(false);
   return (
     <FocusGroup
-      keybindings={open ? {} : { l: () => setOpen(true), enter: () => setOpen(true) }}
+      keybindings={({ next }) =>
+        open ? { j: next, h: () => setOpen(false) } : { l: () => setOpen(true), enter: () => setOpen(true) }
+      }
     >
       <DirContent name={name} files={files} open={open} onClose={() => setOpen(false)} />
     </FocusGroup>
@@ -77,7 +77,7 @@ export default function FileTreeExample() {
           <DirItem name="tests" files={['unit.test.ts', 'e2e.test.ts']} />
           <FileItem name="package.json" />
         </FocusGroup>
-        <Text dimColor>j/k — navigate · l/enter — expand · h — collapse</Text>
+        <Text dimColor>j/k — navigate · l — expand · j — enter · h — collapse</Text>
       </Box>
     </GigglesProvider>
   );

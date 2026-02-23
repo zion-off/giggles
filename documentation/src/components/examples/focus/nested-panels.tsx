@@ -20,7 +20,9 @@ function PanelContent({ title, items }: { title: string; items: string[] }) {
   const { focused } = useFocus();
   return (
     <Box flexDirection="column" borderStyle="round" borderColor={focused ? 'green' : 'white'} paddingX={1} width={24}>
-      <Text bold color={focused ? 'green' : 'white'}>{title}</Text>
+      <Text bold color={focused ? 'green' : 'white'}>
+        {title}
+      </Text>
       <FocusGroup keybindings={({ next, prev }) => ({ j: next, k: prev, down: next, up: prev })}>
         {items.map((item) => (
           <Item key={item} label={item} />

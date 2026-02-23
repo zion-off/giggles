@@ -167,7 +167,16 @@ export const FocusProvider = ({ children }: { children: React.ReactNode }) => {
           }
           cursor = node?.parentId ?? null;
         }
-        if (!currentChildId) return;
+        if (!currentChildId) {
+          const targetId = direction === 'next' ? siblings[0] : siblings[siblings.length - 1];
+          const target = nodes.get(targetId);
+          if (target && target.childrenIds.length > 0) {
+            focusFirstChild(targetId);
+          } else {
+            focusNode(targetId);
+          }
+          return;
+        }
       } else {
         const currentNode = nodes.get(focusedId);
         if (!currentNode?.parentId) return;
