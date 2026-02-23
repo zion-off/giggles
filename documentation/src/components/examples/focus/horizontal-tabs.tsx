@@ -1,10 +1,10 @@
 'use client';
 
-import { FocusGroup, GigglesProvider, useFocus } from 'giggles';
+import { FocusGroup, GigglesProvider, useFocusNode } from 'giggles';
 import { Box, Text } from 'ink-web';
 
 function Tab({ label }: { label: string }) {
-  const focus = useFocus();
+  const focus = useFocusNode();
   return (
     <Box paddingX={1}>
       <Text bold={focus.focused} underline={focus.focused} color={focus.focused ? 'green' : 'white'}>
@@ -20,7 +20,7 @@ export default function HorizontalTabsExample() {
       <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
         <Text bold>Tabs</Text>
         <Box>
-          <FocusGroup direction="horizontal">
+          <FocusGroup keybindings={({ next, prev }) => ({ h: prev, l: next, left: prev, right: next })}>
             <Tab label="General" />
             <Tab label="Keybindings" />
             <Tab label="Appearance" />

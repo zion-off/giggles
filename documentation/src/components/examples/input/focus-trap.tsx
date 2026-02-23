@@ -1,11 +1,11 @@
 'use client';
 
-import { FocusGroup, FocusTrap, GigglesProvider, useFocus } from 'giggles';
+import { FocusGroup, FocusTrap, GigglesProvider, useFocusNode } from 'giggles';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
 
 function MenuItem({ label }: { label: string }) {
-  const focus = useFocus();
+  const focus = useFocusNode();
   return (
     <Text color={focus.focused ? 'green' : 'white'}>
       {focus.focused ? '> ' : '  '}
@@ -20,7 +20,7 @@ function Modal({ onClose }: { onClose: () => void }) {
       <Text bold color="yellow">
         Modal (q to close)
       </Text>
-      <FocusGroup direction="vertical" keybindings={{ q: onClose }}>
+      <FocusGroup keybindings={({ next, prev }) => ({ j: next, k: prev, down: next, up: prev, q: onClose })}>
         <MenuItem label="Confirm" />
         <MenuItem label="Cancel" />
       </FocusGroup>
@@ -33,7 +33,9 @@ function App() {
 
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
-      <FocusGroup direction="vertical" keybindings={{ m: () => setShowModal(true) }}>
+      <FocusGroup
+        keybindings={({ next, prev }) => ({ j: next, k: prev, down: next, up: prev, m: () => setShowModal(true) })}
+      >
         <MenuItem label="New File" />
         <MenuItem label="Open File" />
         <MenuItem label="Save" />

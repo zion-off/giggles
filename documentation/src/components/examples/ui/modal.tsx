@@ -1,6 +1,6 @@
 'use client';
 
-import { GigglesProvider, useFocus, useKeybindings } from 'giggles';
+import { GigglesProvider, useFocusNode, useKeybindings } from 'giggles';
 import { Modal, Select } from 'giggles/ui';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
@@ -12,7 +12,7 @@ const items = [
 ];
 
 function App() {
-  const focus = useFocus();
+  const focus = useFocusNode();
   const [showModal, setShowModal] = useState(false);
   const [choice, setChoice] = useState('new');
 
