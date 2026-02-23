@@ -21,17 +21,19 @@ export function InputRouter({ children }: { children: React.ReactNode }) {
     for (const nodeId of path) {
       const nodeBindings = getNodeBindings(nodeId);
       if (nodeBindings) {
-        const entry = nodeBindings.bindings.get(keyName);
-        if (entry && entry.when !== 'mounted') {
-          entry.handler(input, key);
-          return;
-        }
-
+        // Check capture mode first - if active and key is not in passthrough, capture it immediately
         if (nodeBindings.capture && nodeBindings.onKeypress) {
           if (!nodeBindings.passthrough?.has(keyName)) {
             nodeBindings.onKeypress(input, key);
             return;
           }
+        }
+
+        // Check named bindings (either no capture, or key is in passthrough set)
+        const entry = nodeBindings.bindings.get(keyName);
+        if (entry && entry.when !== 'mounted') {
+          entry.handler(input, key);
+          return;
         }
       }
 
