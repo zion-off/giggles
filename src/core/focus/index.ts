@@ -7,3 +7,8 @@ export { useFocusNode } from './useFocusNode';
 export type { FocusHandle } from './types';
 export { useFocusState } from './useFocusState';
 export { FocusBindContext } from './FocusBindContext';
+export { FocusStore } from './FocusStore';
+export { StoreContext, ScopeIdContext, useStore } from './StoreContext';
+export { useFocusScope } from './useFocusScope';
+export type { FocusScopeHandle, FocusScopeOptions } from './useFocusScope';
+export { FocusScope } from './FocusScope';
