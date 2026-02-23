@@ -80,13 +80,13 @@ export function TextInput({ label, value, onChange, onSubmit, placeholder, rende
   const after = value.slice(cursor + 1);
 
   if (render) {
-    return <>{render({ value, focused: focus.focused, before, cursorChar, after })}</>;
+    return <>{render({ value, focused: focus.hasFocus, before, cursorChar, after })}</>;
   }
 
   const displayValue = value.length > 0 ? value : placeholder ?? '';
   const isPlaceholder = value.length === 0;
 
-  if (focus.focused) {
+  if (focus.hasFocus) {
     return (
       <Text>
         {label != null && <Text bold>{label} </Text>}

@@ -1,6 +1,7 @@
-import React, { useEffect, useId, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Box } from 'ink';
-import { FocusNodeContext, useFocusContext } from '../focus';
+import { ScopeIdContext, useStore } from '../focus/StoreContext';
+import { useFocusNode } from '../focus/useFocusNode';
 import { NavigationContext } from './NavigationContext';
 import type { NavigationContextValue, ScreenRoute } from './types';
 
@@ -27,34 +28,26 @@ export function ScreenEntry({
   replace,
   reset
 }: ScreenEntryProps) {
-  const screenNodeId = useId();
-  const parentId = React.useContext(FocusNodeContext);
-  const { registerNode, unregisterNode, focusFirstChild, focusNode, getFocusedId } = useFocusContext();
+  const { id: screenNodeId } = useFocusNode();
+  const store = useStore();
   const lastFocusedChildRef = useRef<string | null>(null);
   const wasTopRef = useRef(isTop);
-
-  useEffect(() => {
-    registerNode(screenNodeId, parentId);
-    return () => {
-      unregisterNode(screenNodeId);
-    };
-  }, [screenNodeId, parentId, registerNode, unregisterNode]);
 
   useEffect(() => {
     if (!wasTopRef.current && isTop) {
       const saved = restoreFocus ? lastFocusedChildRef.current : null;
       if (saved) {
-        focusNode(saved);
+        store.focusNode(saved);
       } else {
-        focusFirstChild(screenNodeId);
+        store.focusFirstChild(screenNodeId);
       }
     } else if (wasTopRef.current && !isTop) {
-      lastFocusedChildRef.current = getFocusedId();
+      lastFocusedChildRef.current = store.getFocusedId();
     } else if (isTop) {
-      focusFirstChild(screenNodeId);
+      store.focusFirstChild(screenNodeId);
     }
     wasTopRef.current = isTop;
-  }, [isTop, screenNodeId, restoreFocus, focusFirstChild, focusNode, getFocusedId]);
+  }, [isTop, screenNodeId, restoreFocus, store]);
 
   const value = useMemo<NavigationContextValue>(
     () => ({ currentRoute: entry, active: isTop, canGoBack, push, pop, replace, reset }),
@@ -63,11 +56,11 @@ export function ScreenEntry({
 
   return (
     <NavigationContext.Provider value={value}>
-      <FocusNodeContext.Provider value={screenNodeId}>
+      <ScopeIdContext.Provider value={screenNodeId}>
         <Box display={isTop ? 'flex' : 'none'}>
           <Component {...entry.params} />
         </Box>
-      </FocusNodeContext.Provider>
+      </ScopeIdContext.Provider>
     </NavigationContext.Provider>
   );
 }

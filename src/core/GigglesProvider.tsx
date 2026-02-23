@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { AlternateScreen } from '../terminal/components/AlternateScreen';
-import { FocusProvider } from './focus';
 import { FocusStore } from './focus/FocusStore';
 import { StoreContext } from './focus/StoreContext';
 import { InputRouter } from './input';
@@ -13,8 +12,6 @@ type GigglesProviderProps = {
 };
 
 export function GigglesProvider({ theme, fullScreen, children }: GigglesProviderProps) {
-  // Create the FocusStore once per provider tree. useRef with lazy init ensures
-  // a single instance that survives re-renders without triggering new renders itself.
   const storeRef = useRef<FocusStore | null>(null);
   if (!storeRef.current) {
     storeRef.current = new FocusStore();
@@ -24,9 +21,7 @@ export function GigglesProvider({ theme, fullScreen, children }: GigglesProvider
     <AlternateScreen fullScreen={fullScreen}>
       <ThemeProvider theme={theme}>
         <StoreContext.Provider value={storeRef.current}>
-          <FocusProvider>
-            <InputRouter>{children}</InputRouter>
-          </FocusProvider>
+          <InputRouter>{children}</InputRouter>
         </StoreContext.Provider>
       </ThemeProvider>
     </AlternateScreen>

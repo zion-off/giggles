@@ -1,7 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { useFocusNode } from '../focus';
-import { FocusNodeContext, useFocusContext } from '../focus/FocusContext';
-import { useStore } from '../focus/StoreContext';
+import React, { useEffect, useRef } from 'react';
+import { ScopeIdContext, useStore } from '../focus/StoreContext';
+import { useFocusNode } from '../focus/useFocusNode';
 
 type FocusTrapProps = {
   children: React.ReactNode;
@@ -10,21 +9,22 @@ type FocusTrapProps = {
 export function FocusTrap({ children }: FocusTrapProps) {
   const { id } = useFocusNode();
   const store = useStore();
-  const { focusFirstChild, getFocusedId, focusNode } = useFocusContext();
-  const previousFocusRef = useRef<string | null>(getFocusedId());
+  const previousFocusRef = useRef<string | null>(store.getFocusedId());
 
   useEffect(() => {
     const previousFocus = previousFocusRef.current;
     store.setTrap(id);
-    focusFirstChild(id);
+    store.focusFirstChild(id);
     return () => {
       store.clearTrap(id);
       if (previousFocus) {
-        focusNode(previousFocus);
+        store.focusNode(previousFocus);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  return <FocusNodeContext.Provider value={id}>{children}</FocusNodeContext.Provider>;
+  // Set ScopeIdContext so child useFocusNode/useFocusScope calls register
+  // under the trap node as their parent.
+  return <ScopeIdContext.Provider value={id}>{children}</ScopeIdContext.Provider>;
 }

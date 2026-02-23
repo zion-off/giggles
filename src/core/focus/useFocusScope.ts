@@ -76,7 +76,7 @@ export function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle {
   const resolvedBindings: Keybindings =
     typeof options?.keybindings === 'function'
       ? options.keybindings({ next, prev, nextShallow, prevShallow, escape, drillIn })
-      : (options?.keybindings ?? {});
+      : options?.keybindings ?? {};
 
   // Register synchronously so the bindings are always ready for the next keypress.
   // The registrationId is stable, so each render replaces the previous registration

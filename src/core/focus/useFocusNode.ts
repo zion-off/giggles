@@ -1,32 +1,35 @@
-import { useContext, useEffect, useId } from 'react';
-import { FocusBindContext } from './FocusBindContext';
-import { FocusNodeContext, useFocusContext } from './FocusContext';
-import type { FocusHandle } from './types';
+import { useContext, useEffect, useId, useMemo, useSyncExternalStore } from 'react';
+import { ScopeIdContext, useStore } from './StoreContext';
+import type { FocusScopeHandle } from './useFocusScope';
 
-export const useFocusNode = (id?: string): FocusHandle => {
-  const nodeId = useId();
-  const parentId = useContext(FocusNodeContext);
-  const bindContext = useContext(FocusBindContext);
-  const { focusNode, registerNode, unregisterNode, isFocused } = useFocusContext();
+export type FocusNodeHandle = {
+  id: string;
+  hasFocus: boolean;
+};
+
+export type FocusNodeOptions = {
+  // Explicit parent — use when creating a node in the same component as its
+  // parent scope, bypassing ScopeIdContext.
+  parent?: FocusScopeHandle;
+};
+
+export function useFocusNode(options?: FocusNodeOptions): FocusNodeHandle {
+  const id = useId();
+  const store = useStore();
+  const contextParentId = useContext(ScopeIdContext);
+
+  const parentId = options?.parent?.id ?? contextParentId;
+
+  const subscribe = useMemo(() => store.subscribe.bind(store), [store]);
 
   useEffect(() => {
-    registerNode(nodeId, parentId);
-
-    if (id && bindContext) {
-      bindContext.register(id, nodeId);
-    }
-
+    store.registerNode(id, parentId);
     return () => {
-      unregisterNode(nodeId);
-      if (id && bindContext) {
-        bindContext.unregister(id);
-      }
+      store.unregisterNode(id);
     };
-  }, [nodeId, parentId, id, bindContext, registerNode, unregisterNode]);
+  }, [id, parentId, store]);
 
-  return {
-    id: nodeId,
-    focused: isFocused(nodeId),
-    focus: () => focusNode(nodeId)
-  };
-};
+  const hasFocus = useSyncExternalStore(subscribe, () => store.isFocused(id));
+
+  return { id, hasFocus };
+}

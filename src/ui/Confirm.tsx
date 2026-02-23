@@ -20,7 +20,7 @@ export function Confirm({ message, defaultValue = true, onSubmit }: ConfirmProps
   const hint = defaultValue ? 'Y/n' : 'y/N';
 
   return (
-    <Text dimColor={!focus.focused}>
+    <Text dimColor={!focus.hasFocus}>
       {message} <Text dimColor>({hint})</Text>
     </Text>
   );
