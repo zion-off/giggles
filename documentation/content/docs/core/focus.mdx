@@ -10,30 +10,34 @@ import NavigableMenuExample from '@/components/examples/focus/navigable-menu';
 import ControlledFocusExample from '@/components/examples/focus/controlled-focus';
 import FileTreeExample from '@/components/examples/focus/file-tree';
 
-The focus system provides components and hooks for managing keyboard navigation.
+The focus system provides hooks and components for managing keyboard navigation.
 
-`FocusGroup` is the scoping primitive — it creates a navigable region and provides context for its children. Navigation between children is explicit: pass a `keybindings` function that receives `next`, `prev`, and `escape` helpers and returns a key map. This makes nested layouts composable, since each group only handles the keys you assign it.
+`useFocusScope` is the scoping primitive — it creates a navigable region and returns a handle with reactive focus state. Wrap children with `<FocusScope>` to set the parent context, so any child that calls `useFocusNode()` automatically registers under that scope.
 
-Components that are themselves focus targets — items in a list, tabs, form fields — call `useFocusNode()` to register in the tree. Components that need to reflect focus state without being navigable themselves call `useFocus()`. The two hooks are intentionally separate: one creates a node, the other reads one.
+Navigation between children is explicit: pass a `keybindings` function to `useFocusScope` that receives `next`, `prev`, and `escape` helpers and returns a key map. This makes nested layouts composable — each scope only handles the keys you assign it.
 
 ```tsx title="Navigable Menu"
-import { FocusGroup, useFocusNode } from 'giggles';
+import { FocusScope, useFocusNode, useFocusScope } from 'giggles';
 
 function Menu() {
+  const scope = useFocusScope({
+    keybindings: ({ next, prev }) => ({ j: next, k: prev, down: next, up: prev })
+  });
+
   return (
-    <FocusGroup keybindings={({ next, prev }) => ({ j: next, k: prev, down: next, up: prev })}>
+    <FocusScope handle={scope}>
       <MenuItem label="New File" />
       <MenuItem label="Open File" />
       <MenuItem label="Save" />
-    </FocusGroup>
+    </FocusScope>
   );
 }
 
 function MenuItem({ label }: { label: string }) {
   const focus = useFocusNode();
   return (
-    <Text color={focus.focused ? 'green' : 'white'}>
-      {focus.focused ? '> ' : '  '}
+    <Text color={focus.hasFocus ? 'green' : 'white'}>
+      {focus.hasFocus ? '> ' : '  '}
       {label}
     </Text>
   );
@@ -46,58 +50,162 @@ function MenuItem({ label }: { label: string }) {
 
 ## API Reference
 
-### useFocus()
+### useFocusScope()
 
-Returns the focus state of the nearest `FocusGroup` ancestor. Does not create a node in the focus tree. Use this for visual indicators — borders, highlights — on container components.
-
-```ts title="Type Signature"
-function useFocus(): FocusHandle
-```
-
-**Returns:** `FocusHandle`
-
-<TypeTable
-  type={{
-    id: {
-      description: 'ID of the containing FocusGroup node',
-      type: 'string',
-      required: true,
-    },
-    focused: {
-      description: 'Whether this group or any descendant currently has focus',
-      type: 'boolean',
-      required: true,
-    },
-    focus: {
-      description: 'Programmatically focus this group',
-      type: '() => void',
-      required: true,
-    },
-  }}
-/>
-
-When called outside any `FocusGroup`, returns `{ focused: false, focus: () => {} }`.
-
-### useFocusNode()
-
-Registers a component as a node in the focus tree and returns its focus handle. Use this for components that are themselves focusable targets: list items, tabs, form fields.
+Creates a scope node in the focus tree and returns a reactive handle. The scope acts as a grouping container — children that call `useFocusNode()` or `useFocusScope()` without an explicit `parent` register under the nearest `<FocusScope>` ancestor.
 
 ```ts title="Type Signature"
-function useFocusNode(id?: string): FocusHandle
+function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle
 ```
 
 **Parameters:**
 
 <TypeTable
   type={{
-    id: {
-      description: 'Optional logical ID for declarative focus control via FocusGroup value prop',
-      type: 'string',
+    options: {
+      description: 'Optional configuration for the scope',
+      type: 'FocusScopeOptions',
     },
   }}
 />
 
-**Returns:** `FocusHandle`
+**Returns:** `FocusScopeHandle`
+
+#### FocusScopeOptions
+
+<TypeTable
+  type={{
+    parent: {
+      description: 'Explicit parent scope. Defaults to the nearest <FocusScope> ancestor via context.',
+      type: 'FocusScopeHandle',
+    },
+    keybindings: {
+      description: 'Keybindings active while this scope or any descendant has focus. Pass a function to receive navigation helpers.',
+      type: 'Keybindings | ((helpers: FocusScopeHelpers) => Keybindings)',
+    },
+  }}
+/>
+
+#### FocusScopeHandle
+
+<TypeTable
+  type={{
+    id: {
+      description: 'Unique identifier for this scope node',
+      type: 'string',
+      required: true,
+    },
+    hasFocus: {
+      description: 'Whether this scope or any descendant currently has focus',
+      type: 'boolean',
+      required: true,
+    },
+    isPassive: {
+      description: 'Whether this scope is in passive mode — focus has been yielded to the parent via escape()',
+      type: 'boolean',
+      required: true,
+    },
+  }}
+/>
+
+Use `hasFocus` for visual indicators like borders and highlights. Use `isPassive` to show that a scope has been escaped from — for example, dimming a border when j/k will navigate at the parent level instead.
+
+#### FocusScopeHelpers
+
+<TypeTable
+  type={{
+    next: {
+      description: 'Focus the next sibling within this scope, descending to the first leaf automatically.',
+      type: '() => void',
+      required: true,
+    },
+    prev: {
+      description: 'Focus the previous sibling within this scope, descending to the first leaf automatically.',
+      type: '() => void',
+      required: true,
+    },
+    nextShallow: {
+      description: 'Focus the next sibling without descending into child scopes.',
+      type: '() => void',
+      required: true,
+    },
+    prevShallow: {
+      description: 'Focus the previous sibling without descending into child scopes.',
+      type: '() => void',
+      required: true,
+    },
+    escape: {
+      description: 'Yield focus to this scope\'s own node, enabling passive mode. Parent keybindings become active.',
+      type: '() => void',
+      required: true,
+    },
+    drillIn: {
+      description: 'Focus the first child of this scope, clearing passive mode.',
+      type: '() => void',
+      required: true,
+    },
+  }}
+/>
+
+### FocusScope
+
+Sets the parent scope for all children rendered inside it. Children that call `useFocusNode()` or `useFocusScope()` without an explicit `parent` option will register under this scope.
+
+```tsx title="Type Signature"
+function FocusScope({ handle, children }: {
+  handle: FocusScopeHandle;
+  children: React.ReactNode;
+}): JSX.Element
+```
+
+<TypeTable
+  type={{
+    handle: {
+      description: 'The scope handle returned by useFocusScope()',
+      type: 'FocusScopeHandle',
+      required: true,
+    },
+    children: {
+      description: 'Child components that will register under this scope',
+      type: 'React.ReactNode',
+      required: true,
+    },
+  }}
+/>
+
+### useFocusNode()
+
+Registers a component as a leaf node in the focus tree. Use this for components that are themselves focusable targets: list items, form fields, buttons.
+
+```ts title="Type Signature"
+function useFocusNode(options?: FocusNodeOptions): FocusNodeHandle
+```
+
+**Parameters:**
+
+<TypeTable
+  type={{
+    options: {
+      description: 'Optional configuration for the node',
+      type: 'FocusNodeOptions',
+    },
+  }}
+/>
+
+**Returns:** `FocusNodeHandle`
+
+#### FocusNodeOptions
+
+<TypeTable
+  type={{
+    parent: {
+      description: 'Explicit parent scope. Defaults to the nearest <FocusScope> ancestor via context.',
+      type: 'FocusScopeHandle',
+    },
+  }}
+/>
+
+#### FocusNodeHandle
 
 <TypeTable
   type={{
@@ -106,125 +214,66 @@ function useFocusNode(id?: string): FocusHandle
       type: 'string',
       required: true,
     },
-    focused: {
-      description: 'Whether this node or any descendant currently has focus',
+    hasFocus: {
+      description: 'Whether this node currently has focus',
       type: 'boolean',
-      required: true,
-    },
-    focus: {
-      description: 'Programmatically focus this node',
-      type: '() => void',
       required: true,
     },
   }}
 />
 
-The `FocusHandle` type can be imported for typing component props:
+The `FocusNodeHandle` type can be imported for typing component props:
 
 ```tsx title="Typing Props"
-import type { FocusHandle } from 'giggles';
+import type { FocusNodeHandle } from 'giggles';
 
-function MyComponent({ focus }: { focus: FocusHandle }) {
-  return <Text color={focus.focused ? 'green' : 'white'}>Item</Text>;
+function MyComponent({ focus }: { focus: FocusNodeHandle }) {
+  return <Text color={focus.hasFocus ? 'green' : 'white'}>Item</Text>;
 }
 ```
-
-### FocusGroup
-
-Creates a focus scope. Children that call `useFocusNode()` register as nodes within this group. Pass a `keybindings` function to control navigation between them.
-
-<TypeTable
-  type={{
-    keybindings: {
-      description: 'Keybindings active while this group or any descendant has focus. Pass a function to receive next/prev/escape navigation helpers.',
-      type: 'Keybindings | ((helpers: FocusGroupHelpers) => Keybindings)',
-    },
-    wrap: {
-      description: 'Whether next/prev wrap around at the ends',
-      type: 'boolean',
-      default: 'true',
-    },
-    value: {
-      description: 'Controlled focus — logical ID of the child that should be focused. Children must pass a matching id to useFocusNode().',
-      type: 'string',
-    },
-    children: {
-      description: 'Focusable child components',
-      type: 'React.ReactNode',
-      required: true,
-    },
-  }}
-/>
-
-#### FocusGroupHelpers
-
-<TypeTable
-  type={{
-    next: {
-      description: 'Focus the next sibling within this group. Wraps by default.',
-      type: '() => void',
-      required: true,
-    },
-    prev: {
-      description: 'Focus the previous sibling within this group. Wraps by default.',
-      type: '() => void',
-      required: true,
-    },
-    escape: {
-      description: 'Yield focus to this group\'s own node, allowing the parent group to navigate away from it.',
-      type: '() => void',
-      required: true,
-    },
-  }}
-/>
-
-### useFocusState()
-
-Returns a state tuple for controlling focus declaratively.
-
-```ts title="Type Signature"
-function useFocusState<T extends string>(initial: T): [T, (value: T) => void]
-```
-
-<TypeTable
-  type={{
-    initial: {
-      description: 'Initial focused value',
-      type: 'T extends string',
-      required: true,
-    },
-  }}
-/>
-
-**Returns:** A tuple `[currentValue, setValue]` similar to `useState`.
 
 ## Examples
 
-### Controlled focus
+### Nested navigation
 
-Use the `value` prop with the `id` parameter on `useFocusNode` to control focus declaratively:
+Scopes that use the same keys at different nesting levels don't conflict — the innermost scope that handles a key wins. When you want to yield control back to the parent (for example, to navigate between panels with the same j/k keys used inside them), call `escape()` from the inner scope's keybindings.
 
-```tsx title="Controlled Form"
-import { FocusGroup, useFocusNode } from 'giggles';
+After `escape()`, the scope enters passive mode: `isPassive` becomes `true` and the scope is skipped during input dispatch. The parent scope's j/k now fire instead. Passive mode clears automatically when focus moves to a different scope.
 
-function Form() {
-  const [field, setField] = useState('name');
-
-  const advance = () =>
-    setField((f) => (f === 'name' ? 'email' : f === 'email' ? 'submit' : 'name'));
+```tsx title="Two Panels"
+function Panel({ title, items }: { title: string; items: string[] }) {
+  const scope = useFocusScope({
+    keybindings: ({ next, prev, escape }) => ({
+      j: next,
+      k: prev,
+      h: escape  // yield — parent's j/k take over
+    })
+  });
 
   return (
-    <FocusGroup value={field} keybindings={{ n: advance }}>
-      <Field id="name" label="Name" />
-      <Field id="email" label="Email" />
-      <Field id="submit" label="Submit" />
-    </FocusGroup>
+    <FocusScope handle={scope}>
+      <Box
+        borderStyle="round"
+        borderColor={scope.isPassive ? 'yellow' : scope.hasFocus ? 'green' : 'grey'}
+      >
+        <Text>{title}</Text>
+        {items.map((item) => <Item key={item} label={item} />)}
+      </Box>
+    </FocusScope>
   );
 }
 
-function Field({ id, label }: { id: string; label: string }) {
-  const focus = useFocusNode(id);
-  return <Text color={focus.focused ? 'green' : 'white'}>{label}</Text>;
+function App() {
+  const root = useFocusScope({
+    keybindings: ({ next, prev }) => ({ j: next, k: prev })
+  });
+
+  return (
+    <FocusScope handle={root}>
+      <Panel title="Navigation" items={['Home', 'About', 'Contact']} />
+      <Panel title="Tools" items={['Grep', 'Find', 'Awk']} />
+    </FocusScope>
+  );
 }
 ```
 
@@ -232,67 +281,76 @@ function Field({ id, label }: { id: string; label: string }) {
   <ControlledFocusExample />
 </Terminal>
 
-<Callout type="warn">
-  Each child within a `FocusGroup` using `value` must pass a unique `id` to `useFocusNode`. Duplicate IDs will throw a `GigglesError`.
-</Callout>
-
 ### File tree
 
-A collapsible file tree with two levels of navigation. The root group uses `j`/`k` to move between top-level entries. Each directory is its own `FocusGroup` — `l` expands it, then `j` enters it. When DirItem's own node is focused and `next` is called, the framework focuses the first child of the group, descending to the first leaf. Once inside, `j`/`k` on the inner group shadow the root group's bindings. `h` collapses the directory, unmounting the inner group and automatically returning focus to the directory node. `useFocus` on the directory row stays green as long as any descendant has focus.
+A collapsible file tree with two levels of navigation. The root scope uses `nextShallow`/`prevShallow` to move between top-level entries without drilling into their children — so a closed directory lands focus on the directory node, where `l`/`enter` open it. When open, the directory scope's `j: next` descends into the file list. Inside the file list, `j`/`k` navigate between files and `h` collapses back.
+
+The directory header's color reflects `scope.hasFocus`, which is true whenever any descendant — including files deep inside — has focus. This eliminates the need for a separate hook to read parent focus state.
 
 ```tsx title="File Tree"
-import { FocusGroup, useFocus, useFocusNode, useTheme } from 'giggles';
+import { FocusScope, useFocusNode, useFocusScope, useTheme } from 'giggles';
 
 function FileItem({ name, indent = false }: { name: string; indent?: boolean }) {
   const focus = useFocusNode();
   return (
-    <Text color={focus.focused ? 'green' : 'white'}>
+    <Text color={focus.hasFocus ? 'green' : 'white'}>
       {indent ? '    ' : '  '}
-      {focus.focused ? '> ' : '  '}
+      {focus.hasFocus ? '> ' : '  '}
       {name}
     </Text>
   );
 }
 
-function DirContent({ name, files, open, onClose }: { name: string; files: string[]; open: boolean; onClose: () => void }) {
-  const { focused } = useFocus();
-  const { indicator, indicatorOpen } = useTheme();
+function FileList({ files, onClose }: { files: string[]; onClose: () => void }) {
+  const scope = useFocusScope({
+    keybindings: ({ next, prev }) => ({
+      j: next, k: prev, down: next, up: prev,
+      h: onClose
+    })
+  });
   return (
-    <Box flexDirection="column">
-      <Text color={focused ? 'green' : 'white'}>
-        {'  '}{open ? indicatorOpen : indicator} {name}/
-      </Text>
-      {open && (
-        <FocusGroup wrap={false} keybindings={({ next, prev }) => ({ j: next, k: prev, h: onClose })}>
-          {files.map((f) => <FileItem key={f} name={f} indent />)}
-        </FocusGroup>
-      )}
-    </Box>
+    <FocusScope handle={scope}>
+      {files.map((f) => <FileItem key={f} name={f} indent />)}
+    </FocusScope>
   );
 }
 
 function DirItem({ name, files }: { name: string; files: string[] }) {
   const [open, setOpen] = useState(false);
+  const { indicator, indicatorOpen } = useTheme();
+
+  const scope = useFocusScope({
+    keybindings: ({ next }) =>
+      open
+        ? { j: next, h: () => setOpen(false) }
+        : { l: () => setOpen(true), enter: () => setOpen(true) }
+  });
+
   return (
-    <FocusGroup
-      keybindings={({ next }) =>
-        open
-          ? { j: next, h: () => setOpen(false) }
-          : { l: () => setOpen(true), enter: () => setOpen(true) }
-      }
-    >
-      <DirContent name={name} files={files} open={open} onClose={() => setOpen(false)} />
-    </FocusGroup>
+    <FocusScope handle={scope}>
+      <Box flexDirection="column">
+        <Text color={scope.hasFocus ? 'green' : 'white'}>
+          {'  '}{open ? indicatorOpen : indicator} {name}/
+        </Text>
+        {open && <FileList files={files} onClose={() => setOpen(false)} />}
+      </Box>
+    </FocusScope>
   );
 }
 
 function FileTree() {
+  const root = useFocusScope({
+    keybindings: ({ nextShallow, prevShallow }) => ({
+      j: nextShallow, k: prevShallow, down: nextShallow, up: prevShallow
+    })
+  });
+
   return (
-    <FocusGroup keybindings={({ next, prev }) => ({ j: next, k: prev })}>
+    <FocusScope handle={root}>
       <DirItem name="src" files={['index.ts', 'utils.ts', 'types.ts']} />
       <DirItem name="tests" files={['unit.test.ts', 'e2e.test.ts']} />
       <FileItem name="package.json" />
-    </FocusGroup>
+    </FocusScope>
   );
 }
 ```

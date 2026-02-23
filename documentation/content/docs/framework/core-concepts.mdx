@@ -27,44 +27,73 @@ The focus system tracks which component is currently active. Components organize
 
 ### Registering as focusable
 
-Call `useFocusNode()` to make a component focusable:
+Call `useFocusNode()` to make a component a focusable target:
 
 ```tsx
 const focus = useFocusNode();
-// focus.focused — whether this component has focus
-// focus.focus() — programmatically move focus here
+// focus.hasFocus — whether this component has focus
 ```
 
-When your component unmounts, focus automatically moves to its parent. The first component to register receives focus automatically, so your app always has an active component.
+When your component unmounts, focus automatically moves to its nearest ancestor. The first component to register receives focus automatically, so your app always has an active component.
 
-### Reading parent focus
+### Creating navigable regions
 
-Container components that need to show visual indicators (like borders) but aren't themselves focusable can use `useFocus()` to read their ancestor group's focus state:
+`useFocusScope` creates a scope — a grouping of focusable children with explicit navigation keybindings. Wrap children with `<FocusScope>` to set the parent context:
 
 ```tsx
-const focus = useFocus();
-// focus.focused is true when any descendant has focus
+function Menu() {
+  const scope = useFocusScope({
+    keybindings: ({ next, prev }) => ({
+      j: next,
+      k: prev,
+    })
+  });
+
+  return (
+    <FocusScope handle={scope}>
+      <MenuItem />
+      <MenuItem />
+      <MenuItem />
+    </FocusScope>
+  );
+}
 ```
 
-### FocusGroup
+`next` and `prev` navigate between children. By default they descend to the first leaf automatically, so navigation feels natural without manual coordination.
 
-`FocusGroup` creates a navigable region with explicit key mappings. You define which keys move between children:
+The scope handle exposes `hasFocus` — true whenever any descendant has focus. Use it for container-level visual indicators like borders:
 
 ```tsx
-<FocusGroup keybindings={({ next, prev }) => ({ 
-  j: next, 
-  k: prev,
-  escape: () => {} // custom handler
-})}>
-  <MenuItem />
-  <MenuItem />
-  <MenuItem />
-</FocusGroup>
+<Box borderColor={scope.hasFocus ? 'green' : undefined}>
+  <FocusScope handle={scope}>
+    {children}
+  </FocusScope>
+</Box>
 ```
 
-`next` and `prev` navigate between siblings. When a component has nested `FocusGroup` children, calling `next` descends into the first leaf automatically — so navigation feels natural without manual coordination.
+Nested scopes only respond to keys you assign them, preventing conflicts. A file tree might use `j`/`k` at the top level and `h`/`l` for expand/collapse, with both working correctly because each scope controls its own keybindings.
 
-Nested groups only respond to keys you assign them, preventing conflicts. A file tree might use `j`/`k` at the top level and `h`/`l` for expand/collapse, with both working correctly because each group controls its own bindings.
+### Passive scopes
+
+When two scopes at different nesting levels use the same keys, the innermost scope wins because input dispatch walks from the focused node upward. To voluntarily yield control back to the parent, call `escape()` from your keybindings:
+
+```tsx
+const scope = useFocusScope({
+  keybindings: ({ next, prev, escape }) => ({
+    j: next,
+    k: prev,
+    h: escape  // yield to parent — its j/k now fire
+  })
+});
+```
+
+After `escape()`, the scope enters passive mode: it is skipped during input dispatch until focus moves elsewhere. `scope.isPassive` lets you reflect this in the UI — for example, switching a border from green to yellow while the user navigates at the parent level.
+
+```tsx
+<Box borderColor={scope.isPassive ? 'yellow' : scope.hasFocus ? 'green' : undefined}>
+```
+
+Passive mode clears automatically when focus moves to a different scope.
 
 ## Input Routing
 
@@ -75,13 +104,15 @@ When a key is pressed, giggles searches for a matching handler by walking up the
 1. **Capture mode** — if enabled and the key is not in `passthrough`, intercepts immediately
 2. **Focused component's bindings** — checked next (or first if no capture)
 3. **Parent component's bindings** — then grandparent, and so on
-4. **Focus trap** — stops input from reaching anything outside the trap boundary
-5. **Mounted bindings** — global shortcuts registered with `when: 'mounted'`, checked last
+4. **Passive scopes** — skipped entirely during the walk
+5. **Focus trap** — stops input from reaching anything outside the trap boundary
+6. **Mounted bindings** — global shortcuts registered with `when: 'mounted'`, checked last
 
 This priority order means:
 - Capture mode truly captures — navigation keys become text input
 - Keys in `passthrough` check named bindings instead
 - Deeply nested components take precedence over their parents
+- Passive scopes are transparent to input
 - Modals can prevent keys from reaching background components
 - Global shortcuts work regardless of which component has focus
 
@@ -128,7 +159,7 @@ Use `useNavigation()` inside screen components to access navigation functions:
 ```tsx
 function DetailScreen() {
   const { pop, push, currentRoute } = useNavigation();
-  
+
   return (
     <Box>
       <Text>Viewing {currentRoute.params.id}</Text>

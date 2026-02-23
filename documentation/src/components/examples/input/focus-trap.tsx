@@ -1,6 +1,6 @@
 'use client';
 
-import { FocusGroup, FocusTrap, GigglesProvider, useFocusNode, useKeybindings } from 'giggles';
+import { FocusScope, FocusTrap, GigglesProvider, useFocusNode, useFocusScope, useKeybindings } from 'giggles';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
 
@@ -12,8 +12,8 @@ function MenuItem({ label, onSelect }: { label: string; onSelect?: () => void })
   });
 
   return (
-    <Text color={focus.focused ? 'green' : 'white'}>
-      {focus.focused ? '▸ ' : '  '}
+    <Text color={focus.hasFocus ? 'green' : 'white'}>
+      {focus.hasFocus ? '▸ ' : '  '}
       {label}
     </Text>
   );
@@ -30,6 +30,16 @@ function ConfirmDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const scope = useFocusScope({
+    keybindings: ({ next, prev }) => ({
+      j: next,
+      k: prev,
+      left: prev,
+      right: next,
+      escape: onCancel
+    })
+  });
+
   return (
     <Box
       flexDirection="column"
@@ -45,22 +55,12 @@ function ConfirmDialog({
         {title}
       </Text>
       <Text>{message}</Text>
-      <Box marginTop={1}>
-        <FocusGroup
-          keybindings={({ next, prev }) => ({
-            j: next,
-            k: prev,
-            left: prev,
-            right: next,
-            escape: onCancel
-          })}
-        >
-          <Box gap={2}>
-            <MenuItem label="Confirm" onSelect={onConfirm} />
-            <MenuItem label="Cancel" onSelect={onCancel} />
-          </Box>
-        </FocusGroup>
-      </Box>
+      <FocusScope handle={scope}>
+        <Box marginTop={1} gap={2}>
+          <MenuItem label="Confirm" onSelect={onConfirm} />
+          <MenuItem label="Cancel" onSelect={onCancel} />
+        </Box>
+      </FocusScope>
       <Text dimColor>←→/jk: navigate • enter: select • esc: cancel</Text>
     </Box>
   );
@@ -71,14 +71,18 @@ function App() {
   const [action, setAction] = useState('');
   const [keyPressCount, setKeyPressCount] = useState(0);
 
+  const menuScope = useFocusScope({
+    keybindings: ({ next, prev }) => ({
+      j: next,
+      k: prev,
+      down: next,
+      up: prev
+    })
+  });
+
   const openDialog = (actionName: string) => {
     setAction(actionName);
     setShowModal(true);
-  };
-
-  const handleConfirm = () => {
-    setKeyPressCount((c) => c + 1);
-    setShowModal(false);
   };
 
   return (
@@ -94,20 +98,13 @@ function App() {
         <Text dimColor>Try pressing keys when modal is open - they won&apos;t work!</Text>
       </Box>
 
-      <FocusGroup
-        keybindings={({ next, prev }) => ({
-          j: next,
-          k: prev,
-          down: next,
-          up: prev
-        })}
-      >
+      <FocusScope handle={menuScope}>
         <MenuItem label="New File" onSelect={() => openDialog('create a new file')} />
         <MenuItem label="Open File" onSelect={() => openDialog('open a file')} />
         <MenuItem label="Save" onSelect={() => openDialog('save current file')} />
         <MenuItem label="Delete" onSelect={() => openDialog('delete a file')} />
         <MenuItem label="Exit" onSelect={() => openDialog('exit the application')} />
-      </FocusGroup>
+      </FocusScope>
 
       {showModal && (
         <Box position="absolute" left={5} top={2}>
@@ -115,7 +112,10 @@ function App() {
             <ConfirmDialog
               title="Confirm Action"
               message={`Are you sure you want to ${action}?`}
-              onConfirm={handleConfirm}
+              onConfirm={() => {
+                setKeyPressCount((c) => c + 1);
+                setShowModal(false);
+              }}
               onCancel={() => setShowModal(false)}
             />
           </FocusTrap>

@@ -1,47 +1,76 @@
 'use client';
 
-import { FocusGroup, GigglesProvider, useFocusNode } from 'giggles';
+import { FocusScope, GigglesProvider, useFocusNode, useFocusScope } from 'giggles';
 import { Box, Text } from 'ink-web';
-import { useState } from 'react';
 
-function Field({ id, label }: { id: string; label: string }) {
-  const focus = useFocusNode(id);
+const PANELS = [
+  { id: 'nav', title: 'Navigation', items: ['Home', 'About', 'Portfolio', 'Contact'] },
+  { id: 'tools', title: 'Tools', items: ['Grep', 'Find', 'Awk', 'Sed'] }
+];
+
+function Panel({ title, items }: { title: string; items: string[] }) {
+  const scope = useFocusScope({
+    keybindings: ({ next, prev, escape }) => ({
+      j: next,
+      k: prev,
+      h: escape
+    })
+  });
+
   return (
-    <Text color={focus.focused ? 'green' : 'white'}>
-      {focus.focused ? '> ' : '  '}
+    <FocusScope handle={scope}>
+      <Box
+        flexDirection="column"
+        borderStyle="round"
+        borderColor={scope.isPassive ? 'yellow' : scope.hasFocus ? 'green' : 'grey'}
+        paddingX={1}
+        width={20}
+      >
+        <Text bold color={scope.hasFocus ? 'white' : 'grey'}>
+          {title}
+          {scope.isPassive ? ' (escaped)' : ''}
+        </Text>
+        {items.map((item) => (
+          <PanelItem key={item} label={item} />
+        ))}
+      </Box>
+    </FocusScope>
+  );
+}
+
+function PanelItem({ label }: { label: string }) {
+  const focus = useFocusNode();
+  return (
+    <Text color={focus.hasFocus ? 'green' : 'white'}>
+      {focus.hasFocus ? '> ' : '  '}
       {label}
     </Text>
   );
 }
 
-function Form() {
-  const [field, setField] = useState('name');
-
-  const advance = () => {
-    setField((f) => {
-      if (f === 'name') return 'email';
-      if (f === 'email') return 'submit';
-      return 'name';
-    });
-  };
+function App() {
+  const root = useFocusScope({
+    keybindings: ({ next, prev }) => ({ j: next, k: prev })
+  });
 
   return (
-    <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
-      <Text bold>Form</Text>
-      <FocusGroup value={field} keybindings={{ n: advance }}>
-        <Field id="name" label="Name" />
-        <Field id="email" label="Email" />
-        <Field id="submit" label="Submit" />
-      </FocusGroup>
-      <Text dimColor>n to advance</Text>
-    </Box>
+    <FocusScope handle={root}>
+      <Box gap={2}>
+        {PANELS.map((p) => (
+          <Panel key={p.id} title={p.title} items={p.items} />
+        ))}
+      </Box>
+    </FocusScope>
   );
 }
 
 export default function ControlledFocusExample() {
   return (
     <GigglesProvider fullScreen={false}>
-      <Form />
+      <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
+        <App />
+        <Text dimColor>j/k: navigate within panel · h: exit · j/k: switch panels</Text>
+      </Box>
     </GigglesProvider>
   );
 }
