@@ -6,6 +6,7 @@ description: API reference for the input system
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Terminal } from '@/components/terminal';
 import FileListExample from '@/components/examples/input/file-list';
+import CaptureModeExample from '@/components/examples/input/capture-mode';
 import FocusTrapExample from '@/components/examples/input/focus-trap';
 
 The input system routes keyboard events to the focused component and its ancestors.
@@ -15,12 +16,12 @@ Register handlers with `useKeybindings` — when a key is pressed, the focused c
 For modal-like scenarios, `FocusTrap` locks input inside a subtree — nothing outside it is reachable until the trap unmounts.
 
 ```tsx title="Basic Usage"
-import { useKeybindings, useFocus } from 'giggles';
+import { useKeybindings, useFocusNode } from 'giggles';
 import { useState } from 'react';
 import { Box, Text } from 'ink';
 
 function FileList() {
-  const focus = useFocus();
+  const focus = useFocusNode();
   const [selected, setSelected] = useState(0);
   const files = ['file1.ts', 'file2.ts', 'file3.ts'];
 
@@ -47,6 +48,28 @@ function FileList() {
 ### useKeybindings()
 
 Registers keybindings that only fire when the component is focused.
+
+You can call `useKeybindings` multiple times in the same component — bindings from all calls are merged together. Later calls override earlier ones for duplicate keys.
+
+**Capture mode priority:** When `capture: true` is active, it intercepts all keys before checking named bindings, except for keys in the `passthrough` array. This makes text input intuitive:
+
+```tsx
+// These navigation bindings work normally
+useKeybindings(focus, {
+  j: moveDown,
+  k: moveUp,
+  enter: select,
+  escape: clearInput
+});
+
+// When searchMode is true, capture intercepts j/k for text input
+// but escape/enter pass through to named bindings above
+useKeybindings(
+  focus,
+  { enter: confirmSearch }, // Override enter when searching
+  { capture: searchMode, passthrough: ['escape', 'enter'] }
+);
+```
 
 ```ts title="Type Signature"
 function useKeybindings(
@@ -137,7 +160,15 @@ Use these strings as keys in the bindings object:
 
 #### KeybindingOptions
 
-Capture mode intercepts all input at the component, preventing it from bubbling to parents. Named bindings are still checked first — any key matching a named binding fires that handler. Remaining keys fall through to `onKeypress`. Use `passthrough` to let specific keys bypass capture and continue bubbling to parent nodes.
+Capture mode intercepts all input at the component, preventing it from bubbling to parents. When you register keybindings with capture mode options, those bindings are **only active when capture is enabled**. This allows you to have different bindings for normal navigation vs. text input mode.
+
+**Key behavior:** When capture mode is enabled, it takes priority over named bindings. Keys are checked in this order:
+
+1. If not in `passthrough` → sent to `onKeypress`
+2. If in `passthrough` → checked against named bindings  
+3. If no match → bubbles to parent
+
+**Important:** Named bindings registered with capture mode options (i.e., when `onKeypress` is provided) are only active when `capture: true`. When `capture: false`, those bindings are inactive, allowing other registrations to handle those keys. This lets you register the same key (like `enter`) with different behaviors for navigation mode vs. input mode.
 
 <TypeTable
   type={{
@@ -268,28 +299,71 @@ function App() {
 
 ## Examples
 
-### File list
+### File manager with search
 
-```tsx title="File List"
-import { useFocus, useKeybindings } from 'giggles';
+This example demonstrates multiple keybindings, capture mode for search input, and dynamic filtering:
+
+```tsx title="File Manager"
+import { useFocusNode, useKeybindings } from 'giggles';
 import { useState } from 'react';
 import { Box, Text } from 'ink';
 
-function FileList() {
-  const focus = useFocus();
+function FileManager() {
+  const focus = useFocusNode();
   const [selected, setSelected] = useState(0);
-  const files = ['file1.ts', 'file2.ts', 'file3.ts'];
+  const [files, setFiles] = useState([
+    { name: 'App.tsx', size: '2.4 KB' },
+    { name: 'utils.ts', size: '1.8 KB' },
+    { name: 'styles.css', size: '856 B' },
+    // ... more files
+  ]);
+  const [searchMode, setSearchMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
+  const filteredFiles = searchMode 
+    ? files.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : files;
+
+  const deleteFile = () => {
+    const fileToDelete = filteredFiles[selected];
+    setFiles(files.filter(f => f.name !== fileToDelete.name));
+  };
+
+  // Navigation and actions
   useKeybindings(focus, {
-    j: () => setSelected((i) => Math.min(files.length - 1, i + 1)),
+    j: () => setSelected((i) => Math.min(filteredFiles.length - 1, i + 1)),
     k: () => setSelected((i) => Math.max(0, i - 1)),
+    enter: () => console.log('Open', filteredFiles[selected].name),
+    d: deleteFile,
+    '/': () => setSearchMode(true),
+    escape: () => setSearchMode(false)
   });
+
+  // Search mode - capture intercepts j/k for text input
+  useKeybindings(
+    focus,
+    { enter: () => setSearchMode(false) }, // Override enter when searching
+    {
+      capture: searchMode,
+      passthrough: ['escape', 'enter'],
+      onKeypress: (input, key) => {
+        if (key.backspace) {
+          setSearchQuery(q => q.slice(0, -1));
+        } else if (input) {
+          setSearchQuery(q => q + input);
+        }
+      },
+    }
+  );
 
   return (
     <Box flexDirection="column">
-      {files.map((file, i) => (
-        <Text key={file} color={i === selected ? 'green' : 'white'}>
-          {i === selected ? '> ' : '  '}{file}
+      {searchMode && (
+        <Text>Search: {searchQuery}█</Text>
+      )}
+      {filteredFiles.map((file, i) => (
+        <Text key={file.name} color={i === selected ? 'green' : 'white'}>
+          {i === selected ? '▸ ' : '  '}{file.name} {file.size}
         </Text>
       ))}
     </Box>
@@ -301,28 +375,147 @@ function FileList() {
   <FileListExample />
 </Terminal>
 
-### Focus trap
+### Text input with capture mode
+
+Capture mode is essential for building text inputs. This form demonstrates switching between navigation and editing modes:
+
+```tsx title="Contact Form"
+import { useFocusNode, useKeybindings } from 'giggles';
+import { useState } from 'react';
+import { Box, Text } from 'ink';
+
+function ContactForm() {
+  const focus = useFocusNode();
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [activeField, setActiveField] = useState('name');
+  const [editing, setEditing] = useState(false);
+
+  const fields = ['name', 'email', 'message'];
+  const currentIndex = fields.indexOf(activeField);
+
+  // Navigation keybindings
+  useKeybindings(focus, {
+    j: () => setActiveField(fields[Math.min(currentIndex + 1, 2)]),
+    k: () => setActiveField(fields[Math.max(currentIndex - 1, 0)]),
+    enter: () => setEditing(true),
+    escape: () => setEditing(false)
+  });
+
+  // Edit mode - capture intercepts j/k for text input
+  useKeybindings(
+    focus,
+    {
+      enter: () => {
+        setEditing(false);
+        if (currentIndex < 2) setActiveField(fields[currentIndex + 1]);
+      },
+    },
+    {
+      capture: editing,
+      passthrough: ['escape', 'enter'],
+      onKeypress: (input, key) => {
+        if (key.backspace) {
+          setFormData(prev => ({
+            ...prev,
+            [activeField]: prev[activeField].slice(0, -1)
+          }));
+        } else if (input) {
+          setFormData(prev => ({
+            ...prev,
+            [activeField]: prev[activeField] + input
+          }));
+        }
+      },
+    }
+  );
+
+  return (
+    <Box flexDirection="column">
+      {fields.map(field => (
+        <Box key={field} flexDirection="column">
+          <Text color={field === activeField ? 'yellow' : 'grey'}>
+            {field}:
+          </Text>
+          <Text>
+            {field === activeField ? '▸ ' : '  '}
+            {formData[field]}
+            {editing && field === activeField && '█'}
+          </Text>
+        </Box>
+      ))}
+    </Box>
+  );
+}
+```
+
+<Terminal>
+  <CaptureModeExample />
+</Terminal>
+
+### Focus trap for modals
 
 When a `FocusTrap` is active, input stops bubbling past it. The menu behind the modal won't receive any keypresses:
 
 ```tsx title="Modal with FocusTrap"
-import { FocusGroup, FocusTrap, useFocus, useKeybindings } from 'giggles';
+import { FocusGroup, FocusTrap, useFocusNode, useKeybindings } from 'giggles';
 import { Box, Text } from 'ink';
 import { useState } from 'react';
 
+function MenuItem({ label, onSelect }) {
+  const focus = useFocusNode();
+  
+  useKeybindings(focus, {
+    enter: () => onSelect?.()
+  });
+
+  return (
+    <Text color={focus.focused ? 'green' : 'white'}>
+      {focus.focused ? '▸ ' : '  '}{label}
+    </Text>
+  );
+}
+
+function ConfirmDialog({ message, onConfirm, onCancel }) {
+  return (
+    <Box flexDirection="column" borderStyle="double">
+      <Text bold color="yellow">Confirm Action</Text>
+      <Text>{message}</Text>
+      <FocusGroup keybindings={({ next, prev }) => ({ 
+        left: prev, 
+        right: next,
+        escape: onCancel 
+      })}>
+        <MenuItem label="Confirm" onSelect={onConfirm} />
+        <MenuItem label="Cancel" onSelect={onCancel} />
+      </FocusGroup>
+    </Box>
+  );
+}
+
 function App() {
   const [showModal, setShowModal] = useState(false);
+  const [action, setAction] = useState('');
 
   return (
     <Box flexDirection="column">
-      <FocusGroup keybindings={({ next, prev }) => ({ up: prev, down: next, k: prev, j: next, m: () => setShowModal(true) })}>
-        <MenuItem label="New File" />
-        <MenuItem label="Open File" />
-        <MenuItem label="Save" />
+      <FocusGroup keybindings={({ next, prev }) => ({ j: next, k: prev })}>
+        <MenuItem label="New File" onSelect={() => {
+          setAction('create new file');
+          setShowModal(true);
+        }} />
+        <MenuItem label="Delete" onSelect={() => {
+          setAction('delete file');
+          setShowModal(true);
+        }} />
       </FocusGroup>
+      
       {showModal && (
         <FocusTrap>
-          <Modal onClose={() => setShowModal(false)} />
+          <ConfirmDialog
+            message={`Are you sure you want to ${action}?`}
+            onConfirm={() => setShowModal(false)}
+            onCancel={() => setShowModal(false)}
+          />
         </FocusTrap>
       )}
     </Box>
