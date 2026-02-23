@@ -8,47 +8,82 @@ import { Callout } from 'fumadocs-ui/components/callout';
 import { Terminal } from '@/components/terminal';
 import NavigableMenuExample from '@/components/examples/focus/navigable-menu';
 import ControlledFocusExample from '@/components/examples/focus/controlled-focus';
-import HorizontalTabsExample from '@/components/examples/focus/horizontal-tabs';
+import FileTreeExample from '@/components/examples/focus/file-tree';
 
 The focus system provides components and hooks for managing keyboard navigation.
 
-Giggles maintains a focus tree — each call to `useFocus` registers a node, and `FocusGroup` organizes them into navigable groups. Only one node is focused at a time, and only components on the path from that node to the root receive key events.
+`FocusGroup` is the scoping primitive — it creates a navigable region and provides context for its children. Navigation between children is explicit: pass a `keybindings` function that receives `next`, `prev`, and `escape` helpers and returns a key map. This makes nested layouts composable, since each group only handles the keys you assign it.
 
-Components read their focus state through the `FocusHandle` returned by `useFocus`. For grouped navigation, wrap children in a `FocusGroup` to enable arrow-key or j/k movement between siblings. Focus can also be controlled declaratively with the `value` prop.
+Components that are themselves focus targets — items in a list, tabs, form fields — call `useFocusNode()` to register in the tree. Components that need to reflect focus state without being navigable themselves call `useFocus()`. The two hooks are intentionally separate: one creates a node, the other reads one.
 
-```tsx title="Basic Usage"
-import { FocusGroup, useFocus, useFocusState } from 'giggles';
+```tsx title="Navigable Menu"
+import { FocusGroup, useFocusNode } from 'giggles';
 
 function Menu() {
   return (
-    <FocusGroup direction="vertical">
-      <MenuItem label="Option 1" />
-      <MenuItem label="Option 2" />
-      <MenuItem label="Option 3" />
+    <FocusGroup keybindings={({ next, prev }) => ({ j: next, k: prev, down: next, up: prev })}>
+      <MenuItem label="New File" />
+      <MenuItem label="Open File" />
+      <MenuItem label="Save" />
     </FocusGroup>
   );
 }
 
-function MenuItem({ label }) {
-  const focus = useFocus();
-  return <Text color={focus.focused ? 'green' : 'white'}>{label}</Text>;
+function MenuItem({ label }: { label: string }) {
+  const focus = useFocusNode();
+  return (
+    <Text color={focus.focused ? 'green' : 'white'}>
+      {focus.focused ? '> ' : '  '}
+      {label}
+    </Text>
+  );
 }
 ```
+
+<Terminal>
+  <NavigableMenuExample />
+</Terminal>
 
 ## API Reference
 
 ### useFocus()
 
-Returns focus state and methods for a component.
+Returns the focus state of the nearest `FocusGroup` ancestor. Does not create a node in the focus tree. Use this for visual indicators — borders, highlights — on container components.
 
 ```ts title="Type Signature"
-function useFocus(id?: string): FocusHandle
+function useFocus(): FocusHandle
+```
 
-type FocusHandle = {
-  id: string;
-  focused: boolean;
-  focus: () => void;
-}
+**Returns:** `FocusHandle`
+
+<TypeTable
+  type={{
+    id: {
+      description: 'ID of the containing FocusGroup node',
+      type: 'string',
+      required: true,
+    },
+    focused: {
+      description: 'Whether this group or any descendant currently has focus',
+      type: 'boolean',
+      required: true,
+    },
+    focus: {
+      description: 'Programmatically focus this group',
+      type: '() => void',
+      required: true,
+    },
+  }}
+/>
+
+When called outside any `FocusGroup`, returns `{ focused: false, focus: () => {} }`.
+
+### useFocusNode()
+
+Registers a component as a node in the focus tree and returns its focus handle. Use this for components that are themselves focusable targets: list items, tabs, form fields.
+
+```ts title="Type Signature"
+function useFocusNode(id?: string): FocusHandle
 ```
 
 **Parameters:**
@@ -72,21 +107,21 @@ type FocusHandle = {
       required: true,
     },
     focused: {
-      description: 'Whether this component is currently focused',
+      description: 'Whether this node or any descendant currently has focus',
       type: 'boolean',
       required: true,
     },
     focus: {
-      description: 'Programmatically focus this component',
+      description: 'Programmatically focus this node',
       type: '() => void',
       required: true,
     },
   }}
 />
 
-The `FocusHandle` type can be imported and used for typing component props:
+The `FocusHandle` type can be imported for typing component props:
 
-```tsx
+```tsx title="Typing Props"
 import type { FocusHandle } from 'giggles';
 
 function MyComponent({ focus }: { focus: FocusHandle }) {
@@ -96,36 +131,48 @@ function MyComponent({ focus }: { focus: FocusHandle }) {
 
 ### FocusGroup
 
-Creates a navigable group of focusable children.
+Creates a focus scope. Children that call `useFocusNode()` register as nodes within this group. Pass a `keybindings` function to control navigation between them.
 
 <TypeTable
   type={{
-    direction: {
-      description: 'Navigation direction. Vertical uses j/k and up/down, horizontal uses h/l and left/right. Tab and shift+tab move forward and backward regardless of direction.',
-      type: "'vertical' | 'horizontal'",
-      default: "'vertical'",
+    keybindings: {
+      description: 'Keybindings active while this group or any descendant has focus. Pass a function to receive next/prev/escape navigation helpers.',
+      type: 'Keybindings | ((helpers: FocusGroupHelpers) => Keybindings)',
     },
     wrap: {
-      description: 'Whether navigation wraps from last to first item',
-      type: 'boolean',
-      default: 'true',
-    },
-    navigable: {
-      description: 'Whether arrow keys navigate children',
+      description: 'Whether next/prev wrap around at the ends',
       type: 'boolean',
       default: 'true',
     },
     value: {
-      description: 'Controlled focus - ID of child that should be focused',
+      description: 'Controlled focus — logical ID of the child that should be focused. Children must pass a matching id to useFocusNode().',
       type: 'string',
-    },
-    keybindings: {
-      description: 'Keybindings active while any child of the group is focused',
-      type: 'Keybindings',
     },
     children: {
       description: 'Focusable child components',
       type: 'React.ReactNode',
+      required: true,
+    },
+  }}
+/>
+
+#### FocusGroupHelpers
+
+<TypeTable
+  type={{
+    next: {
+      description: 'Focus the next sibling within this group. Wraps by default.',
+      type: '() => void',
+      required: true,
+    },
+    prev: {
+      description: 'Focus the previous sibling within this group. Wraps by default.',
+      type: '() => void',
+      required: true,
+    },
+    escape: {
+      description: 'Yield focus to this group\'s own node, allowing the parent group to navigate away from it.',
+      type: '() => void',
       required: true,
     },
   }}
@@ -153,67 +200,30 @@ function useFocusState<T extends string>(initial: T): [T, (value: T) => void]
 
 ## Examples
 
-### Navigable menu
-
-```tsx title="Vertical Menu"
-import { FocusGroup, useFocus } from 'giggles';
-import { Box, Text } from 'ink';
-
-function Menu() {
-  return (
-    <FocusGroup direction="vertical">
-      <MenuItem label="New File" />
-      <MenuItem label="Open File" />
-      <MenuItem label="Save" />
-    </FocusGroup>
-  );
-}
-
-function MenuItem({ label }: { label: string }) {
-  const focus = useFocus();
-  return (
-    <Text color={focus.focused ? 'green' : 'white'}>
-      {focus.focused ? '> ' : '  '}{label}
-    </Text>
-  );
-}
-```
-
-<Terminal>
-  <NavigableMenuExample />
-</Terminal>
-
 ### Controlled focus
 
-Use the `value` prop on `FocusGroup` with the `id` parameter on `useFocus` to control focus declaratively. Pass custom `keybindings` to the group to advance focus programmatically:
+Use the `value` prop with the `id` parameter on `useFocusNode` to control focus declaratively:
 
 ```tsx title="Controlled Form"
-import { FocusGroup, useFocus } from 'giggles';
-import { useState } from 'react';
-import { Text } from 'ink';
+import { FocusGroup, useFocusNode } from 'giggles';
 
 function Form() {
   const [field, setField] = useState('name');
 
-  const advance = () => {
-    setField((f) => {
-      if (f === 'name') return 'email';
-      if (f === 'email') return 'submit';
-      return 'name';
-    });
-  };
+  const advance = () =>
+    setField((f) => (f === 'name' ? 'email' : f === 'email' ? 'submit' : 'name'));
 
   return (
-    <FocusGroup value={field} navigable={false} keybindings={{ tab: advance }}>
-      <TextInput id="name" label="Name" />
-      <TextInput id="email" label="Email" />
-      <Button id="submit" label="Submit" />
+    <FocusGroup value={field} keybindings={{ n: advance }}>
+      <Field id="name" label="Name" />
+      <Field id="email" label="Email" />
+      <Field id="submit" label="Submit" />
     </FocusGroup>
   );
 }
 
-function TextInput({ id, label }: { id: string; label: string }) {
-  const focus = useFocus(id);
+function Field({ id, label }: { id: string; label: string }) {
+  const focus = useFocusNode(id);
   return <Text color={focus.focused ? 'green' : 'white'}>{label}</Text>;
 }
 ```
@@ -223,35 +233,66 @@ function TextInput({ id, label }: { id: string; label: string }) {
 </Terminal>
 
 <Callout type="warn">
-  Each child within a FocusGroup must have a unique id. Duplicate IDs will throw a `GigglesError`.
+  Each child within a `FocusGroup` using `value` must pass a unique `id` to `useFocusNode`. Duplicate IDs will throw a `GigglesError`.
 </Callout>
 
-### Horizontal tabs
+### File tree
 
-```tsx title="Tab Bar"
-import { FocusGroup, useFocus } from 'giggles';
-import { Box, Text } from 'ink';
+A collapsible file tree with two levels of navigation. The root group uses `j`/`k` to move between top-level entries. Each directory is its own `FocusGroup` — pressing `l` expands it and focus moves to the first file automatically via `useEffect`. Once inside, `j`/`k` on the inner group shadow the root group's bindings. Pressing `h` or `escape` collapses the directory, unmounting the inner group and automatically returning focus to the directory node so the root group's `j`/`k` resume. `useFocus` on the directory row stays green as long as any descendant has focus.
 
-function TabBar() {
+```tsx title="File Tree"
+import { FocusGroup, useFocus, useFocusNode } from 'giggles';
+
+function FileItem({ name, indent = false, autoFocus = false }: { name: string; indent?: boolean; autoFocus?: boolean }) {
+  const focus = useFocusNode();
+  useEffect(() => {
+    if (autoFocus) focus.focus();
+  }, []);
   return (
-    <FocusGroup direction="horizontal">
-      <Tab label="General" />
-      <Tab label="Keybindings" />
-      <Tab label="Appearance" />
+    <Text color={focus.focused ? 'green' : 'white'}>
+      {indent ? '    ' : '  '}
+      {focus.focused ? '> ' : '  '}
+      {name}
+    </Text>
+  );
+}
+
+function DirContent({ name, files, open, onClose }: { name: string; files: string[]; open: boolean; onClose: () => void }) {
+  const { focused } = useFocus();
+  return (
+    <Box flexDirection="column">
+      <Text color={focused ? 'green' : 'white'}>
+        {'  '}{open ? '▼' : '▶'} {name}/
+      </Text>
+      {open && (
+        <FocusGroup wrap={false} keybindings={({ next, prev }) => ({ j: next, k: prev, h: onClose, escape: onClose })}>
+          {files.map((f, i) => <FileItem key={f} name={f} indent autoFocus={i === 0} />)}
+        </FocusGroup>
+      )}
+    </Box>
+  );
+}
+
+function DirItem({ name, files }: { name: string; files: string[] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <FocusGroup keybindings={open ? {} : { l: () => setOpen(true), enter: () => setOpen(true) }}>
+      <DirContent name={name} files={files} open={open} onClose={() => setOpen(false)} />
     </FocusGroup>
   );
 }
 
-function Tab({ label }: { label: string }) {
-  const focus = useFocus();
+function FileTree() {
   return (
-    <Box paddingX={1}>
-      <Text bold={focus.focused} underline={focus.focused}>{label}</Text>
-    </Box>
+    <FocusGroup keybindings={({ next, prev }) => ({ j: next, k: prev })}>
+      <DirItem name="src" files={['index.ts', 'utils.ts', 'types.ts']} />
+      <DirItem name="tests" files={['unit.test.ts', 'e2e.test.ts']} />
+      <FileItem name="package.json" />
+    </FocusGroup>
   );
 }
 ```
 
 <Terminal>
-  <HorizontalTabsExample />
+  <FileTreeExample />
 </Terminal>

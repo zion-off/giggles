@@ -21,24 +21,26 @@ The focus system maintains a tree of nodes that mirrors your component tree. Eac
 
 ### How nodes register
 
-`useFocus()` generates a stable ID with React's `useId()`, then registers a node in the tree on mount and unregisters it on unmount:
+`useFocusNode()` generates a stable ID with React's `useId()`, then registers a node in the tree on mount and unregisters it on unmount:
 
 ```tsx
-const focus = useFocus();
+const focus = useFocusNode();
 // focus.id — the node's ID
-// focus.focused — whether this node is currently focused
+// focus.focused — whether this node or any descendant is currently focused
 // focus.focus() — imperatively move focus to this node
 ```
 
 The parent ID is read from `FocusNodeContext` — a context that each focusable component sets for its subtree. This is how the tree knows who belongs to whom without any explicit prop passing.
 
+`useFocus()` is the companion hook for container components. Instead of registering a new node, it reads the `FocusNodeContext` ID that the nearest `FocusGroup` already published and returns a handle for it. `focused` is true when that group node or any of its descendants is focused — useful for borders and other visual indicators on wrapper components.
+
 When a node unmounts, focus automatically falls back to its `parentId`. The first node to register in the tree is focused automatically.
 
 ### FocusGroup
 
-`FocusGroup` is a focus node that also manages navigation between its children. It registers itself in the tree, sets up keybindings for movement, and publishes its own ID to `FocusNodeContext` so its children register under it.
+`FocusGroup` is a focus node that also scopes navigation for its children. It registers itself in the tree and publishes its own ID to `FocusNodeContext` so its children register under it.
 
-For vertical groups, it binds `j`/`k`, `up`/`down`, `tab`/`shift+tab`. For horizontal groups, `h`/`l`, `left`/`right`, `tab`/`shift+tab`. Custom keybindings are merged on top. Navigation calls `navigateSibling`, which walks the sibling list and moves focus to the next or previous child — descending into the first leaf if the target has children of its own.
+Navigation is explicit: the `keybindings` prop accepts a function that receives `next`, `prev`, and `escape` helpers and returns a key map. `next` and `prev` call `navigateSibling`, which walks the sibling list and moves focus to the adjacent child — descending into the first leaf if the target has children of its own. `escape` focuses the group's own node, yielding control back to the parent group. No keys are bound automatically, so nested groups cannot shadow each other's bindings.
 
 ### Active branch path
 

@@ -14,7 +14,7 @@ inspired by the [charmbracelet](https://github.com/charmbracelet) ecosystem, it 
 
 - no `useInput` hooks scattered across your app — focus, input routing, and keyboard navigation are handled for you
 - navigate between views with a simple API; the previously focused component is restored when you return
-- a full set of hooks and components — `useFocus`, `FocusGroup`, `FocusTrap`, `useNavigation`, and more — for building any interaction pattern without reimplementing the plumbing
+- a full set of hooks and components — `useFocus`, `useFocusNode`, `FocusGroup`, `FocusTrap`, `useNavigation`, and more — for building any interaction pattern without reimplementing the plumbing
 - built-in keybinding registry so your app can always show users what keys do what, in the current context — context-aware and accessible via a hook
 - a component library covering most TUI use cases, from text inputs and autocomplete to virtual lists for large datasets — with sensible defaults and render props for full customization
 - render markdown in the terminal, with full formatting and syntax-highlighted code block and diff support
