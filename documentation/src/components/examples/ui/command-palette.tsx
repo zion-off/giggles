@@ -1,12 +1,12 @@
 'use client';
 
-import { FocusGroup, GigglesProvider, useFocus, useKeybindings } from 'giggles';
+import { FocusGroup, GigglesProvider, useFocusNode, useKeybindings } from 'giggles';
 import { CommandPalette } from 'giggles/ui';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
 
 function FileList() {
-  const focus = useFocus();
+  const focus = useFocusNode();
 
   useKeybindings(focus, {
     d: { action: () => {}, name: 'Delete file' },
@@ -22,7 +22,7 @@ function FileList() {
 }
 
 function Sidebar() {
-  const focus = useFocus();
+  const focus = useFocusNode();
 
   useKeybindings(focus, {
     n: { action: () => {}, name: 'New folder' },
@@ -37,7 +37,7 @@ function Sidebar() {
 }
 
 function App() {
-  const focus = useFocus();
+  const focus = useFocusNode();
   const [showPalette, setShowPalette] = useState(false);
 
   useKeybindings(focus, {
@@ -47,7 +47,7 @@ function App() {
 
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
-      <FocusGroup>
+      <FocusGroup keybindings={({ next, prev }) => ({ tab: next, 'shift+tab': prev })}>
         <Sidebar />
         <FileList />
       </FocusGroup>

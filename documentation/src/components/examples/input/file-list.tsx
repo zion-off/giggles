@@ -1,11 +1,11 @@
 'use client';
 
-import { GigglesProvider, useFocus, useKeybindings } from 'giggles';
+import { GigglesProvider, useFocusNode, useKeybindings } from 'giggles';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
 
 function FileList() {
-  const focus = useFocus();
+  const focus = useFocusNode();
   const [selected, setSelected] = useState(0);
   const files = ['file1.ts', 'file2.ts', 'file3.ts'];
 

@@ -1,11 +1,11 @@
 'use client';
 
-import { GigglesProvider, Router, Screen, useFocus, useKeybindings, useNavigation } from 'giggles';
+import { GigglesProvider, Router, Screen, useFocusNode, useKeybindings, useNavigation } from 'giggles';
 import { Box, Text } from 'ink-web';
 
 function Home() {
   const { push } = useNavigation();
-  const focus = useFocus();
+  const focus = useFocusNode();
 
   useKeybindings(focus, {
     s: () => push('settings'),
@@ -22,7 +22,7 @@ function Home() {
 
 function Settings() {
   const { pop } = useNavigation();
-  const focus = useFocus();
+  const focus = useFocusNode();
 
   useKeybindings(focus, {
     q: () => pop()
@@ -38,7 +38,7 @@ function Settings() {
 
 function Detail() {
   const { pop, currentRoute } = useNavigation();
-  const focus = useFocus();
+  const focus = useFocusNode();
 
   useKeybindings(focus, {
     q: () => pop()

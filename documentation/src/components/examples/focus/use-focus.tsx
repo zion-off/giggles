@@ -1,11 +1,11 @@
 'use client';
 
-import { FocusGroup, GigglesProvider, useFocus, useKeybindings } from 'giggles';
+import { FocusGroup, GigglesProvider, useFocusNode, useKeybindings } from 'giggles';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
 
 function MenuItem({ label }: { label: string }) {
-  const focus = useFocus();
+  const focus = useFocusNode();
   const [selected, setSelected] = useState(false);
 
   useKeybindings(focus, {
@@ -26,7 +26,7 @@ export default function UseFocusExample() {
     <GigglesProvider fullScreen={false}>
       <Box flexDirection="column" paddingX={2} paddingY={1}>
         <Text bold>My Menu</Text>
-        <FocusGroup direction="vertical">
+        <FocusGroup keybindings={({ next, prev }) => ({ j: next, k: prev, down: next, up: prev })}>
           <MenuItem label="Start Game" />
           <MenuItem label="Settings" />
           <MenuItem label="Exit" />

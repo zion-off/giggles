@@ -1,11 +1,11 @@
 'use client';
 
-import { FocusGroup, GigglesProvider, useFocus } from 'giggles';
+import { FocusGroup, GigglesProvider, useFocusNode } from 'giggles';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
 
 function Field({ id, label }: { id: string; label: string }) {
-  const focus = useFocus(id);
+  const focus = useFocusNode(id);
   return (
     <Text color={focus.focused ? 'green' : 'white'}>
       {focus.focused ? '> ' : '  '}
@@ -28,7 +28,7 @@ function Form() {
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <Text bold>Form</Text>
-      <FocusGroup value={field} navigable={false} keybindings={{ n: advance }}>
+      <FocusGroup value={field} keybindings={{ n: advance }}>
         <Field id="name" label="Name" />
         <Field id="email" label="Email" />
         <Field id="submit" label="Submit" />

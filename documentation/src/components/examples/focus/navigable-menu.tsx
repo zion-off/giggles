@@ -1,10 +1,10 @@
 'use client';
 
-import { FocusGroup, GigglesProvider, useFocus } from 'giggles';
+import { FocusGroup, GigglesProvider, useFocusNode } from 'giggles';
 import { Box, Text } from 'ink-web';
 
 function MenuItem({ label }: { label: string }) {
-  const focus = useFocus();
+  const focus = useFocusNode();
   return (
     <Text color={focus.focused ? 'green' : 'white'}>
       {focus.focused ? '> ' : '  '}
@@ -18,7 +18,7 @@ export default function NavigableMenuExample() {
     <GigglesProvider fullScreen={false}>
       <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
         <Text bold>Menu</Text>
-        <FocusGroup direction="vertical">
+        <FocusGroup keybindings={({ next, prev }) => ({ j: next, k: prev, down: next, up: prev })}>
           <MenuItem label="New File" />
           <MenuItem label="Open File" />
           <MenuItem label="Save" />
