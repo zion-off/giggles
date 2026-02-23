@@ -238,16 +238,13 @@ function Field({ id, label }: { id: string; label: string }) {
 
 ### File tree
 
-A collapsible file tree with two levels of navigation. The root group uses `j`/`k` to move between top-level entries. Each directory is its own `FocusGroup` — pressing `l` expands it and focus moves to the first file automatically via `useEffect`. Once inside, `j`/`k` on the inner group shadow the root group's bindings. Pressing `h` or `escape` collapses the directory, unmounting the inner group and automatically returning focus to the directory node so the root group's `j`/`k` resume. `useFocus` on the directory row stays green as long as any descendant has focus.
+A collapsible file tree with two levels of navigation. The root group uses `j`/`k` to move between top-level entries. Each directory is its own `FocusGroup` — `l` expands it, then `j` enters it. When DirItem's own node is focused and `next` is called, the framework focuses the first child of the group, descending to the first leaf. Once inside, `j`/`k` on the inner group shadow the root group's bindings. `h` collapses the directory, unmounting the inner group and automatically returning focus to the directory node. `useFocus` on the directory row stays green as long as any descendant has focus.
 
 ```tsx title="File Tree"
-import { FocusGroup, useFocus, useFocusNode } from 'giggles';
+import { FocusGroup, useFocus, useFocusNode, useTheme } from 'giggles';
 
-function FileItem({ name, indent = false, autoFocus = false }: { name: string; indent?: boolean; autoFocus?: boolean }) {
+function FileItem({ name, indent = false }: { name: string; indent?: boolean }) {
   const focus = useFocusNode();
-  useEffect(() => {
-    if (autoFocus) focus.focus();
-  }, []);
   return (
     <Text color={focus.focused ? 'green' : 'white'}>
       {indent ? '    ' : '  '}
@@ -259,14 +256,15 @@ function FileItem({ name, indent = false, autoFocus = false }: { name: string; i
 
 function DirContent({ name, files, open, onClose }: { name: string; files: string[]; open: boolean; onClose: () => void }) {
   const { focused } = useFocus();
+  const { indicator, indicatorOpen } = useTheme();
   return (
     <Box flexDirection="column">
       <Text color={focused ? 'green' : 'white'}>
-        {'  '}{open ? '▼' : '▶'} {name}/
+        {'  '}{open ? indicatorOpen : indicator} {name}/
       </Text>
       {open && (
-        <FocusGroup wrap={false} keybindings={({ next, prev }) => ({ j: next, k: prev, h: onClose, escape: onClose })}>
-          {files.map((f, i) => <FileItem key={f} name={f} indent autoFocus={i === 0} />)}
+        <FocusGroup wrap={false} keybindings={({ next, prev }) => ({ j: next, k: prev, h: onClose })}>
+          {files.map((f) => <FileItem key={f} name={f} indent />)}
         </FocusGroup>
       )}
     </Box>
@@ -276,7 +274,13 @@ function DirContent({ name, files, open, onClose }: { name: string; files: strin
 function DirItem({ name, files }: { name: string; files: string[] }) {
   const [open, setOpen] = useState(false);
   return (
-    <FocusGroup keybindings={open ? {} : { l: () => setOpen(true), enter: () => setOpen(true) }}>
+    <FocusGroup
+      keybindings={({ next }) =>
+        open
+          ? { j: next, h: () => setOpen(false) }
+          : { l: () => setOpen(true), enter: () => setOpen(true) }
+      }
+    >
       <DirContent name={name} files={files} open={open} onClose={() => setOpen(false)} />
     </FocusGroup>
   );

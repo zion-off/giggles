@@ -77,9 +77,14 @@ render(
       default: <Swatch color="#A0A0A0" />,
     },
     indicator: {
-      description: 'Character used for focus indicators',
+      description: 'Character used for collapsed or inactive state (e.g. closed directory, unselected item)',
       type: 'string',
       default: "'▶'",
+    },
+    indicatorOpen: {
+      description: 'Character used for expanded or active state (e.g. open directory)',
+      type: 'string',
+      default: "'▼'",
     },
     checkedIndicator: {
       description: 'Character shown for selected items in MultiSelect',
