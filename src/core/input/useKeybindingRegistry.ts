@@ -1,6 +1,6 @@
 import type { FocusHandle } from '../focus';
 import { useFocusContext } from '../focus/FocusContext';
-import { useInputContext } from './InputContext';
+import { useStore } from '../focus/StoreContext';
 import type { RegisteredKeybinding } from './types';
 
 export type KeybindingRegistry = {
@@ -10,15 +10,17 @@ export type KeybindingRegistry = {
 };
 
 export function useKeybindingRegistry(focus?: FocusHandle): KeybindingRegistry {
-  const { getAllBindings, getTrapNodeId } = useInputContext();
+  const store = useStore();
+  // Active branch path still comes from the old FocusContext while the focus
+  // tree lives there. This will move to store.getActiveBranchPath() in chunk #4.
   const { getActiveBranchPath } = useFocusContext();
 
-  const all = getAllBindings().filter((b) => b.name != null);
+  const all = store.getAllBindings().filter((b) => b.name != null);
 
   const branchPath = getActiveBranchPath();
   const branchSet = new Set(branchPath);
 
-  const trapNodeId = getTrapNodeId();
+  const trapNodeId = store.getTrapNodeId();
   const withinTrapSet = (() => {
     if (!trapNodeId) return null;
     const trapIndex = branchPath.indexOf(trapNodeId);

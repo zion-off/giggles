@@ -1,7 +1,31 @@
+import type { Key, KeyHandler, KeybindingOptions, Keybindings, RegisteredKeybinding } from '../input/types';
+
 type FocusNode = {
   id: string;
   parentId: string | null;
   childrenIds: string[];
+};
+
+type BindingEntry = {
+  handler: KeyHandler;
+  name?: string;
+  when?: 'focused' | 'mounted';
+};
+
+type BindingRegistration = {
+  bindings: Map<string, BindingEntry>;
+  capture: boolean;
+  onKeypress?: (input: string, key: Key) => void;
+  passthrough?: Set<string>;
+  layer?: string;
+};
+
+export type NodeBindings = {
+  bindings: Map<string, BindingEntry>;
+  capture: boolean;
+  onKeypress?: (input: string, key: Key) => void;
+  passthrough?: Set<string>;
+  layer?: string;
 };
 
 export class FocusStore {
@@ -13,6 +37,11 @@ export class FocusStore {
   private pendingFocusFirstChild: Set<string> = new Set();
   private trapNodeId: string | null = null;
   private listeners: Set<() => void> = new Set();
+  // nodeId → registrationId → BindingRegistration
+  // Keybindings register synchronously during render; nodes register in useEffect.
+  // A keybinding may exist for a node that has not yet appeared in the node tree —
+  // this is safe because dispatch only walks nodes in the active branch path.
+  private keybindings: Map<string, Map<string, BindingRegistration>> = new Map();
 
   // ---------------------------------------------------------------------------
   // Subscription
@@ -283,6 +312,110 @@ export class FocusStore {
 
   getTrapNodeId(): string | null {
     return this.trapNodeId;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Keybinding registry
+  // ---------------------------------------------------------------------------
+
+  registerKeybindings(
+    nodeId: string,
+    registrationId: string,
+    bindings: Keybindings,
+    options?: KeybindingOptions
+  ): void {
+    const entries: [string, BindingEntry][] = Object.entries(bindings)
+      .filter((entry): entry is [string, NonNullable<(typeof bindings)[string]>] => entry[1] != null)
+      .map(([key, def]) => {
+        if (typeof def === 'function') {
+          return [key, { handler: def }];
+        }
+        return [key, { handler: def.action, name: def.name, when: def.when }];
+      });
+
+    const registration: BindingRegistration = {
+      bindings: new Map(entries),
+      capture: options?.capture ?? false,
+      onKeypress: options?.onKeypress,
+      passthrough: options?.passthrough ? new Set(options.passthrough) : undefined,
+      layer: options?.layer
+    };
+
+    if (!this.keybindings.has(nodeId)) {
+      this.keybindings.set(nodeId, new Map());
+    }
+    this.keybindings.get(nodeId)!.set(registrationId, registration);
+  }
+
+  unregisterKeybindings(nodeId: string, registrationId: string): void {
+    const nodeRegistrations = this.keybindings.get(nodeId);
+    if (nodeRegistrations) {
+      nodeRegistrations.delete(registrationId);
+      if (nodeRegistrations.size === 0) {
+        this.keybindings.delete(nodeId);
+      }
+    }
+  }
+
+  getNodeBindings(nodeId: string): NodeBindings | undefined {
+    const nodeRegistrations = this.keybindings.get(nodeId);
+    if (!nodeRegistrations || nodeRegistrations.size === 0) return undefined;
+
+    // Merge all registrations for this node in insertion order.
+    // Later registrations override earlier ones for the same key.
+    const mergedBindings = new Map<string, BindingEntry>();
+    let finalCapture = false;
+    let finalOnKeypress: ((input: string, key: Key) => void) | undefined;
+    let finalPassthrough: Set<string> | undefined;
+    let finalLayer: string | undefined;
+
+    for (const registration of nodeRegistrations.values()) {
+      const isCaptureRegistration = registration.onKeypress !== undefined;
+      const shouldIncludeBindings = !isCaptureRegistration || registration.capture;
+
+      if (shouldIncludeBindings) {
+        for (const [key, entry] of registration.bindings) {
+          mergedBindings.set(key, entry);
+        }
+      }
+
+      if (registration.capture) {
+        finalCapture = true;
+        finalOnKeypress = registration.onKeypress;
+        finalPassthrough = registration.passthrough;
+      }
+
+      if (registration.layer) {
+        finalLayer = registration.layer;
+      }
+    }
+
+    return {
+      bindings: mergedBindings,
+      capture: finalCapture,
+      onKeypress: finalOnKeypress,
+      passthrough: finalPassthrough,
+      layer: finalLayer
+    };
+  }
+
+  getAllBindings(): RegisteredKeybinding[] {
+    const all: RegisteredKeybinding[] = [];
+    for (const [nodeId, nodeRegistrations] of this.keybindings) {
+      for (const registration of nodeRegistrations.values()) {
+        for (const [key, entry] of registration.bindings) {
+          all.push({
+            nodeId,
+            key,
+            handler: entry.handler,
+            name: entry.name,
+            when: entry.when,
+            layer: registration.layer
+          });
+        }
+      }
+    }
+    return all;
   }
 
   // ---------------------------------------------------------------------------

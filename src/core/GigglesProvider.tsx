@@ -3,7 +3,7 @@ import { AlternateScreen } from '../terminal/components/AlternateScreen';
 import { FocusProvider } from './focus';
 import { FocusStore } from './focus/FocusStore';
 import { StoreContext } from './focus/StoreContext';
-import { InputProvider, InputRouter } from './input';
+import { InputRouter } from './input';
 import { type GigglesTheme, ThemeProvider } from './theme';
 
 type GigglesProviderProps = {
@@ -25,9 +25,7 @@ export function GigglesProvider({ theme, fullScreen, children }: GigglesProvider
       <ThemeProvider theme={theme}>
         <StoreContext.Provider value={storeRef.current}>
           <FocusProvider>
-            <InputProvider>
-              <InputRouter>{children}</InputRouter>
-            </InputProvider>
+            <InputRouter>{children}</InputRouter>
           </FocusProvider>
         </StoreContext.Provider>
       </ThemeProvider>
