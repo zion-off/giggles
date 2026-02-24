@@ -15,16 +15,16 @@ import { useTerminalSize, useTerminalFocus, useShellOut, useSpawn } from 'giggle
 ```
 
 ```tsx title="Shell Out Example"
-import { useKeybindings, useFocus } from 'giggles';
+import { useKeybindings, useFocusScope } from 'giggles';
 import { useShellOut, useTerminalSize } from 'giggles/terminal';
 import { Box, Text } from 'ink';
 
 function Editor({ path }: { path: string }) {
-  const focus = useFocus();
+  const scope = useFocusScope();
   const shell = useShellOut();
   const { columns } = useTerminalSize();
 
-  useKeybindings(focus, {
+  useKeybindings(scope, {
     e: async () => {
       const { exitCode } = await shell.run(`${process.env.EDITOR ?? 'vim'} ${path}`);
       if (exitCode === 0) reload();
@@ -227,15 +227,15 @@ function Timer() {
 ### Stream command output
 
 ```tsx title="Docker Logs"
-import { useFocus, useKeybindings } from 'giggles';
+import { useFocusScope, useKeybindings } from 'giggles';
 import { useSpawn } from 'giggles/terminal';
 import { Box, Text } from 'ink';
 
 function DockerLogs({ container }: { container: string }) {
-  const focus = useFocus();
+  const scope = useFocusScope();
   const { output, running, error, run, kill } = useSpawn();
 
-  useKeybindings(focus, {
+  useKeybindings(scope, {
     r: () => run('docker', ['logs', '-f', container], { pty: true }),
     k: kill,
   });
@@ -256,15 +256,15 @@ function DockerLogs({ container }: { container: string }) {
 ### Open $EDITOR
 
 ```tsx title="Edit a File"
-import { useFocus, useKeybindings } from 'giggles';
+import { useFocusScope, useKeybindings } from 'giggles';
 import { useShellOut } from 'giggles/terminal';
 import { Text } from 'ink';
 
 function FileViewer({ path }: { path: string }) {
-  const focus = useFocus();
+  const scope = useFocusScope();
   const shell = useShellOut();
 
-  useKeybindings(focus, {
+  useKeybindings(scope, {
     e: async () => {
       await shell.run(`${process.env.EDITOR ?? 'vim'} ${path}`);
     },
