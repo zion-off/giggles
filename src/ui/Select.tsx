@@ -21,8 +21,8 @@ export type SelectRenderProps<T> = {
 
 type SelectProps<T> = {
   options: SelectOption<T>[];
-  value: T;
-  onChange: (value: T) => void;
+  value?: T;
+  onChange?: (value: T) => void;
   onSubmit?: (value: T) => void;
   onHighlight?: (value: T) => void;
   label?: string;
@@ -80,7 +80,7 @@ export function Select<T>({
       setHighlightIndex(next);
       onHighlight?.(options[next]!.value);
       if (immediate) {
-        onChange(options[next]!.value);
+        onChange?.(options[next]!.value);
       }
     }
   };
@@ -100,7 +100,7 @@ export function Select<T>({
       if (immediate) {
         onSubmit?.(options[safeIndex]!.value);
       } else {
-        onChange(options[safeIndex]!.value);
+        onChange?.(options[safeIndex]!.value);
         onSubmit?.(options[safeIndex]!.value);
       }
     }
@@ -110,7 +110,7 @@ export function Select<T>({
 
   const renderOption = ({ item: option, index }: { item: SelectOption<T>; index: number }) => {
     const highlighted = index === safeIndex;
-    const selected = option.value === value;
+    const selected = value !== undefined && option.value === value;
 
     if (render) {
       return render({ option, focused: focus.hasFocus, highlighted, selected });
