@@ -17,8 +17,8 @@ export type MultiSelectRenderProps<T> = {
 
 type MultiSelectProps<T> = {
   options: SelectOption<T>[];
-  value: T[];
-  onChange: (value: T[]) => void;
+  value?: T[];
+  onChange?: (value: T[]) => void;
   onSubmit?: (value: T[]) => void;
   onHighlight?: (value: T) => void;
   label?: string;
@@ -56,6 +56,9 @@ export function MultiSelect<T>({
   const focus = useFocusNode();
   const theme = useTheme();
   const [highlightIndex, setHighlightIndex] = useState(0);
+  const [internalSelected, setInternalSelected] = useState<T[]>([]);
+  const effectiveValue = value ?? internalSelected;
+  const effectiveOnChange = onChange ?? setInternalSelected;
 
   const safeIndex = options.length === 0 ? -1 : Math.min(highlightIndex, options.length - 1);
 
@@ -79,8 +82,8 @@ export function MultiSelect<T>({
   const toggle = () => {
     if (options.length === 0) return;
     const item = options[safeIndex]!.value;
-    const exists = value.includes(item);
-    onChange(exists ? value.filter((v) => v !== item) : [...value, item]);
+    const exists = effectiveValue.includes(item);
+    effectiveOnChange(exists ? effectiveValue.filter((v) => v !== item) : [...effectiveValue, item]);
   };
 
   const prev = () => moveHighlight(-1);
@@ -94,14 +97,14 @@ export function MultiSelect<T>({
   useKeybindings(focus, {
     ...navBindings,
     ' ': toggle,
-    ...(onSubmit && { enter: () => onSubmit(value) })
+    ...(onSubmit && { enter: () => onSubmit(effectiveValue) })
   });
 
   const isHorizontal = direction === 'horizontal';
 
   const renderOption = ({ item: option, index }: { item: SelectOption<T>; index: number }) => {
     const highlighted = index === safeIndex;
-    const selected = value.includes(option.value);
+    const selected = effectiveValue.includes(option.value);
 
     if (render) {
       return render({ option, focused: focus.hasFocus, highlighted, selected });
