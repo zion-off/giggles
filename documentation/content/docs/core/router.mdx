@@ -5,6 +5,7 @@ description: API reference for the screen router
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Callout } from 'fumadocs-ui/components/callout';
+import { Terminal } from '@/components/terminal';
 import BasicRouterExample from '@/components/examples/router/basic-router';
 
 Stack-based screen navigation. Screens stay mounted when pushed to preserve state.
@@ -14,7 +15,7 @@ When you `push` a screen, it's added to the top of the stack. When you `pop`, th
 The Router integrates with the focus system automatically — when a screen becomes the top of the stack, its first focusable child receives focus. When navigating back to a previous screen, focus is restored to whichever element was focused before the screen was covered. This can be disabled with `restoreFocus={false}`, which always focuses the first child instead.
 
 ```tsx title="Basic Usage"
-import { GigglesProvider, Router, Screen, useNavigation, useFocus, useKeybindings } from 'giggles';
+import { GigglesProvider, Router, Screen, useNavigation, useFocusNode, useKeybindings } from 'giggles';
 import { Text } from 'ink';
 
 function App() {
@@ -30,7 +31,7 @@ function App() {
 
 function Home() {
   const { push } = useNavigation();
-  const focus = useFocus();
+  const focus = useFocusNode();
 
   useKeybindings(focus, {
     s: () => push('settings'),
@@ -41,7 +42,7 @@ function Home() {
 
 function Settings() {
   const { pop, canGoBack } = useNavigation();
-  const focus = useFocus();
+  const focus = useFocusNode();
 
   useKeybindings(focus, {
     q: () => pop(),
