@@ -6,6 +6,7 @@ description: API reference for the TextInput component
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Terminal } from '@/components/terminal';
 import TextInputExample from '@/components/examples/ui/text-input';
+import TextInputCustomExample from '@/components/examples/ui/text-input-custom';
 
 A controlled single-line text input with cursor navigation, inline editing, and render prop support.
 
@@ -51,7 +52,7 @@ function NameInput() {
       type: 'string',
     },
     placeholder: {
-      description: 'Dimmed text shown when the value is empty and the input is not focused',
+      description: 'Text shown when the value is empty. When unfocused, rendered dimmed. When focused, the cursor sits at position 0 of the placeholder text.',
       type: 'string',
     },
     render: {
@@ -105,6 +106,10 @@ The `render` prop receives pre-split text segments around the cursor.
       type: 'string',
       required: true,
     },
+    placeholder: {
+      description: 'The placeholder string, if provided. Use this to implement cursor-on-placeholder behaviour in custom renders.',
+      type: 'string',
+    },
   }}
 />
 
@@ -114,39 +119,60 @@ The `render` prop receives pre-split text segments around the cursor.
 
 ```tsx title="Form with Submit"
 import { TextInput } from 'giggles/ui';
-import { FocusGroup } from 'giggles';
 import { useState } from 'react';
 
 function SearchForm() {
   const [query, setQuery] = useState('');
 
   return (
-    <FocusGroup>
-      <TextInput
-        label="Search:"
-        value={query}
-        onChange={setQuery}
-        onSubmit={(value) => performSearch(value)}
-        placeholder="type to search..."
-      />
-    </FocusGroup>
+    <TextInput
+      label="Search:"
+      value={query}
+      onChange={setQuery}
+      onSubmit={(value) => performSearch(value)}
+      placeholder="type to search..."
+    />
   );
 }
 ```
 
 ### Custom render
 
+The `render` prop gives full control over how the input is displayed. The `placeholder` prop is forwarded into render props so custom renders can replicate the cursor-on-placeholder behaviour.
+
 ```tsx title="Custom Render"
-<TextInput
-  label="Notes:"
-  value={value}
-  onChange={setValue}
-  render={({ before, cursorChar, after, focused }) => (
-    <Text color={focused ? 'cyan' : 'white'}>
-      {before}
-      <Text inverse>{cursorChar}</Text>
-      {after}
-    </Text>
-  )}
-/>
+function SearchBar() {
+  const [query, setQuery] = useState('');
+
+  return (
+    <TextInput
+      value={query}
+      onChange={setQuery}
+      placeholder="Search components..."
+      render={({ before, cursorChar, after, focused, value, placeholder }) => {
+        const empty = value.length === 0;
+
+        let content;
+        if (focused && empty && placeholder) {
+          content = <Text><Text inverse>{placeholder[0]}</Text><Text dimColor>{placeholder.slice(1)}</Text></Text>;
+        } else if (focused) {
+          content = <Text>{before}<Text inverse>{cursorChar}</Text>{after}</Text>;
+        } else {
+          content = <Text dimColor={empty}>{empty ? placeholder : value}</Text>;
+        }
+
+        return (
+          <Box borderStyle="round" borderColor={focused ? 'cyan' : 'gray'} paddingX={1} gap={1} width={36}>
+            <Text color={focused ? 'cyan' : 'gray'}>/</Text>
+            {content}
+          </Box>
+        );
+      }}
+    />
+  );
+}
 ```
+
+<Terminal>
+  <TextInputCustomExample />
+</Terminal>
