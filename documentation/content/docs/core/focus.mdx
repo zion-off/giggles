@@ -236,18 +236,14 @@ function MyComponent({ focus }: { focus: FocusNodeHandle }) {
 
 ### Nested navigation
 
-Scopes that use the same keys at different nesting levels don't conflict — the innermost scope that handles a key wins. When you want to yield control back to the parent (for example, to navigate between panels with the same j/k keys used inside them), call `escape()` from the inner scope's keybindings.
+If inner and outer scopes use different keys, normal key bubbling handles the separation automatically — no extra machinery needed. Passive mode only becomes necessary when the same keys need to mean different things at different nesting levels.
 
-After `escape()`, the scope enters passive mode: `isPassive` becomes `true` and the scope is skipped during input dispatch. The parent scope's j/k now fire instead. Passive mode clears automatically when focus moves to a different scope.
+In this example, `j`/`k` navigate items inside each panel and also switch between panels at the root. Because the inner scope consumes `j`/`k`, they never reach the root while a panel is active. Calling `escape()` puts the panel into passive mode — it is skipped during dispatch, so the root's `j`/`k` fire instead. Passive mode clears automatically when focus moves to a different scope.
 
 ```tsx title="Two Panels"
 function Panel({ title, items }: { title: string; items: string[] }) {
   const scope = useFocusScope({
-    keybindings: ({ next, prev, escape }) => ({
-      j: next,
-      k: prev,
-      h: escape  // yield — parent's j/k take over
-    })
+    keybindings: ({ escape }) => ({ e: escape })  // yield — parent's j/k take over
   });
 
   return (
@@ -257,7 +253,7 @@ function Panel({ title, items }: { title: string; items: string[] }) {
         borderColor={scope.isPassive ? 'yellow' : scope.hasFocus ? 'green' : 'grey'}
       >
         <Text>{title}</Text>
-        {items.map((item) => <Item key={item} label={item} />)}
+        <Select options={items.map(i => ({ label: i, value: i }))} />
       </Box>
     </FocusScope>
   );
@@ -288,32 +284,8 @@ A collapsible file tree with two levels of navigation. The root scope uses `next
 The directory header's color reflects `scope.hasFocus`, which is true whenever any descendant — including files deep inside — has focus. This eliminates the need for a separate hook to read parent focus state.
 
 ```tsx title="File Tree"
-import { FocusScope, useFocusNode, useFocusScope, useTheme } from 'giggles';
-
-function FileItem({ name, indent = false }: { name: string; indent?: boolean }) {
-  const focus = useFocusNode();
-  return (
-    <Text color={focus.hasFocus ? 'green' : 'white'}>
-      {indent ? '    ' : '  '}
-      {focus.hasFocus ? '> ' : '  '}
-      {name}
-    </Text>
-  );
-}
-
-function FileList({ files, onClose }: { files: string[]; onClose: () => void }) {
-  const scope = useFocusScope({
-    keybindings: ({ next, prev }) => ({
-      j: next, k: prev, down: next, up: prev,
-      h: onClose
-    })
-  });
-  return (
-    <FocusScope handle={scope}>
-      {files.map((f) => <FileItem key={f} name={f} indent />)}
-    </FocusScope>
-  );
-}
+import { FocusScope, useFocusScope, useTheme } from 'giggles';
+import { Select } from 'giggles/ui';
 
 function DirItem({ name, files }: { name: string; files: string[] }) {
   const [open, setOpen] = useState(false);
@@ -330,9 +302,11 @@ function DirItem({ name, files }: { name: string; files: string[] }) {
     <FocusScope handle={scope}>
       <Box flexDirection="column">
         <Text color={scope.hasFocus ? 'green' : 'white'}>
-          {'  '}{open ? indicatorOpen : indicator} {name}/
+          {open ? indicatorOpen : indicator} {name}/
         </Text>
-        {open && <FileList files={files} onClose={() => setOpen(false)} />}
+        {open && (
+          <Select options={files.map(f => ({ label: f, value: f }))} />
+        )}
       </Box>
     </FocusScope>
   );
@@ -341,7 +315,7 @@ function DirItem({ name, files }: { name: string; files: string[] }) {
 function FileTree() {
   const root = useFocusScope({
     keybindings: ({ nextShallow, prevShallow }) => ({
-      j: nextShallow, k: prevShallow, down: nextShallow, up: prevShallow
+      j: nextShallow, k: prevShallow
     })
   });
 
@@ -349,7 +323,6 @@ function FileTree() {
     <FocusScope handle={root}>
       <DirItem name="src" files={['index.ts', 'utils.ts', 'types.ts']} />
       <DirItem name="tests" files={['unit.test.ts', 'e2e.test.ts']} />
-      <FileItem name="package.json" />
     </FocusScope>
   );
 }
