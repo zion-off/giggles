@@ -36,8 +36,8 @@ export function Paginator({ total, offset, visible, gap = 0, style = 'arrows', p
     return (
       <Text>
         {Array.from({ length: totalPages }, (_, i) => (
-          <Text key={i} color={i === currentPage ? theme.accentColor : undefined} dimColor={i !== currentPage}>
-            {i === currentPage ? '●' : '○'}
+          <Text key={i} dimColor={i !== currentPage}>
+            {'●'}
             {i < totalPages - 1 ? ' ' : ''}
           </Text>
         ))}
