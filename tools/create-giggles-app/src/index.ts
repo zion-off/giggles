@@ -122,7 +122,7 @@ async function main() {
 
   const deps: Record<string, string> = {
     giggles: 'latest',
-    ink: '^6.6.0',
+    ink: '^6.8.0',
     react: '^19.2.4'
   };
 
