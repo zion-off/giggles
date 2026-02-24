@@ -51,7 +51,7 @@ export function CodeBlock({ children, language, tokenColors, ...boxProps }: Code
   const content = grammar ? renderTokens(Prism.tokenize(children, grammar), colors) : <Text>{children}</Text>;
 
   return (
-    <Box paddingX={1} borderStyle="round" borderColor={theme.borderColor} {...boxProps}>
+    <Box paddingX={1} borderStyle={theme.borderStyle} borderColor={theme.borderColor} {...boxProps}>
       <Text>{content}</Text>
     </Box>
   );

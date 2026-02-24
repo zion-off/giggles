@@ -9,6 +9,7 @@ export type TextInputRenderProps = {
   before: string;
   cursorChar: string;
   after: string;
+  placeholder?: string;
 };
 
 type TextInputProps = {
@@ -64,7 +65,7 @@ export function TextInput({ label, value, onChange, onSubmit, placeholder, rende
     },
     {
       capture: true,
-      passthrough: ['tab', 'shift+tab', 'enter', 'escape'],
+      passthrough: ['tab', 'shift+tab', 'enter', 'escape', 'backspace', 'delete', 'left', 'right', 'home', 'end'],
       onKeypress: (input, key) => {
         if (input.length === 1 && !key.ctrl && !key.return && !key.escape && !key.tab) {
           const c = cursorRef.current;
@@ -80,19 +81,23 @@ export function TextInput({ label, value, onChange, onSubmit, placeholder, rende
   const after = value.slice(cursor + 1);
 
   if (render) {
-    return <>{render({ value, focused: focus.hasFocus, before, cursorChar, after })}</>;
+    return <>{render({ value, focused: focus.hasFocus, before, cursorChar, after, placeholder })}</>;
   }
 
   const displayValue = value.length > 0 ? value : placeholder ?? '';
   const isPlaceholder = value.length === 0;
 
   if (focus.hasFocus) {
+    const isPlaceholderVisible = value.length === 0 && placeholder != null;
+    const activeCursorChar = isPlaceholderVisible ? placeholder[0] ?? ' ' : cursorChar;
+    const activeAfter = isPlaceholderVisible ? placeholder.slice(1) : after;
+
     return (
       <Text>
         {label != null && <Text bold>{label} </Text>}
         {before}
-        <Text inverse>{cursorChar}</Text>
-        {after}
+        <Text inverse>{activeCursorChar}</Text>
+        {isPlaceholderVisible ? <Text dimColor>{activeAfter}</Text> : activeAfter}
       </Text>
     );
   }
