@@ -7,6 +7,7 @@
   "pages": [
     "index",
     "motivation",
-    "core-concepts"
+    "core-concepts",
+    "agentic-coding"
   ]
 }
