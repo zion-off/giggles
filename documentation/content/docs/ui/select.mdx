@@ -8,7 +8,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 import { Terminal } from '@/components/terminal';
 import SelectExample from '@/components/examples/ui/select';
 
-A controlled single-select list. Navigate with `j`/`k` or arrow keys, confirm with Enter.
+A single-select list. Navigate with `j`/`k` or arrow keys, confirm with Enter.
+
+Works in controlled or uncontrolled mode. Pass `value` and `onChange` to own the selection state yourself; omit them to let the component manage it internally. Use `onHighlight` to observe cursor movement without taking ownership of state.
 
 By default, `onChange` fires when Enter is pressed. Set `immediate` to fire `onChange` on every highlight change instead — useful for previewing the selected option as you browse. Use `onSubmit` to handle the final confirmation separately.
 
@@ -16,7 +18,6 @@ The `direction` prop controls both layout and navigation keys. Vertical uses `j`
 
 ```tsx title="Basic Usage"
 import { Select } from 'giggles/ui';
-import { useState } from 'react';
 
 const languages = [
   { label: 'TypeScript', value: 'ts' },
@@ -24,9 +25,14 @@ const languages = [
   { label: 'Go', value: 'go' },
 ];
 
+// uncontrolled — no useState needed
 function LanguagePicker() {
-  const [lang, setLang] = useState('ts');
+  return <Select options={languages} onSubmit={(lang) => console.log(lang)} />;
+}
 
+// controlled — caller owns selection state
+function ControlledLanguagePicker() {
+  const [lang, setLang] = useState('ts');
   return <Select options={languages} value={lang} onChange={setLang} />;
 }
 ```
@@ -51,14 +57,12 @@ function LanguagePicker() {
       required: true,
     },
     value: {
-      description: 'Currently selected value (controlled)',
+      description: 'Currently selected value. When provided, the component is controlled and the caller owns selection state.',
       type: 'T',
-      required: true,
     },
     onChange: {
-      description: 'Called with the new value when a selection is made. Fires on Enter by default, or on every highlight change when immediate is set.',
+      description: 'Called with the new value when a selection is made. Fires on Enter by default, or on every highlight change when immediate is set. Required when value is provided.',
       type: '(value: T) => void',
-      required: true,
     },
     onSubmit: {
       description: 'Called with the selected value when Enter is pressed. When immediate is set, this is the only way to distinguish confirmation from browsing.',

@@ -1,38 +1,9 @@
 'use client';
 
-import { FocusScope, GigglesProvider, useFocusNode, useFocusScope, useTheme } from 'giggles';
+import { FocusScope, GigglesProvider, useFocusScope, useTheme } from 'giggles';
+import { Select } from 'giggles/ui';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
-
-function FileItem({ name, indent = false }: { name: string; indent?: boolean }) {
-  const focus = useFocusNode();
-  return (
-    <Text color={focus.hasFocus ? 'green' : 'white'}>
-      {indent ? '    ' : '  '}
-      {focus.hasFocus ? '> ' : '  '}
-      {name}
-    </Text>
-  );
-}
-
-function FileList({ files, onClose }: { files: string[]; onClose: () => void }) {
-  const scope = useFocusScope({
-    keybindings: ({ next, prev }) => ({
-      j: next,
-      k: prev,
-      down: next,
-      up: prev,
-      h: onClose
-    })
-  });
-  return (
-    <FocusScope handle={scope}>
-      {files.map((f) => (
-        <FileItem key={f} name={f} indent />
-      ))}
-    </FocusScope>
-  );
-}
 
 function DirItem({ name, files }: { name: string; files: string[] }) {
   const [open, setOpen] = useState(false);
@@ -50,7 +21,7 @@ function DirItem({ name, files }: { name: string; files: string[] }) {
           {'  '}
           {open ? indicatorOpen : indicator} {name}/
         </Text>
-        {open && <FileList files={files} onClose={() => setOpen(false)} />}
+        {open && <Select options={files.map((f) => ({ label: '    ' + f, value: f }))} />}
       </Box>
     </FocusScope>
   );
@@ -72,7 +43,6 @@ function FileTree() {
       <FocusScope handle={root}>
         <DirItem name="src" files={['index.ts', 'utils.ts', 'types.ts']} />
         <DirItem name="tests" files={['unit.test.ts', 'e2e.test.ts']} />
-        <FileItem name="package.json" />
       </FocusScope>
       <Text dimColor>j/k — navigate · l — expand · j — enter · h — collapse</Text>
     </Box>

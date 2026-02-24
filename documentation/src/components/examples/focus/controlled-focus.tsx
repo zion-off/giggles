@@ -1,6 +1,7 @@
 'use client';
 
-import { FocusScope, GigglesProvider, useFocusNode, useFocusScope } from 'giggles';
+import { FocusScope, GigglesProvider, useFocusScope } from 'giggles';
+import { Select } from 'giggles/ui';
 import { Box, Text } from 'ink-web';
 
 const PANELS = [
@@ -10,11 +11,7 @@ const PANELS = [
 
 function Panel({ title, items }: { title: string; items: string[] }) {
   const scope = useFocusScope({
-    keybindings: ({ next, prev, escape }) => ({
-      j: next,
-      k: prev,
-      h: escape
-    })
+    keybindings: ({ escape }) => ({ e: escape })
   });
 
   return (
@@ -30,21 +27,9 @@ function Panel({ title, items }: { title: string; items: string[] }) {
           {title}
           {scope.isPassive ? ' (escaped)' : ''}
         </Text>
-        {items.map((item) => (
-          <PanelItem key={item} label={item} />
-        ))}
+        <Select options={items.map((i) => ({ label: i, value: i }))} />
       </Box>
     </FocusScope>
-  );
-}
-
-function PanelItem({ label }: { label: string }) {
-  const focus = useFocusNode();
-  return (
-    <Text color={focus.hasFocus ? 'green' : 'white'}>
-      {focus.hasFocus ? '> ' : '  '}
-      {label}
-    </Text>
   );
 }
 
@@ -69,7 +54,7 @@ export default function ControlledFocusExample() {
     <GigglesProvider fullScreen={false}>
       <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
         <App />
-        <Text dimColor>j/k: navigate within panel · h: exit · j/k: switch panels</Text>
+        <Text dimColor>j/k: navigate within panel · e: exit · j/k: switch panels</Text>
       </Box>
     </GigglesProvider>
   );

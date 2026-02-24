@@ -8,13 +8,12 @@ import { Callout } from 'fumadocs-ui/components/callout';
 import { Terminal } from '@/components/terminal';
 import MultiSelectExample from '@/components/examples/ui/multi-select';
 
-A controlled multi-select list. Navigate with `j`/`k` or arrow keys, toggle items with Space.
+A multi-select list. Navigate with `j`/`k` or arrow keys, toggle items with Space.
 
-Items are toggled in and out of the `value` array with Space. Use `onSubmit` to handle a final confirmation on Enter — when not provided, Enter does nothing.
+Works in controlled or uncontrolled mode. Pass `value` and `onChange` to own the selection state yourself; omit them to let the component manage it internally — starting with nothing selected. Use `onSubmit` to handle a final confirmation on Enter.
 
 ```tsx title="Basic Usage"
 import { MultiSelect } from 'giggles/ui';
-import { useState } from 'react';
 
 const toppings = [
   { label: 'Pepperoni', value: 'pepperoni' },
@@ -23,9 +22,14 @@ const toppings = [
   { label: 'Olives', value: 'olives' },
 ];
 
+// uncontrolled — no useState needed
 function ToppingPicker() {
-  const [selected, setSelected] = useState<string[]>([]);
+  return <MultiSelect options={toppings} onSubmit={(selected) => saveOrder(selected)} />;
+}
 
+// controlled — caller owns selection state
+function ControlledToppingPicker() {
+  const [selected, setSelected] = useState<string[]>([]);
   return <MultiSelect options={toppings} value={selected} onChange={setSelected} />;
 }
 ```
@@ -50,14 +54,12 @@ function ToppingPicker() {
       required: true,
     },
     value: {
-      description: 'Array of currently selected values (controlled)',
+      description: 'Array of currently selected values. When provided, the component is controlled and the caller owns selection state.',
       type: 'T[]',
-      required: true,
     },
     onChange: {
-      description: 'Called with the updated array when an item is toggled',
+      description: 'Called with the updated array when an item is toggled. Required when value is provided.',
       type: '(value: T[]) => void',
-      required: true,
     },
     onSubmit: {
       description: 'Called with the current selections when Enter is pressed. When not provided, Enter does nothing.',
