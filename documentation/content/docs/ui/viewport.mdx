@@ -4,24 +4,21 @@ description: API reference for the Viewport component
 ---
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
-import { Callout } from 'fumadocs-ui/components/callout';
 import { Terminal } from '@/components/terminal';
 import ViewportExample from '@/components/examples/ui/viewport';
 
 A scrollable container that clips content to a fixed height and scrolls by row. Navigate with `j`/`k`, jump with `g`/`G`, page with `PgUp`/`PgDn`. Inspired by [Bubble Tea's viewport](https://github.com/charmbracelet/bubbles/blob/master/viewport/viewport.go) and [ink-scroll-view](https://github.com/ByteLandTechnology/ink-scroll-view).
 
-Pass any children — text, components, mixed content. Viewport measures each child's actual terminal height and scrolls in rows, so multi-line content works correctly. Use the ref to programmatically scroll or jump to a specific child with `scrollToItem`. For a virtualized item-count-based list, see [VirtualList](/ui/virtual-list).
+Pass any children — text, components, mixed content. Viewport measures each child's actual rendered height after terminal wrapping, so long lines that wrap across multiple rows are accounted for correctly without any manual line-splitting. Use the ref to programmatically scroll or jump to a specific child with `scrollToItem`. For a virtualized item-count-based list, see [VirtualList](/ui/virtual-list).
 
 ```tsx title="Basic Usage"
 import { Viewport } from 'giggles/ui';
 
-const lines = fileContent.split('\n');
-
-function FileViewer() {
+function ArticleViewer({ paragraphs }: { paragraphs: string[] }) {
   return (
     <Viewport height={20}>
-      {lines.map((line, i) => (
-        <Text key={i}>{line}</Text>
+      {paragraphs.map((p, i) => (
+        <Text key={i}>{p}</Text>
       ))}
     </Viewport>
   );
@@ -31,10 +28,6 @@ function FileViewer() {
 <Terminal>
   <ViewportExample />
 </Terminal>
-
-<Callout>
-  Viewport requires a parent `FocusGroup` to receive focus and respond to keybindings.
-</Callout>
 
 ## API Reference
 
@@ -55,6 +48,14 @@ function FileViewer() {
       description: 'Whether to bind scroll keybindings (j/k, arrows, page, g/G)',
       type: 'boolean',
       default: 'true',
+    },
+    footer: {
+      description: 'Content rendered below the scrollable area, outside the clipping box — useful for scroll indicators or status lines',
+      type: 'React.ReactNode',
+    },
+    '...boxProps': {
+      description: 'Any Ink Box prop (borderStyle, borderColor, padding, width, etc.) applied to the outer container. height, overflow, and flexDirection are reserved.',
+      type: 'BoxProps',
     },
   }}
 />
