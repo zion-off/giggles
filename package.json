@@ -41,7 +41,7 @@
     "build": "tsup",
     "build:watch": "nodemon --watch src --ext ts,tsx --exec tsup",
     "dev": "tsx --watch playground/index.tsx",
-    "dev:docs": "pnpm build && pnpm --filter documentation dev",
+    "dev:docs": "pnpm build && concurrently --kill-others \"pnpm build:watch\" \"pnpm --filter documentation dev\"",
     "lint": "prettier --write . && eslint . --fix"
   },
   "files": [
@@ -56,6 +56,7 @@
     "@types/node": "^22.0.0",
     "@types/prismjs": "^1.26.6",
     "@types/react": "^19.2.13",
+    "concurrently": "^9.2.1",
     "eslint": "^9.0.0",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^7.0.1",
