@@ -9,7 +9,7 @@ giggles is built around three systems that work together: the **focus tree**, th
 
 `GigglesProvider` wraps your entire application and sets up the focus, input, and theme systems. Every giggles app starts with this provider:
 
-```tsx
+```tsx title="Setup"
 import { GigglesProvider } from 'giggles';
 
 function App() {
@@ -29,7 +29,7 @@ The focus system tracks which component is currently active. Components organize
 
 Call `useFocusNode()` to make a component a focusable target:
 
-```tsx
+```tsx title="useFocusNode"
 const focus = useFocusNode();
 // focus.hasFocus — whether this component has focus
 ```
@@ -40,7 +40,7 @@ When your component unmounts, focus automatically moves to its nearest ancestor.
 
 `useFocusScope` creates a scope — a grouping of focusable children with explicit navigation keybindings. Wrap children with `<FocusScope>` to set the parent context:
 
-```tsx
+```tsx title="useFocusScope"
 function Menu() {
   const scope = useFocusScope({
     keybindings: ({ next, prev }) => ({
@@ -63,7 +63,7 @@ function Menu() {
 
 The scope handle exposes `hasFocus` — true whenever any descendant has focus. Use it for container-level visual indicators like borders:
 
-```tsx
+```tsx title="Focus indicator"
 <Box borderColor={scope.hasFocus ? 'green' : undefined}>
   <FocusScope handle={scope}>
     {children}
@@ -77,7 +77,7 @@ Nested scopes only respond to keys you assign them, preventing conflicts. A file
 
 When two scopes at different nesting levels use the same keys, the innermost scope wins because input dispatch walks from the focused node upward. To voluntarily yield control back to the parent, call `escape()` from your keybindings:
 
-```tsx
+```tsx title="Passive mode"
 const scope = useFocusScope({
   keybindings: ({ next, prev, escape }) => ({
     j: next,
@@ -89,7 +89,7 @@ const scope = useFocusScope({
 
 After `escape()`, the scope enters passive mode: it is skipped during input dispatch until focus moves elsewhere. `scope.isPassive` lets you reflect this in the UI — for example, switching a border from green to yellow while the user navigates at the parent level.
 
-```tsx
+```tsx title="Passive indicator"
 <Box borderColor={scope.isPassive ? 'yellow' : scope.hasFocus ? 'green' : undefined}>
 ```
 
@@ -120,7 +120,7 @@ This priority order means:
 
 You can call `useKeybindings` multiple times in the same component. All bindings are active simultaneously, and later calls override earlier ones for duplicate keys:
 
-```tsx
+```tsx title="Multiple keybindings"
 // Base navigation
 useKeybindings(focus, {
   j: moveDown,
@@ -156,7 +156,7 @@ Each screen maintains its own focus state. When you push a new screen, the curre
 
 Use `useNavigation()` inside screen components to access navigation functions:
 
-```tsx
+```tsx title="useNavigation"
 function DetailScreen() {
   const { pop, push, currentRoute } = useNavigation();
 
