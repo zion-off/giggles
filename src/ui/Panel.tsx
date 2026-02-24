@@ -52,7 +52,14 @@ export function Panel({ children, title, width, borderColor, footer, ...boxProps
       {...boxProps}
     >
       {renderTopBorder()}
-      <Box flexDirection="column" flexGrow={1} borderStyle="round" borderTop={false} borderColor={color} paddingX={1}>
+      <Box
+        flexDirection="column"
+        flexGrow={1}
+        borderStyle={theme.borderStyle}
+        borderTop={false}
+        borderColor={color}
+        paddingX={1}
+      >
         {footer ? (
           <>
             <Box flexDirection="column" flexGrow={1}>

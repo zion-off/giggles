@@ -1,8 +1,10 @@
 import React, { createContext, useContext } from 'react';
+import type { BoxProps } from 'ink';
 
 export type GigglesTheme = {
   accentColor: string;
   borderColor: string;
+  borderStyle?: BoxProps['borderStyle'];
   selectedColor: string;
   hintColor: string;
   hintDimColor: string;
@@ -17,6 +19,7 @@ export type GigglesTheme = {
 const defaultTheme: GigglesTheme = {
   accentColor: '#6B9FD4',
   borderColor: '#5C5C5C',
+  borderStyle: 'round',
   selectedColor: '#8FBF7F',
   hintColor: '#8A8A8A',
   hintDimColor: '#5C5C5C',

@@ -22,7 +22,7 @@ function ModalInner({ children, onClose, title, ...boxProps }: ModalProps) {
     <Box
       flexDirection="column"
       alignSelf="flex-start"
-      borderStyle="round"
+      borderStyle={theme.borderStyle}
       borderColor={theme.borderColor}
       paddingX={1}
       {...boxProps}
