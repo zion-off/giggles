@@ -8,7 +8,7 @@ import React, {
   useRef,
   useState
 } from 'react';
-import { Box, DOMElement, measureElement } from 'ink';
+import { Box, BoxProps, DOMElement, measureElement } from 'ink';
 import { useFocusNode } from '../core/focus';
 import { useKeybindings } from '../core/input';
 
@@ -48,7 +48,7 @@ export type ViewportRef = {
   getViewportHeight: () => number;
 };
 
-type ViewportProps = {
+type ViewportProps = Omit<BoxProps, 'height' | 'overflow' | 'flexDirection'> & {
   children?: React.ReactNode;
   height: number;
   keybindings?: boolean;
@@ -56,7 +56,7 @@ type ViewportProps = {
 };
 
 export const Viewport = forwardRef<ViewportRef, ViewportProps>(function Viewport(
-  { children, height, keybindings: enableKeybindings = true, footer },
+  { children, height, keybindings: enableKeybindings = true, footer, ...boxProps },
   ref
 ) {
   const focus = useFocusNode();
@@ -164,7 +164,7 @@ export const Viewport = forwardRef<ViewportRef, ViewportProps>(function Viewport
   );
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" {...boxProps}>
       <Box height={height} overflow="hidden">
         <Box marginTop={-scrollOffset} flexDirection="column" width="100%">
           {Children.map(children, (child, index) => {
