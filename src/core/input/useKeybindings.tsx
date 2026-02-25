@@ -2,14 +2,11 @@ import { useEffect, useId, useRef } from 'react';
 import { useStore } from '../focus/StoreContext';
 import { KeybindingOptions, Keybindings } from './types';
 
-// Accepts any object with an `id` string — works with both FocusHandle (old API)
-// and FocusScopeHandle / FocusNodeHandle (new store-based API).
 export function useKeybindings(focus: { id: string }, bindings: Keybindings, options?: KeybindingOptions) {
   const store = useStore();
   const registrationId = useId();
   const nodeIdRef = useRef(focus.id);
 
-  // Update ref if focus.id changes
   nodeIdRef.current = focus.id;
 
   // Register/update bindings synchronously on every render so handlers always

@@ -3,6 +3,7 @@ title: Input
 description: API reference for the input system
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Terminal } from '@/components/terminal';
 import FileListExample from '@/components/examples/input/file-list';
@@ -168,7 +169,9 @@ Capture mode intercepts all input at the component, preventing it from bubbling 
 2. If in `passthrough` → checked against named bindings
 3. If no match → bubbles to parent
 
-**Important:** Named bindings registered with capture mode options (i.e., when `onKeypress` is provided) are only active when `capture: true`. When `capture: false`, those bindings are inactive, allowing other registrations to handle those keys. This lets you register the same key (like `enter`) with different behaviors for navigation mode vs. input mode.
+<Callout type="warn" title="Capture mode">
+Named bindings registered with capture mode options (i.e., when `onKeypress` is provided) are only active when `capture: true`. When `capture: false`, those bindings are inactive, allowing other registrations to handle those keys. This lets you register the same key (like `enter`) with different behaviors for navigation mode vs. input mode.
+</Callout>
 
 <TypeTable
   type={{
