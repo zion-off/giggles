@@ -104,11 +104,11 @@ Register keybindings independently from focus scope navigation. You can call it 
 // Base navigation
 useKeybindings(focus, { j: moveDown, k: moveUp });
 
-// Search mode — adds capture when active; escape/enter pass through to named bindings
-useKeybindings(focus, { escape: exitSearch }, { capture: searchMode, passthrough: ['escape'] });
+// Search mode — fallback intercepts unbound keys; escape bubbles to named bindings above
+useKeybindings(focus, searchMode ? { escape: exitSearch } : {}, searchMode ? { fallback: handleInput, bubble: ['escape'] } : undefined);
 ```
 
-**Capture mode:** when `capture: true`, named bindings are always checked first. If no named binding matches, the key goes to `onKeypress` (for printable characters) unless it's listed in `passthrough`, in which case it bubbles to the parent scope. Use this for text input. `TextInput` and `Autocomplete` use capture mode internally.
+**Fallback handler:** pass `fallback` to catch keys that don't match any named binding — useful for text input. Keys listed in `bubble` skip the fallback and propagate to parent scopes. `TextInput` and `Autocomplete` use this internally.
 
 **App-wide shortcuts:** register them on the root scope — unhandled keys bubble up naturally, so a binding at the root fires whenever no child consumes the key first.
 

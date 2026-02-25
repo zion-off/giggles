@@ -105,11 +105,11 @@ When a key is pressed, giggles searches for a matching handler by walking up the
 2. **Parent component's bindings** — then grandparent, and so on; unhandled keys bubble up naturally
 3. **Passive scopes** — skipped entirely during the walk
 4. **Focus trap** — stops the walk; nothing outside the trap is reachable
-5. **Capture mode** — fires last, only if no named binding matched anywhere in the path
+5. **Fallback handler** — fires last, only if no named binding matched anywhere in the path
 
 This priority order means:
-- Named bindings always win — even over capture mode at the same node
-- Keys in `passthrough` skip `onKeypress` and bubble to parent scopes
+- Named bindings always win — even over the fallback handler at the same node
+- Keys in `bubble` skip the fallback and propagate to parent scopes
 - Deeply nested components take precedence over their parents
 - Passive scopes are transparent to input
 - Modals can prevent keys from reaching background components
@@ -126,11 +126,11 @@ useKeybindings(focus, {
   k: moveUp,
 });
 
-// Search mode — adds capture when active
+// Search mode — fallback intercepts unbound keys when active
 useKeybindings(
   focus,
-  { escape: exitSearch },
-  { capture: searchMode, onKeypress: handleInput }
+  searchMode ? { escape: exitSearch } : {},
+  searchMode ? { fallback: handleInput } : undefined
 );
 ```
 

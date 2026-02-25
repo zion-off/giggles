@@ -52,10 +52,10 @@ Registers keybindings that only fire when the component is focused.
 
 You can call `useKeybindings` multiple times in the same component — bindings from all calls are merged together. Later calls override earlier ones for duplicate keys.
 
-**Capture mode:** When `capture: true` is active, named bindings are checked first. If a key has no named binding, it falls through to `onKeypress`. Keys in `passthrough` skip `onKeypress` and bubble to parent scopes instead. This makes text input intuitive:
+For text input scenarios, pass a `fallback` handler to catch keys that don't match any named binding. Use `bubble` to let specific keys (like tab or escape) propagate to parent scopes instead:
 
 ```tsx
-// These navigation bindings work normally
+// Navigation
 useKeybindings(focus, {
   j: moveDown,
   k: moveUp,
@@ -63,12 +63,11 @@ useKeybindings(focus, {
   escape: clearInput
 });
 
-// When searchMode is true, capture intercepts j/k for text input
-// but escape/enter pass through to named bindings above
+// When searching, all unbound keys go to the fallback for text input
 useKeybindings(
   focus,
-  { enter: confirmSearch }, // Override enter when searching
-  { capture: searchMode, passthrough: ['escape', 'enter'] }
+  searchMode ? { enter: confirmSearch } : {},
+  searchMode ? { fallback: handleSearchInput, bubble: ['escape', 'enter'] } : undefined
 );
 ```
 
@@ -95,7 +94,7 @@ function useKeybindings(
       required: true,
     },
     options: {
-      description: 'Optional configuration for capture mode',
+      description: 'Optional fallback and bubble configuration for text input scenarios',
       type: 'KeybindingOptions',
     },
   }}
@@ -157,31 +156,23 @@ Use these strings as keys in the bindings object:
 
 #### KeybindingOptions
 
-Capture mode is designed for text input — it routes unhandled keypresses to `onKeypress` so printable characters reach your handler. Named bindings always take priority and fire before capture mode is considered.
+Use these options to build text inputs. Named bindings are always checked first — the `fallback` only fires for keys that don't match any binding.
 
-**Dispatch order:**
-
-1. **Named bindings** — always checked first, capture mode or not
-2. **`onKeypress`** — called if no named binding matched and the key is not in `passthrough`
-3. **Parent scope** — key bubbles up if it's in `passthrough` and has no named binding
-
-<Callout type="warn">
-Named bindings registered with capture mode options (i.e., when `onKeypress` is provided) are only active when `capture: true`. When `capture: false`, those bindings are inactive, allowing other registrations to handle those keys. This lets you register the same key (like `enter`) with different behaviors for navigation mode vs. input mode.
-</Callout>
+| Priority | What happens |
+|---|---|
+| 1. Named binding matches | Handler fires, key stops |
+| 2. Key is in `bubble` | Key propagates to parent scope |
+| 3. `fallback` exists | Fallback handler fires |
+| 4. Nothing matched | Key propagates to parent scope |
 
 <TypeTable
   type={{
-    capture: {
-      description: 'When enabled, unmatched keystrokes go to onKeypress instead of being handled by parent components',
-      type: 'boolean',
-      default: 'false',
-    },
-    onKeypress: {
-      description: 'Handler for keystrokes in capture mode that don\'t match named bindings',
+    fallback: {
+      description: 'Handler for keystrokes that don\'t match named bindings. When provided, unmatched keys are routed here instead of bubbling to parent components.',
       type: '(input: string, key: Key) => void',
     },
-    passthrough: {
-      description: 'Key names that skip onKeypress and bubble to parent components instead. Use for keys like tab and escape that should always reach parent scopes.',
+    bubble: {
+      description: 'Key names that skip the fallback and bubble to parent components instead. Use for keys like tab and escape that should always reach parent scopes.',
       type: 'string[]',
     },
   }}
@@ -292,7 +283,7 @@ function App() {
 
 ### File manager with search
 
-This example demonstrates multiple keybindings, capture mode for search input, and dynamic filtering:
+Navigate a file list with `j`/`k`, press `/` to search. The search mode uses a `fallback` handler to catch typed characters while letting `escape` and `enter` bubble to the navigation bindings:
 
 ```tsx title="File Manager"
 import { useFocusNode, useKeybindings } from 'giggles';
@@ -330,21 +321,23 @@ function FileManager() {
     escape: () => setSearchMode(false)
   });
 
-  // Search mode - capture intercepts j/k for text input
+  // Search mode — fallback intercepts j/k for text input,
+  // but escape/enter bubble to the named bindings above
   useKeybindings(
     focus,
-    { enter: () => setSearchMode(false) }, // Override enter when searching
-    {
-      capture: searchMode,
-      passthrough: ['escape', 'enter'],
-      onKeypress: (input, key) => {
-        if (key.backspace) {
-          setSearchQuery(q => q.slice(0, -1));
-        } else if (input) {
-          setSearchQuery(q => q + input);
+    searchMode ? { enter: () => setSearchMode(false) } : {},
+    searchMode
+      ? {
+          fallback: (input, key) => {
+            if (key.backspace) {
+              setSearchQuery(q => q.slice(0, -1));
+            } else if (input) {
+              setSearchQuery(q => q + input);
+            }
+          },
+          bubble: ['escape', 'enter'],
         }
-      },
-    }
+      : undefined
   );
 
   return (
@@ -366,9 +359,9 @@ function FileManager() {
   <FileListExample />
 </Terminal>
 
-### Text input with capture mode
+### Text input with mode switching
 
-Capture mode is essential for building text inputs. This form demonstrates switching between navigation and editing modes:
+A form that switches between navigation (`j`/`k` to move between fields) and editing (press `enter` to type). When editing, the `fallback` handler catches typed characters:
 
 ```tsx title="Contact Form"
 import { useFocusNode, useKeybindings } from 'giggles';
@@ -392,32 +385,36 @@ function ContactForm() {
     escape: () => setEditing(false)
   });
 
-  // Edit mode - capture intercepts j/k for text input
+  // Edit mode — fallback intercepts j/k for text input,
+  // but escape/enter bubble to the named bindings above
   useKeybindings(
     focus,
-    {
-      enter: () => {
-        setEditing(false);
-        if (currentIndex < 2) setActiveField(fields[currentIndex + 1]);
-      },
-    },
-    {
-      capture: editing,
-      passthrough: ['escape', 'enter'],
-      onKeypress: (input, key) => {
-        if (key.backspace) {
-          setFormData(prev => ({
-            ...prev,
-            [activeField]: prev[activeField].slice(0, -1)
-          }));
-        } else if (input) {
-          setFormData(prev => ({
-            ...prev,
-            [activeField]: prev[activeField] + input
-          }));
+    editing
+      ? {
+          enter: () => {
+            setEditing(false);
+            if (currentIndex < 2) setActiveField(fields[currentIndex + 1]);
+          },
         }
-      },
-    }
+      : {},
+    editing
+      ? {
+          fallback: (input, key) => {
+            if (key.backspace) {
+              setFormData(prev => ({
+                ...prev,
+                [activeField]: prev[activeField].slice(0, -1)
+              }));
+            } else if (input) {
+              setFormData(prev => ({
+                ...prev,
+                [activeField]: prev[activeField] + input
+              }));
+            }
+          },
+          bubble: ['escape', 'enter'],
+        }
+      : undefined
   );
 
   return (

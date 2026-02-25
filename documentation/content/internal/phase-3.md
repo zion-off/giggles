@@ -29,32 +29,31 @@ UI components and command palette built on the core framework.
 
 Building TextInput required several additions to the core input system. These are now available for all components.
 
-### passthrough (KeybindingOptions)
+### fallback / bubble (KeybindingOptions)
 
-Capture mode (`capture: true`) intercepts all input — nothing bubbles to parent nodes. The `passthrough` option lists key names that should skip capture and continue bubbling.
+The `fallback` handler catches unmatched keystrokes instead of letting them bubble to parent nodes. The `bubble` option lists key names that should skip the fallback and continue bubbling.
 
 ```tsx
 useKeybindings(
   focus,
   { backspace: handleBackspace },
   {
-    capture: true,
-    passthrough: ['tab', 'shift+tab', 'escape'],
-    onKeypress: (input, key) => { /* handle printable chars */ }
+    fallback: (input, key) => { /* handle printable chars */ },
+    bubble: ['tab', 'shift+tab', 'escape'],
   }
 );
 ```
 
 **Dispatch order in InputRouter:**
 1. Named bindings checked first — if a key matches, the handler fires and input stops
-2. If no named binding matches and the node has `capture + onKeypress`:
-   - If the key is in `passthrough` → skip this node, continue bubbling
-   - Otherwise → fire `onKeypress`, input stops
+2. If no named binding matches and the node has a `fallback`:
+   - If the key is in `bubble` → skip this node, continue bubbling
+   - Otherwise → record `pendingFallback` and continue walking (ancestor named bindings still get a chance)
 3. If the node is a trap boundary → input stops
 4. Continue to next node in the focus path
-5. Fall through to `when: 'mounted'` bindings
+5. Fire `pendingFallback` if no named binding matched
 
-Named bindings always take priority over passthrough. A component can put `'enter'` in its passthrough list but conditionally add an `enter` named binding — the binding fires when present, otherwise Enter bubbles.
+Named bindings always take priority over bubble. A component can put `'enter'` in its bubble list but conditionally add an `enter` named binding — the binding fires when present, otherwise Enter bubbles.
 
 ### normalizeKey changes
 
@@ -63,7 +62,7 @@ Named bindings always take priority over passthrough. A component can put `'ente
 
 ### FocusGroup tab navigation
 
-FocusGroup now binds `tab` → next and `shift+tab` → prev alongside its directional keys (j/k or h/l). This works with capture-mode children because they declare tab/shift+tab as passthrough keys.
+FocusGroup now binds `tab` → next and `shift+tab` → prev alongside its directional keys (j/k or h/l). This works with children that have fallback handlers because they declare tab/shift+tab as bubble keys.
 
 ---
 
@@ -146,7 +145,7 @@ function CustomCommandPalette() {
 
 ### Palette Component
 
-The palette itself is a framework-provided component. It's a `FocusTrap` with capture mode — takes over all input while open, dismisses on `Escape`.
+The palette itself is a framework-provided component. It's a `FocusTrap` with a fallback handler — takes over all input while open, dismisses on `Escape`.
 
 Internally, it uses `useKeybindingRegistry()` to read all registered keybindings, fuzzy-matches the search query against command names, and executes the selected command.
 
@@ -181,8 +180,8 @@ function App() {
 **Internal design:**
 - Controlled: `value` + `onChange` from parent, cursor is internal
 - Cursor uses `useRef` (not `useState`) to avoid Ink rendering flicker from un-batched state updates. Navigation keys (left/right/home/end) trigger re-render via `useReducer` counter. Editing keys (char insert, backspace, delete) update the ref before calling `onChange`, which triggers the parent re-render — cursor is already correct when TextInput re-renders.
-- Uses `capture: true` with `passthrough: ['tab', 'shift+tab', 'enter', 'escape']`
-- `onSubmit`: when provided, `enter` is spread into the named bindings object. Named bindings fire before the passthrough check, so Enter calls `onSubmit` instead of bubbling. When `onSubmit` is absent, Enter passes through to parent bindings.
+- Uses `fallback` with `bubble: ['tab', 'shift+tab', 'enter', 'escape']`
+- `onSubmit`: when provided, `enter` is spread into the named bindings object. Named bindings fire before the bubble check, so Enter calls `onSubmit` instead of bubbling. When `onSubmit` is absent, Enter bubbles to parent bindings.
 
 **Render prop:** passes `{ value, focused, before, cursorChar, after }` — pre-split segments, not a raw cursor number. This is intentional: passing a raw cursor invites users to do their own slicing inside `<Box>` layouts, which causes Ink/Yoga remeasurement flicker. Pre-split segments make flat `<Text>` rendering the natural pattern.
 
@@ -257,14 +256,14 @@ List-based components (Select, MultiSelect, Autocomplete, Table) share a common 
 
 Navigation keys follow direction: vertical = `j`/`k`/`up`/`down`, horizontal = `h`/`l`/`left`/`right`. `enter` confirms in both directions. List components are single focusable nodes that manage their own highlight index internally (not FocusGroups).
 
-### Patterns for Capture-Mode Components
+### Patterns for Text Input Components
 
-Components that handle arbitrary text input (TextInput, Autocomplete, etc.) need `capture: true` on `useKeybindings` to intercept printable characters via `onKeypress`. Key patterns established by TextInput:
+Components that handle arbitrary text input (TextInput, Autocomplete, etc.) use `fallback` on `useKeybindings` to intercept printable characters. Key patterns established by TextInput:
 
-- **Navigation keys as named bindings** — `left`, `right`, `home`, `end`, `backspace`, `delete`. Named bindings fire before `onKeypress`, so they won't be caught by the printable char handler.
-- **Printable chars in onKeypress** — guard with `input.length === 1 && !key.ctrl && !key.return && !key.escape && !key.tab`.
-- **passthrough for focus navigation** — `['tab', 'shift+tab']` at minimum. Add `'enter'` and `'escape'` if the component doesn't need to consume them.
-- **Conditional named bindings** — use spread to add bindings based on props: `...(onSubmit && { enter: () => onSubmit(value) })`. Named bindings take priority over passthrough, so the same key can be in both.
+- **Navigation keys as named bindings** — `left`, `right`, `home`, `end`, `backspace`, `delete`. Named bindings fire before the fallback, so they won't be caught by the printable char handler.
+- **Printable chars in fallback** — guard with `input.length === 1 && !key.ctrl && !key.return && !key.escape && !key.tab`.
+- **bubble for focus navigation** — `['tab', 'shift+tab']` at minimum. Add `'enter'` and `'escape'` if the component doesn't need to consume them.
+- **Conditional named bindings** — use spread to add bindings based on props: `...(onSubmit && { enter: () => onSubmit(value) })`. Named bindings take priority over bubble, so the same key can be in both.
 - **Cursor as ref** — Ink's renderer may not batch cross-component state updates. Use `useRef` for cursor position and `useReducer` for forcing re-renders on navigation-only changes.
 
 ### Patterns for List-like Components
@@ -278,7 +277,7 @@ Established by Select/MultiSelect. Apply to any component that navigates a list 
 - **No side effects in state updaters** — Do not call `onChange`/`onHighlight` inside `setHighlightIndex(prev => ...)`. Compute the new index, call `setHighlightIndex(next)`, then call callbacks as separate statements. React may call updater functions twice in Strict Mode.
 - **`useKeybindings` re-registers on every render** — The bindings object is passed to `registerKeybindings` during render (not in a `useEffect`), so handlers always have fresh closures. No refs needed for keybinding handlers.
 - **Space key** — `normalizeKey` does not handle space specially. Bind it as `' '` (literal space string), not `'space'`.
-- **No capture mode** — List components don't handle printable text input, so they don't need `capture: true`. Tab/shift+tab bubble naturally without passthrough.
+- **No fallback handler** — List components don't handle printable text input, so they don't need a `fallback`. Tab/shift+tab bubble naturally.
 - **Single focusable node** — List components manage their own highlight index with `useState`. They do NOT use FocusGroup (which would register each option as a separate focus node in the tree).
 
 ### Planned Components

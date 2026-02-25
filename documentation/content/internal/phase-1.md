@@ -91,27 +91,27 @@ function App() {
 }
 ```
 
-### Capture Mode
+### Fallback Handler
 
 For components like text inputs that need to receive ALL keystrokes (letters, numbers, punctuation) instead of having them interpreted as keybindings.
 
-When `capture: true` is set on the focused node:
+When a `fallback` handler is set on the focused node:
 
-- Explicit keybindings (like `escape`, `enter`) are checked first
-- Everything else goes to `onKeypress` — never bubbles
+- Named keybindings (like `escape`, `enter`) are checked first
+- Everything else goes to `fallback` — never bubbles (unless listed in `bubble`)
 
 ```tsx
 function TextInput({ onSubmit }) {
   const [value, setValue] = useState('');
 
   useKeybindings(
+    focus,
     {
       escape: () => blur(),
       enter: () => onSubmit(value)
     },
     {
-      capture: true,
-      onKeypress: (key) => setValue((v) => v + key)
+      fallback: (key) => setValue((v) => v + key)
     }
   );
 
@@ -122,14 +122,14 @@ function TextInput({ onSubmit }) {
 Flow comparison:
 
 ```
-Normal mode (capture: false):
+Without fallback:
   'j' pressed → check focused node bindings → no match → bubble up → parent handles
 
-Capture mode (capture: true):
-  'j' pressed → check explicit bindings (escape, enter) → no match → onKeypress → types 'j' → STOPS
+With fallback:
+  'j' pressed → check named bindings (escape, enter) → no match → fallback → types 'j' → STOPS
 ```
 
-This generalizes beyond text inputs. A confirmation dialog captures with only `y`/`n`/`Escape` as explicit bindings and swallows everything else.
+This generalizes beyond text inputs. A confirmation dialog uses a fallback with only `y`/`n`/`Escape` as named bindings and swallows everything else.
 
 ---
 
