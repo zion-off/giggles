@@ -436,12 +436,24 @@ export class FocusStore {
 
   // Bridge target for InputRouter. Walks the active branch path with passive-scope
   // skipping, capture mode, and trap boundary — the full dispatch algorithm.
+  //
+  // Priority order:
+  //   1. Named bindings (walk focused node → root)
+  //   2. Global bindings (useGlobalKeybindings) — checked before capture fires
+  //   3. Capture mode (onKeypress) — only if no global binding matched
+  //
+  // Separating capture from the path walk ensures global bindings fire even when
+  // a capture-mode component (e.g. TextInput) has focus.
   dispatch(input: string, key: Key): void {
     const keyName = normalizeKey(input, key);
     if (!keyName) return;
 
     const path = this.getActiveBranchPath();
     const trapNodeId = this.trapNodeId;
+
+    // Pass 1: named bindings. Also note the first capture handler that would
+    // fire, without actually firing it — we check globals first.
+    let pendingCapture: ((input: string, key: Key) => void) | undefined;
 
     for (const nodeId of path) {
       // Passive scopes yield — skip them so their parent's bindings fire instead.
@@ -455,28 +467,33 @@ export class FocusStore {
           return;
         }
 
-        if (nodeBindings.capture && nodeBindings.onKeypress) {
+        if (!pendingCapture && nodeBindings.capture && nodeBindings.onKeypress) {
           if (nodeBindings.passthrough?.has(keyName)) {
-            // Key is in passthrough — skip onKeypress and bubble to parent.
+            // Key is in passthrough — bubble to parent instead of capturing.
             continue;
           }
-          nodeBindings.onKeypress(input, key);
-          return;
+          pendingCapture = nodeBindings.onKeypress;
         }
       }
 
       if (nodeId === trapNodeId) {
+        // Trap boundary reached. Global bindings must not escape the trap,
+        // but capture mode (which is inside the trap) should still fire.
+        pendingCapture?.(input, key);
         return;
       }
     }
 
-    // Fall through to global bindings (registered via useGlobalKeybindings).
+    // Pass 2: global bindings — fire before capture so they are truly global.
     for (const binding of this.getAllBindings()) {
       if (binding.key === keyName && binding.global) {
         binding.handler(input, key);
         return;
       }
     }
+
+    // Pass 3: capture mode — only reaches here if no global binding matched.
+    pendingCapture?.(input, key);
   }
 
   // ---------------------------------------------------------------------------
