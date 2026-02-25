@@ -86,7 +86,6 @@ function Inner({ onClose, render }: { onClose: () => void; render?: CommandPalet
     },
     {
       capture: true,
-      passthrough: ['escape', 'enter', 'left', 'right', 'backspace'],
       onKeypress: (input, key) => {
         if (input.length === 1 && !key.ctrl) {
           setQuery((q) => q + input);

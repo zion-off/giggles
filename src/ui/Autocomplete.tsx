@@ -145,20 +145,7 @@ export function Autocomplete<T>({
     },
     {
       capture: true,
-      passthrough: [
-        'tab',
-        'shift+tab',
-        'escape',
-        'backspace',
-        'delete',
-        'left',
-        'right',
-        'home',
-        'end',
-        'up',
-        'down',
-        'enter'
-      ],
+      passthrough: ['tab', 'shift+tab', 'escape'],
       onKeypress: (input, key) => {
         if (input.length === 1 && !key.ctrl && !key.return && !key.escape && !key.tab) {
           const c = cursorRef.current;
