@@ -102,11 +102,11 @@ When a key is pressed, giggles searches for a matching handler by walking up the
 ### Priority order
 
 1. **Focused component's named bindings** — checked first, always
-2. **Capture mode** — if enabled and the key has no named binding and is not in `passthrough`, intercepts via `onKeypress`
+2. **Capture mode** — if enabled and the key has no named binding, intercepts via `onKeypress`; keys in `passthrough` skip this and bubble to parent instead
 3. **Parent component's bindings** — then grandparent, and so on
 4. **Passive scopes** — skipped entirely during the walk
 5. **Focus trap** — stops input from reaching anything outside the trap boundary
-6. **Mounted bindings** — global shortcuts registered with `when: 'mounted'`, checked last
+6. **Global bindings** — registered with `useGlobalKeybindings`, checked last as a fallback
 
 This priority order means:
 - Capture mode truly captures — navigation keys become text input
