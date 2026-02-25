@@ -85,8 +85,7 @@ function Inner({ onClose, render }: { onClose: () => void; render?: CommandPalet
       }
     },
     {
-      capture: true,
-      onKeypress: (input, key) => {
+      fallback: (input, key) => {
         if (input.length === 1 && !key.ctrl) {
           setQuery((q) => q + input);
           setSelectedIndex(0);

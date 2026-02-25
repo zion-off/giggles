@@ -144,15 +144,14 @@ export function Autocomplete<T>({
       }
     },
     {
-      capture: true,
-      passthrough: ['tab', 'shift+tab', 'escape'],
-      onKeypress: (input, key) => {
+      fallback: (input, key) => {
         if (input.length === 1 && !key.ctrl && !key.return && !key.escape && !key.tab) {
           const c = cursorRef.current;
           cursorRef.current = c + 1;
           updateQuery(query.slice(0, c) + input + query.slice(c));
         }
-      }
+      },
+      bubble: ['tab', 'shift+tab', 'escape']
     }
   );
 

@@ -14,16 +14,14 @@ type BindingEntry = {
 
 type BindingRegistration = {
   bindings: Map<string, BindingEntry>;
-  capture: boolean;
-  onKeypress?: (input: string, key: Key) => void;
-  passthrough?: Set<string>;
+  fallback?: (input: string, key: Key) => void;
+  bubble?: Set<string>;
 };
 
 export type NodeBindings = {
   bindings: Map<string, BindingEntry>;
-  capture: boolean;
-  onKeypress?: (input: string, key: Key) => void;
-  passthrough?: Set<string>;
+  fallback?: (input: string, key: Key) => void;
+  bubble?: Set<string>;
 };
 
 export class FocusStore {
@@ -333,9 +331,8 @@ export class FocusStore {
 
     const registration: BindingRegistration = {
       bindings: new Map(entries),
-      capture: options?.capture ?? false,
-      onKeypress: options?.onKeypress,
-      passthrough: options?.passthrough ? new Set(options.passthrough) : undefined
+      fallback: options?.fallback,
+      bubble: options?.bubble ? new Set(options.bubble) : undefined
     };
 
     if (!this.keybindings.has(nodeId)) {
@@ -361,32 +358,24 @@ export class FocusStore {
     // Merge all registrations for this node in insertion order.
     // Later registrations override earlier ones for the same key.
     const mergedBindings = new Map<string, BindingEntry>();
-    let finalCapture = false;
-    let finalOnKeypress: ((input: string, key: Key) => void) | undefined;
-    let finalPassthrough: Set<string> | undefined;
+    let finalFallback: ((input: string, key: Key) => void) | undefined;
+    let finalBubble: Set<string> | undefined;
 
     for (const registration of nodeRegistrations.values()) {
-      const isCaptureRegistration = registration.onKeypress !== undefined;
-      const shouldIncludeBindings = !isCaptureRegistration || registration.capture;
-
-      if (shouldIncludeBindings) {
-        for (const [key, entry] of registration.bindings) {
-          mergedBindings.set(key, entry);
-        }
+      for (const [key, entry] of registration.bindings) {
+        mergedBindings.set(key, entry);
       }
 
-      if (registration.capture) {
-        finalCapture = true;
-        finalOnKeypress = registration.onKeypress;
-        finalPassthrough = registration.passthrough;
+      if (registration.fallback) {
+        finalFallback = registration.fallback;
+        finalBubble = registration.bubble;
       }
     }
 
     return {
       bindings: mergedBindings,
-      capture: finalCapture,
-      onKeypress: finalOnKeypress,
-      passthrough: finalPassthrough
+      fallback: finalFallback,
+      bubble: finalBubble
     };
   }
 
@@ -412,14 +401,14 @@ export class FocusStore {
   // ---------------------------------------------------------------------------
 
   // Bridge target for InputRouter. Walks the active branch path with passive-scope
-  // skipping, capture mode, and trap boundary — the full dispatch algorithm.
+  // skipping, fallback handlers, and trap boundary — the full dispatch algorithm.
   //
   // Priority order (per node, walking focused → root):
   //   1. Named bindings — always checked first
-  //   2. Capture mode (onKeypress) — deferred until after the full path walk,
-  //      so named bindings at any ancestor still fire before capture kicks in.
-  //      Keys in `passthrough` skip capture and bubble to the next ancestor.
-  //   3. Trap boundary — stops the walk; capture inside the trap still fires.
+  //   2. Fallback handler — deferred until after the full path walk, so named
+  //      bindings at any ancestor still fire before the fallback kicks in.
+  //      Keys in `bubble` skip the fallback and continue to the next ancestor.
+  //   3. Trap boundary — stops the walk; fallback inside the trap still fires.
   dispatch(input: string, key: Key): void {
     const keyName = normalizeKey(input, key);
     if (!keyName) return;
@@ -427,9 +416,9 @@ export class FocusStore {
     const path = this.getActiveBranchPath();
     const trapNodeId = this.trapNodeId;
 
-    // Collect the first capture handler encountered, but don't fire it yet —
-    // we want ancestor named bindings to win over capture mode.
-    let pendingCapture: ((input: string, key: Key) => void) | undefined;
+    // Collect the first fallback handler encountered, but don't fire it yet —
+    // we want ancestor named bindings to win over the fallback.
+    let pendingFallback: ((input: string, key: Key) => void) | undefined;
 
     for (const nodeId of path) {
       // Passive scopes yield — skip them so their parent's bindings fire instead.
@@ -443,12 +432,12 @@ export class FocusStore {
           return;
         }
 
-        if (!pendingCapture && nodeBindings.capture && nodeBindings.onKeypress) {
-          if (nodeBindings.passthrough?.has(keyName)) {
-            // Key is in passthrough — bubble to parent instead of capturing.
+        if (!pendingFallback && nodeBindings.fallback) {
+          if (nodeBindings.bubble?.has(keyName)) {
+            // Key is in bubble — let it propagate to parent instead.
             continue;
           }
-          pendingCapture = nodeBindings.onKeypress;
+          pendingFallback = nodeBindings.fallback;
         }
       }
 
@@ -457,7 +446,7 @@ export class FocusStore {
       }
     }
 
-    pendingCapture?.(input, key);
+    pendingFallback?.(input, key);
   }
 
   // ---------------------------------------------------------------------------
