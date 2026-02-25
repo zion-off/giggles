@@ -93,7 +93,7 @@ focusFirstChild(parentId) {
 for (const nodeId of path) {
   const nodeBindings = getNodeBindings(nodeId);
   if (nodeBindings) {
-    // check bindings, capture mode
+    // check bindings, fallback handler
   }
   if (nodeId === trapNodeId) {
     return;  // always reached, even if node has no bindings

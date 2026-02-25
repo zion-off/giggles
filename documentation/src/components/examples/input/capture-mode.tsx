@@ -47,34 +47,37 @@ function ContactForm() {
     escape: () => setEditing(false)
   });
 
-  // Text input with capture mode - when active, intercepts all keys except passthrough
+  // Text input — when editing, fallback intercepts all keys except bubble list
   useKeybindings(
     focus,
-    {
-      enter: () => {
-        setEditing(false);
-        if (currentIndex < fields.length - 1) {
-          setActiveField(fields[currentIndex + 1].key);
+    editing
+      ? {
+          enter: () => {
+            setEditing(false);
+            if (currentIndex < fields.length - 1) {
+              setActiveField(fields[currentIndex + 1].key);
+            }
+          }
         }
-      }
-    },
-    {
-      capture: editing,
-      passthrough: ['escape', 'enter', 'ctrl+s'],
-      onKeypress: (input, key) => {
-        if (key.backspace || key.delete) {
-          setFormData((prev) => ({
-            ...prev,
-            [activeField]: prev[activeField].slice(0, -1)
-          }));
-        } else if (!key.ctrl && !key.meta && input) {
-          setFormData((prev) => ({
-            ...prev,
-            [activeField]: prev[activeField] + input
-          }));
+      : {},
+    editing
+      ? {
+          fallback: (input, key) => {
+            if (key.backspace || key.delete) {
+              setFormData((prev) => ({
+                ...prev,
+                [activeField]: prev[activeField].slice(0, -1)
+              }));
+            } else if (!key.ctrl && !key.meta && input) {
+              setFormData((prev) => ({
+                ...prev,
+                [activeField]: prev[activeField] + input
+              }));
+            }
+          },
+          bubble: ['escape', 'enter', 'ctrl+s']
         }
-      }
-    }
+      : undefined
   );
 
   if (submitted) {

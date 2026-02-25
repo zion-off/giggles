@@ -359,9 +359,9 @@ The dispatch algorithm lives in `store.dispatch(input, key)`. The `InputRouter` 
 2. Walk the active branch path (focused node up to root). For each node:
    a. If node is in the passive set → skip.
    b. If node has a matching named keybinding → call handler, stop.
-   c. If node has capture mode active: if key is in passthrough → continue to next node; otherwise → record `pendingCapture` and continue walking (ancestor named bindings still get a chance).
+   c. If node has a fallback handler: if key is in bubble list → continue to next node; otherwise → record `pendingFallback` and continue walking (ancestor named bindings still get a chance).
    d. If node is the trap node → break.
-3. Fire `pendingCapture` if set and no named binding matched.
+3. Fire `pendingFallback` if set and no named binding matched.
 
 ---
 

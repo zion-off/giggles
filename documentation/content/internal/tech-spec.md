@@ -28,7 +28,7 @@ A framework built on top of [Ink](https://github.com/vadimdemedes/ink) (React fo
 - **Bubbletea (Go)** — Elm architecture for TUIs. Single `Update` function receives all input as messages, routes explicitly. Prevents input leaking by design. Our input system borrows this constraint but implements it with React patterns.
 - **React Navigation (React Native)** — Stack-based screen navigation with automatic focus management. Our screen router is modeled directly on this.
 - **SwiftUI `@FocusState`** — Declarative focus binding to an enum. Inspired our `useFocusState()` hook.
-- **Vim/Tmux** — Modal input (insert mode vs normal mode). Inspired our capture mode for text inputs.
+- **Vim/Tmux** — Modal input (insert mode vs normal mode). Inspired our fallback handler for text inputs.
 
 ---
 
@@ -128,7 +128,7 @@ The framework is distributed as one package but organized into logical import pa
 
 ### Hooks
 
-- `useKeybindings(bindings, options?)` — Focus-scoped key handling with optional capture mode and command palette registration
+- `useKeybindings(bindings, options?)` — Focus-scoped key handling with optional fallback handler and command palette registration
 - `useKeybindingRegistry()` — Returns `{ all, available, local }` keybinding views for custom UI (used by CommandPalette)
 - `useFocus()` — Returns `{ focused, id, focus() }`
 - `useFocusState<T>(initial)` — Declarative focus binding to an enum

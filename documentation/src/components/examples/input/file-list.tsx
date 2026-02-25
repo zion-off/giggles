@@ -61,26 +61,29 @@ function FileList() {
     }
   });
 
-  // Search mode with capture - when active, intercepts all keys for text input
+  // Search mode — when active, fallback intercepts all keys for text input
   useKeybindings(
     focus,
-    {
-      enter: () => {
-        setSearchMode(false);
-        setSelected(0);
-      }
-    },
-    {
-      capture: searchMode,
-      passthrough: ['escape', 'enter'],
-      onKeypress: (input, key) => {
-        if (key.backspace || key.delete) {
-          setSearchQuery((q) => q.slice(0, -1));
-        } else if (!key.ctrl && !key.meta && input) {
-          setSearchQuery((q) => q + input);
+    searchMode
+      ? {
+          enter: () => {
+            setSearchMode(false);
+            setSelected(0);
+          }
         }
-      }
-    }
+      : {},
+    searchMode
+      ? {
+          fallback: (input, key) => {
+            if (key.backspace || key.delete) {
+              setSearchQuery((q) => q.slice(0, -1));
+            } else if (!key.ctrl && !key.meta && input) {
+              setSearchQuery((q) => q + input);
+            }
+          },
+          bubble: ['escape', 'enter']
+        }
+      : undefined
   );
 
   return (
