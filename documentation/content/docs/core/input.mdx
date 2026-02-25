@@ -54,7 +54,7 @@ You can call `useKeybindings` multiple times in the same component — bindings 
 
 For text input scenarios, pass a `fallback` handler to catch keys that don't match any named binding. Use `bubble` to let specific keys (like tab or escape) propagate to parent scopes instead:
 
-```tsx
+```tsx title="Fallback and bubble"
 useKeybindings(focus, {
   ...(!searchMode && { j: moveDown, k: moveUp, enter: select }),
   escape: clearInput,
@@ -171,6 +171,24 @@ Use these options to build text inputs. Named bindings are always checked first 
     },
   }}
 />
+
+<Callout type="warn" title="Nested scopes sharing keys">
+  The innermost scope always wins during dispatch. If you find yourself assigning the same keys at multiple nesting levels, use [`escape()`](/core/focus#focusscopehelpers) in the inner scope's keybindings to yield control back to the parent:
+
+  ```tsx
+  const scope = useFocusScope({
+    keybindings: ({ next, prev, escape }) => ({
+      j: next,
+      k: prev,
+      h: escape  // parent's j/k now fire until focus moves elsewhere
+    })
+  });
+  ```
+
+  `scope.isPassive` lets you reflect this in the UI — a yellow border instead of green while the parent is in control. Passive mode clears automatically when focus moves to a different scope.
+
+  If your nested scopes use different keys at each level, normal bubbling handles the separation and you won't need this.
+</Callout>
 
 ### useKeybindingRegistry()
 

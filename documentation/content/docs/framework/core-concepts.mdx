@@ -3,11 +3,26 @@ title: Core Concepts
 description: Understanding how giggles manages focus and input
 ---
 
-giggles is built around three systems that work together: the **focus tree**, the **input router**, and the **screen router**. Understanding these concepts helps you build more complex applications.
 
-## GigglesProvider
+Building a terminal UI means answering one question over and over: when the user presses a key, what should happen? The answer depends on what's active, where it sits in the component tree, and what screens are on the stack. giggles handles all of this through three connected systems — focus, input routing, and screen navigation.
 
-`GigglesProvider` wraps your entire application and sets up the focus, input, and theme systems. Every giggles app starts with this provider:
+## A component that knows when it's active
+
+Start with a single panel. You want it to show a green border when it has focus and a grey one when it doesn't. Call `useFocusNode()` to register the component as a focusable target — it returns a handle with a `hasFocus` boolean you can use directly in your render:
+
+```tsx title="A focusable panel"
+function Panel() {
+  const focus = useFocusNode();
+
+  return (
+    <Box borderStyle="single" borderColor={focus.hasFocus ? 'green' : 'grey'}>
+      <Text>Panel content</Text>
+    </Box>
+  );
+}
+```
+
+Wrap your application in `GigglesProvider` to activate the focus, input, and theme systems:
 
 ```tsx title="Setup"
 import { GigglesProvider } from 'giggles';
@@ -21,49 +36,37 @@ function App() {
 }
 ```
 
-## The Focus Tree
+The first component to call `useFocusNode` receives focus automatically. When it unmounts, focus moves to its nearest ancestor — so your app always has an active component.
 
-The focus system tracks which component is currently active. Components organize themselves into a tree structure that mirrors your UI hierarchy.
+## Navigating between components
 
-### Registering as focusable
+One panel isn't interesting. Add a second one and you immediately have a new problem: how does focus move between them?
 
-Call `useFocusNode()` to make a component a focusable target:
-
-```tsx title="useFocusNode"
-const focus = useFocusNode();
-// focus.hasFocus — whether this component has focus
-```
-
-When your component unmounts, focus automatically moves to its nearest ancestor. The first component to register receives focus automatically, so your app always has an active component.
-
-### Creating navigable regions
-
-`useFocusScope` creates a scope — a grouping of focusable children with explicit navigation keybindings. Wrap children with `<FocusScope>` to set the parent context:
+This is where `useFocusScope` comes in. A scope groups focusable children and defines the keybindings that move between them:
 
 ```tsx title="useFocusScope"
-function Menu() {
+function Layout() {
   const scope = useFocusScope({
     keybindings: ({ next, prev }) => ({
-      j: next,
-      k: prev,
+      tab: next,
+      'shift+tab': prev,
     })
   });
 
   return (
     <FocusScope handle={scope}>
-      <MenuItem />
-      <MenuItem />
-      <MenuItem />
+      <Panel />
+      <Panel />
     </FocusScope>
   );
 }
 ```
 
-`next` and `prev` navigate between children. By default they descend to the first leaf automatically, so navigation feels natural without manual coordination.
+`next` and `prev` navigate between children, automatically descending to the first leaf so navigation feels natural without manual coordination. `<FocusScope handle={scope}>` sets the parent context — any `useFocusNode` or `useFocusScope` call inside it registers as a child of this scope.
 
-The scope handle exposes `hasFocus` — true whenever any descendant has focus. Use it for container-level visual indicators like borders:
+The scope exposes its own `hasFocus` — true whenever any descendant has focus. Use it for container-level visual indicators:
 
-```tsx title="Focus indicator"
+```tsx title="Scope-level focus indicator"
 <Box borderColor={scope.hasFocus ? 'green' : undefined}>
   <FocusScope handle={scope}>
     {children}
@@ -71,89 +74,42 @@ The scope handle exposes `hasFocus` — true whenever any descendant has focus. 
 </Box>
 ```
 
-Nested scopes only respond to keys you assign them, preventing conflicts. A file tree might use `j`/`k` at the top level and `h`/`l` for expand/collapse, with both working correctly because each scope controls its own keybindings.
+## How a keypress reaches its handler
 
-### Passive scopes
+With two panels, pressing `tab` moves focus. But what actually happens between the keypress and the handler firing?
 
-When two scopes at different nesting levels use the same keys, the innermost scope wins because input dispatch walks from the focused node upward. To voluntarily yield control back to the parent, call `escape()` from your keybindings:
+When a key is pressed, giggles walks up the focus tree from the currently focused component toward the root, checking each node for a matching handler. If the focused component has a binding for that key, it fires and the walk stops. If not, the key bubbles to the parent scope, then the grandparent, and so on — the same pattern as DOM event bubbling, just over the focus tree instead of the element tree ([with one exception](/core/input#keybindingoptions)).
 
-```tsx title="Passive mode"
-const scope = useFocusScope({
-  keybindings: ({ next, prev, escape }) => ({
-    j: next,
-    k: prev,
-    h: escape  // yield to parent — its j/k now fire
+This means deeply nested components naturally take precedence over their parents, and unhandled keys always find their way up. You don't need a special global shortcut API — register app-wide shortcuts on the outermost scope and they'll fire whenever nothing deeper claims the key first:
+
+```tsx title="App-level shortcuts"
+const root = useFocusScope({
+  keybindings: () => ({
+    'ctrl+p': openCommandPalette,
+    'ctrl+q': quit,
   })
 });
 ```
 
-After `escape()`, the scope enters passive mode: it is skipped during input dispatch until focus moves elsewhere. `scope.isPassive` lets you reflect this in the UI — for example, switching a border from green to yellow while the user navigates at the parent level.
 
-```tsx title="Passive indicator"
-<Box borderColor={scope.isPassive ? 'yellow' : scope.hasFocus ? 'green' : undefined}>
-```
+## Navigating between screens
 
-Passive mode clears automatically when focus moves to a different scope.
+Sometimes you want to show an entirely different view — a detail page, a settings panel, a confirmation dialog — without losing the state of what's behind it. giggles handles this with a screen router: a stack of full-screen views where only the top one is visible, but all of them stay mounted.
 
-## Input Routing
-
-When a key is pressed, giggles searches for a matching handler by walking up the focus tree from the currently focused component toward the root.
-
-### Priority order
-
-1. **Focused component's named bindings** — checked first, always
-2. **Parent component's bindings** — then grandparent, and so on; unhandled keys bubble up naturally
-3. **Passive scopes** — skipped entirely during the walk
-4. **Focus trap** — stops the walk; nothing outside the trap is reachable
-5. **Fallback handler** — fires last, only if no named binding matched anywhere in the path
-
-This priority order means:
-- Named bindings always win — even over the fallback handler at the same node
-- Keys in `bubble` skip the fallback and propagate to parent scopes
-- Deeply nested components take precedence over their parents
-- Passive scopes are transparent to input
-- Modals can prevent keys from reaching background components
-- App-level shortcuts work by registering them on a root scope — they receive any key that no child handles
-
-### Multiple keybindings
-
-You can call `useKeybindings` multiple times in the same component. All bindings are active simultaneously, and later calls override earlier ones for duplicate keys:
-
-```tsx title="Multiple keybindings"
-// Base navigation
-useKeybindings(focus, {
-  j: moveDown,
-  k: moveUp,
-});
-
-// Search mode — fallback intercepts unbound keys when active
-useKeybindings(
-  focus,
-  searchMode ? { escape: exitSearch } : {},
-  searchMode ? { fallback: handleInput } : undefined
-);
-```
-
-This lets you separate concerns naturally instead of managing one big conditional keybinding object.
-
-## The Screen Router
-
-The router manages a stack of screens. Operations map to stack manipulation:
+Stack operations map directly to what you'd expect:
 
 - `push(name, params)` — open a new screen on top
 - `pop()` — close the current screen, return to previous
 - `replace(name, params)` — swap the current screen
 - `reset(name, params)` — clear the stack and show this screen
 
-### Screen persistence
-
 All screens in the stack stay mounted but hidden. When you navigate back, the previous screen's state is exactly as you left it — no re-initialization or state loss. This makes back navigation instant and predictable.
 
-Each screen maintains its own focus state. When you push a new screen, the current focus position is saved. Popping the screen restores focus to where it was before.
+Each screen also maintains its own focus state. Pushing a new screen saves where focus was; popping it restores focus to exactly that position.
 
-### Accessing navigation
+Routers can be nested — a screen can contain its own `Router` for tabbed layouts or sub-navigation, each managing its own independent stack.
 
-Use `useNavigation()` inside screen components to access navigation functions:
+Use `useNavigation()` inside screen components to access these functions:
 
 ```tsx title="useNavigation"
 function DetailScreen() {
