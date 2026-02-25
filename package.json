@@ -41,6 +41,7 @@
     "build": "tsup",
     "build:watch": "nodemon --watch src --ext ts,tsx --exec tsup",
     "play": "tsx --watch",
+    "record": "vhs",
     "dev:docs": "pnpm build && concurrently --kill-others \"pnpm build:watch\" \"pnpm --filter documentation dev\"",
     "lint": "prettier --write . && eslint . --fix"
   },
