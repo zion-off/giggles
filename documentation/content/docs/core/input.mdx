@@ -187,29 +187,6 @@ Named bindings registered with capture mode options (i.e., when `onKeypress` is 
   }}
 />
 
-### useGlobalKeybindings()
-
-Registers keybindings that fire regardless of which component is focused. Use this for app-level shortcuts like quitting or opening help.
-
-Global bindings are checked last — after the full focus path has been walked — so any focused component can always shadow them with its own binding for the same key.
-
-```tsx title="Global shortcuts"
-import { useGlobalKeybindings } from 'giggles';
-
-function App() {
-  useGlobalKeybindings({
-    'ctrl+q': { action: () => process.exit(0), name: 'Quit' },
-    '?': { action: openHelp, name: 'Help' },
-  });
-
-  return <MainLayout />;
-}
-```
-
-```ts title="Type Signature"
-function useGlobalKeybindings(bindings: Keybindings): void
-```
-
 ### useKeybindingRegistry()
 
 Reads all named keybindings registered across the app. Useful for building command palettes, help screens, and key hints bars.
@@ -242,7 +219,7 @@ function HelpScreen() {
       required: true,
     },
     available: {
-      description: 'Named bindings currently reachable — focused/ancestor bindings from the active focus path, plus global bindings',
+      description: 'Named bindings currently reachable from the active focus path and its ancestors',
       type: 'RegisteredKeybinding[]',
       required: true,
     },
@@ -276,10 +253,6 @@ function HelpScreen() {
     name: {
       description: 'Human-readable label (only present on named bindings)',
       type: 'string | undefined',
-    },
-    global: {
-      description: 'True for bindings registered via useGlobalKeybindings — they fire as a fallback regardless of focus',
-      type: 'boolean | undefined',
     },
   }}
 />

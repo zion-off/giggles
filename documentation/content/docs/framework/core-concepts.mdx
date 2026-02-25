@@ -102,20 +102,18 @@ When a key is pressed, giggles searches for a matching handler by walking up the
 ### Priority order
 
 1. **Focused component's named bindings** — checked first, always
-2. **Capture mode** — if enabled and the key has no named binding, intercepts via `onKeypress`; keys in `passthrough` skip this and bubble to parent instead
-3. **Parent component's bindings** — then grandparent, and so on
-4. **Passive scopes** — skipped entirely during the walk
-5. **Focus trap** — stops input from reaching anything outside the trap boundary
-6. **Global bindings** — registered with `useGlobalKeybindings`, checked last as a fallback
+2. **Parent component's bindings** — then grandparent, and so on; unhandled keys bubble up naturally
+3. **Passive scopes** — skipped entirely during the walk
+4. **Focus trap** — stops the walk; nothing outside the trap is reachable
+5. **Capture mode** — fires last, only if no named binding matched anywhere in the path
 
 This priority order means:
-- Capture mode truly captures — navigation keys become text input
-- Named bindings fire before `onKeypress`, so special keys always work even in capture mode
+- Named bindings always win — even over capture mode at the same node
 - Keys in `passthrough` skip `onKeypress` and bubble to parent scopes
 - Deeply nested components take precedence over their parents
 - Passive scopes are transparent to input
 - Modals can prevent keys from reaching background components
-- Global shortcuts work regardless of which component has focus
+- App-level shortcuts work by registering them on a root scope — they receive any key that no child handles
 
 ### Multiple keybindings
 
