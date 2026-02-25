@@ -10,7 +10,6 @@ type FocusNode = {
 type BindingEntry = {
   handler: KeyHandler;
   name?: string;
-  global?: boolean;
 };
 
 type BindingRegistration = {
@@ -345,27 +344,6 @@ export class FocusStore {
     this.keybindings.get(nodeId)!.set(registrationId, registration);
   }
 
-  registerGlobalKeybindings(nodeId: string, registrationId: string, bindings: Keybindings): void {
-    const entries: [string, BindingEntry][] = Object.entries(bindings)
-      .filter((entry): entry is [string, NonNullable<(typeof bindings)[string]>] => entry[1] != null)
-      .map(([key, def]) => {
-        if (typeof def === 'function') {
-          return [key, { handler: def, global: true }];
-        }
-        return [key, { handler: def.action, name: def.name, global: true }];
-      });
-
-    const registration: BindingRegistration = {
-      bindings: new Map(entries),
-      capture: false
-    };
-
-    if (!this.keybindings.has(nodeId)) {
-      this.keybindings.set(nodeId, new Map());
-    }
-    this.keybindings.get(nodeId)!.set(registrationId, registration);
-  }
-
   unregisterKeybindings(nodeId: string, registrationId: string): void {
     const nodeRegistrations = this.keybindings.get(nodeId);
     if (nodeRegistrations) {
@@ -421,8 +399,7 @@ export class FocusStore {
             nodeId,
             key,
             handler: entry.handler,
-            name: entry.name,
-            global: entry.global
+            name: entry.name
           });
         }
       }
@@ -437,13 +414,12 @@ export class FocusStore {
   // Bridge target for InputRouter. Walks the active branch path with passive-scope
   // skipping, capture mode, and trap boundary — the full dispatch algorithm.
   //
-  // Priority order:
-  //   1. Named bindings (walk focused node → root)
-  //   2. Global bindings (useGlobalKeybindings) — checked before capture fires
-  //   3. Capture mode (onKeypress) — only if no global binding matched
-  //
-  // Separating capture from the path walk ensures global bindings fire even when
-  // a capture-mode component (e.g. TextInput) has focus.
+  // Priority order (per node, walking focused → root):
+  //   1. Named bindings — always checked first
+  //   2. Capture mode (onKeypress) — deferred until after the full path walk,
+  //      so named bindings at any ancestor still fire before capture kicks in.
+  //      Keys in `passthrough` skip capture and bubble to the next ancestor.
+  //   3. Trap boundary — stops the walk; capture inside the trap still fires.
   dispatch(input: string, key: Key): void {
     const keyName = normalizeKey(input, key);
     if (!keyName) return;
@@ -451,8 +427,8 @@ export class FocusStore {
     const path = this.getActiveBranchPath();
     const trapNodeId = this.trapNodeId;
 
-    // Pass 1: named bindings. Also note the first capture handler that would
-    // fire, without actually firing it — we check globals first.
+    // Collect the first capture handler encountered, but don't fire it yet —
+    // we want ancestor named bindings to win over capture mode.
     let pendingCapture: ((input: string, key: Key) => void) | undefined;
 
     for (const nodeId of path) {
@@ -462,7 +438,7 @@ export class FocusStore {
       const nodeBindings = this.getNodeBindings(nodeId);
       if (nodeBindings) {
         const entry = nodeBindings.bindings.get(keyName);
-        if (entry && !entry.global) {
+        if (entry) {
           entry.handler(input, key);
           return;
         }
@@ -477,22 +453,10 @@ export class FocusStore {
       }
 
       if (nodeId === trapNodeId) {
-        // Trap boundary reached. Global bindings must not escape the trap,
-        // but capture mode (which is inside the trap) should still fire.
-        pendingCapture?.(input, key);
-        return;
+        break;
       }
     }
 
-    // Pass 2: global bindings — fire before capture so they are truly global.
-    for (const binding of this.getAllBindings()) {
-      if (binding.key === keyName && binding.global) {
-        binding.handler(input, key);
-        return;
-      }
-    }
-
-    // Pass 3: capture mode — only reaches here if no global binding matched.
     pendingCapture?.(input, key);
   }
 
