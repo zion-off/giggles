@@ -37,16 +37,15 @@ function Sidebar() {
 }
 
 function App() {
-  const focus = useFocusNode();
   const [showPalette, setShowPalette] = useState(false);
 
   const scope = useFocusScope({
-    keybindings: ({ next, prev }) => ({ tab: next, 'shift+tab': prev })
-  });
-
-  useKeybindings(focus, {
-    'ctrl+k': { action: () => setShowPalette(true), name: 'Open palette', when: 'mounted' },
-    q: { action: () => {}, name: 'Quit', when: 'mounted' }
+    keybindings: ({ next, prev }) => ({
+      tab: next,
+      'shift+tab': prev,
+      'ctrl+k': { action: () => setShowPalette(true), name: 'Open palette' },
+      q: { action: () => {}, name: 'Quit' }
+    })
   });
 
   return (
