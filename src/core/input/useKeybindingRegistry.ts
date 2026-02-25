@@ -23,7 +23,7 @@ export function useKeybindingRegistry(focus?: { id: string }): KeybindingRegistr
   })();
 
   const available = all.filter((b) => {
-    if (b.when === 'mounted') return withinTrapSet ? withinTrapSet.has(b.nodeId) : true;
+    if (b.global) return withinTrapSet ? withinTrapSet.has(b.nodeId) : true;
     return (withinTrapSet ?? branchSet).has(b.nodeId);
   });
 

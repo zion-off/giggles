@@ -10,7 +10,7 @@ type FocusNode = {
 type BindingEntry = {
   handler: KeyHandler;
   name?: string;
-  when?: 'focused' | 'mounted';
+  global?: boolean;
 };
 
 type BindingRegistration = {
@@ -18,7 +18,6 @@ type BindingRegistration = {
   capture: boolean;
   onKeypress?: (input: string, key: Key) => void;
   passthrough?: Set<string>;
-  layer?: string;
 };
 
 export type NodeBindings = {
@@ -26,7 +25,6 @@ export type NodeBindings = {
   capture: boolean;
   onKeypress?: (input: string, key: Key) => void;
   passthrough?: Set<string>;
-  layer?: string;
 };
 
 export class FocusStore {
@@ -331,15 +329,35 @@ export class FocusStore {
         if (typeof def === 'function') {
           return [key, { handler: def }];
         }
-        return [key, { handler: def.action, name: def.name, when: def.when }];
+        return [key, { handler: def.action, name: def.name }];
       });
 
     const registration: BindingRegistration = {
       bindings: new Map(entries),
       capture: options?.capture ?? false,
       onKeypress: options?.onKeypress,
-      passthrough: options?.passthrough ? new Set(options.passthrough) : undefined,
-      layer: options?.layer
+      passthrough: options?.passthrough ? new Set(options.passthrough) : undefined
+    };
+
+    if (!this.keybindings.has(nodeId)) {
+      this.keybindings.set(nodeId, new Map());
+    }
+    this.keybindings.get(nodeId)!.set(registrationId, registration);
+  }
+
+  registerGlobalKeybindings(nodeId: string, registrationId: string, bindings: Keybindings): void {
+    const entries: [string, BindingEntry][] = Object.entries(bindings)
+      .filter((entry): entry is [string, NonNullable<(typeof bindings)[string]>] => entry[1] != null)
+      .map(([key, def]) => {
+        if (typeof def === 'function') {
+          return [key, { handler: def, global: true }];
+        }
+        return [key, { handler: def.action, name: def.name, global: true }];
+      });
+
+    const registration: BindingRegistration = {
+      bindings: new Map(entries),
+      capture: false
     };
 
     if (!this.keybindings.has(nodeId)) {
@@ -368,7 +386,6 @@ export class FocusStore {
     let finalCapture = false;
     let finalOnKeypress: ((input: string, key: Key) => void) | undefined;
     let finalPassthrough: Set<string> | undefined;
-    let finalLayer: string | undefined;
 
     for (const registration of nodeRegistrations.values()) {
       const isCaptureRegistration = registration.onKeypress !== undefined;
@@ -385,18 +402,13 @@ export class FocusStore {
         finalOnKeypress = registration.onKeypress;
         finalPassthrough = registration.passthrough;
       }
-
-      if (registration.layer) {
-        finalLayer = registration.layer;
-      }
     }
 
     return {
       bindings: mergedBindings,
       capture: finalCapture,
       onKeypress: finalOnKeypress,
-      passthrough: finalPassthrough,
-      layer: finalLayer
+      passthrough: finalPassthrough
     };
   }
 
@@ -410,8 +422,7 @@ export class FocusStore {
             key,
             handler: entry.handler,
             name: entry.name,
-            when: entry.when,
-            layer: registration.layer
+            global: entry.global
           });
         }
       }
@@ -439,15 +450,17 @@ export class FocusStore {
       const nodeBindings = this.getNodeBindings(nodeId);
       if (nodeBindings) {
         const entry = nodeBindings.bindings.get(keyName);
-        if (entry && entry.when !== 'mounted') {
+        if (entry && !entry.global) {
           entry.handler(input, key);
           return;
         }
 
         if (nodeBindings.capture && nodeBindings.onKeypress) {
-          if (!nodeBindings.passthrough?.has(keyName)) {
-            nodeBindings.onKeypress(input, key);
+          if (nodeBindings.passthrough?.has(keyName)) {
+            // Key is in passthrough — skip onKeypress and bubble to parent.
+            continue;
           }
+          nodeBindings.onKeypress(input, key);
           return;
         }
       }
@@ -457,9 +470,9 @@ export class FocusStore {
       }
     }
 
-    // Fall through to globally mounted bindings.
+    // Fall through to global bindings (registered via useGlobalKeybindings).
     for (const binding of this.getAllBindings()) {
-      if (binding.key === keyName && binding.when === 'mounted') {
+      if (binding.key === keyName && binding.global) {
         binding.handler(input, key);
         return;
       }
