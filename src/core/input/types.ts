@@ -34,7 +34,6 @@ export type RegisteredKeybinding = {
   key: string;
   handler: KeyHandler;
   name?: string;
-  global?: boolean;
 };
 
 export type { Key } from 'ink';
