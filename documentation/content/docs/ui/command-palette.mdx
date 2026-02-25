@@ -21,7 +21,7 @@ function App() {
   const [showPalette, setShowPalette] = useState(false);
 
   useKeybindings(focus, {
-    'ctrl+k': { action: () => setShowPalette(true), name: 'Open palette', when: 'mounted' },
+    'ctrl+k': { action: () => setShowPalette(true), name: 'Open palette' },
   });
 
   return (

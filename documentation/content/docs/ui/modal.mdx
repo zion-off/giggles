@@ -37,7 +37,7 @@ function App() {
 </Terminal>
 
 <Callout>
-  Modal captures all input while open. The parent component's keybinding that opens the modal should use `when: 'mounted'` so it fires regardless of which child has focus.
+  Modal captures all input while open. Register the keybinding that opens the modal on a scope that sits above the modal's children — unhandled keys bubble up naturally, so it will fire regardless of which child currently has focus.
 </Callout>
 
 ## API Reference
