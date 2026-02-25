@@ -17,7 +17,7 @@ function App() {
   const [choice, setChoice] = useState('new');
 
   useKeybindings(focus, {
-    m: { action: () => setShowModal(true), name: 'Open modal', when: 'mounted' }
+    m: { action: () => setShowModal(true), name: 'Open modal' }
   });
 
   return (
