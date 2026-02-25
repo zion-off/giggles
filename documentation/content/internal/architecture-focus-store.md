@@ -32,6 +32,7 @@ FocusStore
 ├── navigateSibling(direction, wrap, groupId, shallow?)
 ├── dispatch(input, key)               // Input dispatch algorithm
 ├── registerKeybindings(nodeId, registrationId, bindings, options)
+├── registerGlobalKeybindings(nodeId, registrationId, bindings)
 ├── unregisterKeybindings(nodeId, registrationId)
 ├── getNodeBindings(nodeId)
 ├── getActiveBranchPath() → string[]
@@ -358,10 +359,10 @@ The dispatch algorithm lives in `store.dispatch(input, key)`. The `InputRouter` 
 1. Normalize the keypress via `normalizeKey(input, key)`.
 2. Walk the active branch path (focused node up to root). For each node:
    a. If node is in the passive set → skip.
-   b. If node has a matching keybinding with `when !== 'mounted'` → call handler, stop.
-   c. If node has capture mode active and key is not in passthrough → call `onKeypress`, stop.
+   b. If node has a matching keybinding that is not global → call handler, stop.
+   c. If node has capture mode active: if key is in passthrough → continue to next node; otherwise → call `onKeypress`, stop.
    d. If node is the trap node → stop.
-3. If no handler found, check all bindings with `when: 'mounted'`. Fire first match.
+3. If no handler found, check all global bindings (registered via `useGlobalKeybindings`). Fire first match.
 
 ---
 

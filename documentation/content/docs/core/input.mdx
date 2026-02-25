@@ -95,7 +95,7 @@ function useKeybindings(
       required: true,
     },
     options: {
-      description: 'Optional configuration for capture mode and layers',
+      description: 'Optional configuration for capture mode',
       type: 'KeybindingOptions',
     },
   }}
@@ -132,14 +132,10 @@ Each value can be a plain handler function or a named binding object. Named bind
   type={{
     '[key: string]': {
       description: 'Key name mapped to a handler function or named binding object. See Key Names below for valid key strings.',
-      type: 'KeyHandler | { action: KeyHandler; name: string; when?: "focused" | "mounted" }',
+      type: 'KeyHandler | { action: KeyHandler; name: string }',
     },
   }}
 />
-
-The `when` field controls when the binding is considered available:
-- `"focused"` (default) — active only when the registering component is the focused leaf
-- `"mounted"` — active whenever the component is mounted, regardless of focus. Fires even if the component is not in the current focus path.
 
 #### Key Names
 
@@ -188,12 +184,31 @@ Named bindings registered with capture mode options (i.e., when `onKeypress` is 
       description: 'Key names that skip onKeypress and bubble to parent components instead. Use for keys like tab and escape that should always reach parent scopes.',
       type: 'string[]',
     },
-    layer: {
-      description: 'Optional layer identifier for organizing keybindings (metadata only)',
-      type: 'string',
-    },
   }}
 />
+
+### useGlobalKeybindings()
+
+Registers keybindings that fire regardless of which component is focused. Use this for app-level shortcuts like quitting or opening help.
+
+Global bindings are checked last — after the full focus path has been walked — so any focused component can always shadow them with its own binding for the same key.
+
+```tsx title="Global shortcuts"
+import { useGlobalKeybindings } from 'giggles';
+
+function App() {
+  useGlobalKeybindings({
+    'ctrl+q': { action: () => process.exit(0), name: 'Quit' },
+    '?': { action: openHelp, name: 'Help' },
+  });
+
+  return <MainLayout />;
+}
+```
+
+```ts title="Type Signature"
+function useGlobalKeybindings(bindings: Keybindings): void
+```
 
 ### useKeybindingRegistry()
 
@@ -227,7 +242,7 @@ function HelpScreen() {
       required: true,
     },
     available: {
-      description: 'Named bindings currently reachable — focused/ancestor bindings from the active focus path, plus all mounted bindings',
+      description: 'Named bindings currently reachable — focused/ancestor bindings from the active focus path, plus global bindings',
       type: 'RegisteredKeybinding[]',
       required: true,
     },
@@ -262,9 +277,9 @@ function HelpScreen() {
       description: 'Human-readable label (only present on named bindings)',
       type: 'string | undefined',
     },
-    when: {
-      description: 'Availability scope of the binding',
-      type: '"focused" | "mounted" | undefined',
+    global: {
+      description: 'True for bindings registered via useGlobalKeybindings — they fire as a fallback regardless of focus',
+      type: 'boolean | undefined',
     },
   }}
 />
