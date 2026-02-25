@@ -36,13 +36,16 @@ function ContactForm() {
     }
   };
 
-  // Navigation keybindings
+  // Navigation keybindings — disabled while editing so they don't intercept
+  // typed characters before the fallback handler sees them
   useKeybindings(focus, {
-    j: () => setActiveField(fields[Math.min(currentIndex + 1, fields.length - 1)].key),
-    k: () => setActiveField(fields[Math.max(currentIndex - 1, 0)].key),
-    down: () => setActiveField(fields[Math.min(currentIndex + 1, fields.length - 1)].key),
-    up: () => setActiveField(fields[Math.max(currentIndex - 1, 0)].key),
-    enter: () => setEditing(true),
+    ...(!editing && {
+      j: () => setActiveField(fields[Math.min(currentIndex + 1, fields.length - 1)].key),
+      k: () => setActiveField(fields[Math.max(currentIndex - 1, 0)].key),
+      down: () => setActiveField(fields[Math.min(currentIndex + 1, fields.length - 1)].key),
+      up: () => setActiveField(fields[Math.max(currentIndex - 1, 0)].key),
+      enter: () => setEditing(true)
+    }),
     'ctrl+s': submit,
     escape: () => setEditing(false)
   });

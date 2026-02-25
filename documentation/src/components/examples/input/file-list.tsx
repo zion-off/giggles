@@ -42,18 +42,21 @@ function FileList() {
     setTimeout(() => setMessage(''), 2000);
   };
 
-  // Navigation and action keybindings
+  // Navigation and action keybindings — disabled during search so they don't
+  // intercept typed characters before the fallback handler sees them
   useKeybindings(focus, {
-    j: () => setSelected((i) => Math.min(filteredFiles.length - 1, i + 1)),
-    k: () => setSelected((i) => Math.max(0, i - 1)),
-    down: () => setSelected((i) => Math.min(filteredFiles.length - 1, i + 1)),
-    up: () => setSelected((i) => Math.max(0, i - 1)),
-    enter: openFile,
-    d: deleteFile,
-    '/': () => {
-      setSearchMode(true);
-      setSearchQuery('');
-    },
+    ...(!searchMode && {
+      j: () => setSelected((i) => Math.min(filteredFiles.length - 1, i + 1)),
+      k: () => setSelected((i) => Math.max(0, i - 1)),
+      down: () => setSelected((i) => Math.min(filteredFiles.length - 1, i + 1)),
+      up: () => setSelected((i) => Math.max(0, i - 1)),
+      enter: openFile,
+      d: deleteFile,
+      '/': () => {
+        setSearchMode(true);
+        setSearchQuery('');
+      }
+    }),
     escape: () => {
       setSearchMode(false);
       setSearchQuery('');
