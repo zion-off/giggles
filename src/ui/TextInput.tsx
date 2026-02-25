@@ -64,15 +64,14 @@ export function TextInput({ label, value, onChange, onSubmit, placeholder, rende
       ...(onSubmit && { enter: () => onSubmit(value) })
     },
     {
-      capture: true,
-      passthrough: ['tab', 'shift+tab', 'enter', 'escape', 'backspace', 'delete', 'left', 'right', 'home', 'end'],
-      onKeypress: (input, key) => {
+      fallback: (input, key) => {
         if (input.length === 1 && !key.ctrl && !key.return && !key.escape && !key.tab) {
           const c = cursorRef.current;
           cursorRef.current = c + 1;
           onChange(value.slice(0, c) + input + value.slice(c));
         }
-      }
+      },
+      bubble: ['tab', 'shift+tab', 'enter', 'escape', 'backspace', 'delete', 'left', 'right', 'home', 'end']
     }
   );
 
