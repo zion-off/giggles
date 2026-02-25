@@ -11,7 +11,7 @@ export { useFocusScope, FocusScope, useFocusNode } from './core/focus';
 export type { FocusScopeHandle, FocusScopeHelpers, FocusScopeOptions, FocusNodeHandle } from './core/focus';
 
 // Input system
-export { useKeybindings, FocusTrap, useKeybindingRegistry } from './core/input';
+export { useKeybindings, useGlobalKeybindings, FocusTrap, useKeybindingRegistry } from './core/input';
 export type { Keybindings, KeybindingOptions, KeyHandler, Key, RegisteredKeybinding } from './core/input';
 export type { KeybindingRegistry } from './core/input';
 

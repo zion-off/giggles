@@ -19,7 +19,7 @@ type SpecialKey =
 
 type KeyName = SpecialKey | (string & {});
 
-type KeybindingDefinition = KeyHandler | { action: KeyHandler; name: string; when?: 'focused' | 'mounted' };
+type KeybindingDefinition = KeyHandler | { action: KeyHandler; name: string };
 
 export type Keybindings = Partial<Record<KeyName, KeybindingDefinition>>;
 
@@ -27,7 +27,6 @@ export type KeybindingOptions = {
   capture?: boolean;
   onKeypress?: (input: string, key: Key) => void;
   passthrough?: string[];
-  layer?: string;
 };
 
 export type RegisteredKeybinding = {
@@ -35,8 +34,7 @@ export type RegisteredKeybinding = {
   key: string;
   handler: KeyHandler;
   name?: string;
-  when?: 'focused' | 'mounted';
-  layer?: string;
+  global?: boolean;
 };
 
 export type { Key } from 'ink';
