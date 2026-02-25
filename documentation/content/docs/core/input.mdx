@@ -55,21 +55,15 @@ You can call `useKeybindings` multiple times in the same component — bindings 
 For text input scenarios, pass a `fallback` handler to catch keys that don't match any named binding. Use `bubble` to let specific keys (like tab or escape) propagate to parent scopes instead:
 
 ```tsx
-// Navigation
 useKeybindings(focus, {
-  j: moveDown,
-  k: moveUp,
-  enter: select,
-  escape: clearInput
-});
-
-// When searching, all unbound keys go to the fallback for text input
-useKeybindings(
-  focus,
-  searchMode ? { enter: confirmSearch } : {},
-  searchMode ? { fallback: handleSearchInput, bubble: ['escape', 'enter'] } : undefined
-);
+  ...(!searchMode && { j: moveDown, k: moveUp, enter: select }),
+  escape: clearInput,
+}, searchMode ? { fallback: handleSearchInput, bubble: ['escape'] } : undefined);
 ```
+
+<Callout type="info">
+Named bindings always take priority over the fallback, across all `useKeybindings` calls on the same component. If a key like `j` is registered as a named binding in one call and the fallback should own it in another mode, disable it while the fallback is active using conditional spreading: `...(!mode && { j: handler })`.
+</Callout>
 
 ```ts title="Type Signature"
 function useKeybindings(
@@ -311,18 +305,20 @@ function FileManager() {
     setFiles(files.filter(f => f.name !== fileToDelete.name));
   };
 
-  // Navigation and actions
+  // Navigation bindings — disabled during search so typed characters reach the fallback
   useKeybindings(focus, {
-    j: () => setSelected((i) => Math.min(filteredFiles.length - 1, i + 1)),
-    k: () => setSelected((i) => Math.max(0, i - 1)),
-    enter: () => console.log('Open', filteredFiles[selected].name),
-    d: deleteFile,
-    '/': () => setSearchMode(true),
+    ...(!searchMode && {
+      j: () => setSelected((i) => Math.min(filteredFiles.length - 1, i + 1)),
+      k: () => setSelected((i) => Math.max(0, i - 1)),
+      enter: () => console.log('Open', filteredFiles[selected].name),
+      d: deleteFile,
+      '/': () => setSearchMode(true),
+    }),
     escape: () => setSearchMode(false)
   });
 
-  // Search mode — fallback intercepts j/k for text input,
-  // but escape/enter bubble to the named bindings above
+  // Search mode — fallback catches all typed characters;
+  // escape and enter bubble to the bindings above
   useKeybindings(
     focus,
     searchMode ? { enter: () => setSearchMode(false) } : {},
@@ -377,16 +373,18 @@ function ContactForm() {
   const fields = ['name', 'email', 'message'];
   const currentIndex = fields.indexOf(activeField);
 
-  // Navigation keybindings
+  // Navigation keybindings — disabled while editing so typed characters reach the fallback
   useKeybindings(focus, {
-    j: () => setActiveField(fields[Math.min(currentIndex + 1, 2)]),
-    k: () => setActiveField(fields[Math.max(currentIndex - 1, 0)]),
-    enter: () => setEditing(true),
+    ...(!editing && {
+      j: () => setActiveField(fields[Math.min(currentIndex + 1, 2)]),
+      k: () => setActiveField(fields[Math.max(currentIndex - 1, 0)]),
+      enter: () => setEditing(true),
+    }),
     escape: () => setEditing(false)
   });
 
-  // Edit mode — fallback intercepts j/k for text input,
-  // but escape/enter bubble to the named bindings above
+  // Edit mode — fallback catches typed characters;
+  // escape and enter bubble to the bindings above
   useKeybindings(
     focus,
     editing
