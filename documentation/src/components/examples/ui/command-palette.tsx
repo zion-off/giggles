@@ -5,13 +5,13 @@ import { CommandPalette } from 'giggles/ui';
 import { Box, Text } from 'ink-web';
 import { useState } from 'react';
 
-function FileList() {
+function FileList({ log }: { log: (msg: string) => void }) {
   const focus = useFocusNode();
 
   useKeybindings(focus, {
-    d: { action: () => {}, name: 'Delete file' },
-    r: { action: () => {}, name: 'Rename file' },
-    'ctrl+c': { action: () => {}, name: 'Copy path' }
+    d: { action: () => log('Deleted file'), name: 'Delete file' },
+    r: { action: () => log('Renamed file'), name: 'Rename file' },
+    'ctrl+c': { action: () => log('Copied path'), name: 'Copy path' }
   });
 
   return (
@@ -21,12 +21,12 @@ function FileList() {
   );
 }
 
-function Sidebar() {
+function Sidebar({ log }: { log: (msg: string) => void }) {
   const focus = useFocusNode();
 
   useKeybindings(focus, {
-    n: { action: () => {}, name: 'New folder' },
-    x: { action: () => {}, name: 'Expand all' }
+    n: { action: () => log('Created new folder'), name: 'New folder' },
+    x: { action: () => log('Expanded all'), name: 'Expand all' }
   });
 
   return (
@@ -38,24 +38,38 @@ function Sidebar() {
 
 function App() {
   const [showPalette, setShowPalette] = useState(false);
+  const [lastAction, setLastAction] = useState<string | null>(null);
+
+  const log = (msg: string) => setLastAction(msg);
 
   const scope = useFocusScope({
     keybindings: ({ next, prev }) => ({
       tab: next,
       'shift+tab': prev,
       'ctrl+k': { action: () => setShowPalette(true), name: 'Open palette' },
-      q: { action: () => {}, name: 'Quit' }
+      q: { action: () => log('Quit'), name: 'Quit' }
     })
   });
 
   return (
     <Box flexDirection="column" paddingX={2} paddingY={1} gap={1}>
       <FocusScope handle={scope}>
-        <Sidebar />
-        <FileList />
+        <Sidebar log={log} />
+        <FileList log={log} />
       </FocusScope>
       {showPalette && <CommandPalette onClose={() => setShowPalette(false)} />}
-      <Text dimColor>Tab to switch panels, Ctrl+K for palette</Text>
+      <Box>
+        <Text dimColor>
+          {lastAction ? (
+            <Text>
+              <Text color="green">✓ </Text>
+              {lastAction}
+            </Text>
+          ) : (
+            'Tab to switch panels, Ctrl+K for palette'
+          )}
+        </Text>
+      </Box>
     </Box>
   );
 }
