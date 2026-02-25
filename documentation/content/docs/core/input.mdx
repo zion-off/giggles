@@ -52,7 +52,7 @@ Registers keybindings that only fire when the component is focused.
 
 You can call `useKeybindings` multiple times in the same component — bindings from all calls are merged together. Later calls override earlier ones for duplicate keys.
 
-**Capture mode priority:** When `capture: true` is active, it intercepts all keys before checking named bindings, except for keys in the `passthrough` array. This makes text input intuitive:
+**Capture mode:** When `capture: true` is active, named bindings are checked first. If a key has no named binding, it falls through to `onKeypress`. Keys in `passthrough` skip `onKeypress` and bubble to parent scopes instead. This makes text input intuitive:
 
 ```tsx
 // These navigation bindings work normally
@@ -161,15 +161,15 @@ Use these strings as keys in the bindings object:
 
 #### KeybindingOptions
 
-Capture mode intercepts all input at the component, preventing it from bubbling to parents. When you register keybindings with capture mode options, those bindings are **only active when capture is enabled**. This allows you to have different bindings for normal navigation vs. text input mode.
+Capture mode is designed for text input — it routes unhandled keypresses to `onKeypress` so printable characters reach your handler. Named bindings always take priority and fire before capture mode is considered.
 
-**Key behavior:** When capture mode is enabled, it takes priority over named bindings. Keys are checked in this order:
+**Dispatch order:**
 
-1. If not in `passthrough` → sent to `onKeypress`
-2. If in `passthrough` → checked against named bindings
-3. If no match → bubbles to parent
+1. **Named bindings** — always checked first, capture mode or not
+2. **`onKeypress`** — called if no named binding matched and the key is not in `passthrough`
+3. **Parent scope** — key bubbles up if it's in `passthrough` and has no named binding
 
-<Callout type="warn" title="Capture mode">
+<Callout type="warn">
 Named bindings registered with capture mode options (i.e., when `onKeypress` is provided) are only active when `capture: true`. When `capture: false`, those bindings are inactive, allowing other registrations to handle those keys. This lets you register the same key (like `enter`) with different behaviors for navigation mode vs. input mode.
 </Callout>
 
@@ -185,7 +185,7 @@ Named bindings registered with capture mode options (i.e., when `onKeypress` is 
       type: '(input: string, key: Key) => void',
     },
     passthrough: {
-      description: 'Key names that bypass capture mode and are handled by parent components instead. Useful for letting keys like escape reach parent components.',
+      description: 'Key names that skip onKeypress and bubble to parent components instead. Use for keys like tab and escape that should always reach parent scopes.',
       type: 'string[]',
     },
     layer: {

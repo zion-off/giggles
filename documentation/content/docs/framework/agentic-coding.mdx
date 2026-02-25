@@ -108,7 +108,7 @@ useKeybindings(focus, { j: moveDown, k: moveUp });
 useKeybindings(focus, { escape: exitSearch }, { capture: searchMode, passthrough: ['escape'] });
 ```
 
-**Capture mode:** when `capture: true`, all keypresses are intercepted before checking named bindings, except keys listed in `passthrough`. Use this for text input. `TextInput` and `Autocomplete` use capture mode internally.
+**Capture mode:** when `capture: true`, named bindings are always checked first. If no named binding matches, the key goes to `onKeypress` (for printable characters) unless it's listed in `passthrough`, in which case it bubbles to the parent scope. Use this for text input. `TextInput` and `Autocomplete` use capture mode internally.
 
 **`when: 'mounted'`:** registers a global binding active regardless of focus position. Useful for app-wide shortcuts.
 

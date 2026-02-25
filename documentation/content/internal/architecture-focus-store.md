@@ -358,8 +358,8 @@ The dispatch algorithm lives in `store.dispatch(input, key)`. The `InputRouter` 
 1. Normalize the keypress via `normalizeKey(input, key)`.
 2. Walk the active branch path (focused node up to root). For each node:
    a. If node is in the passive set → skip.
-   b. If node has capture mode active and key is not in passthrough → call `onKeypress`, stop.
-   c. If node has a matching keybinding with `when !== 'mounted'` → call handler, stop.
+   b. If node has a matching keybinding with `when !== 'mounted'` → call handler, stop.
+   c. If node has capture mode active and key is not in passthrough → call `onKeypress`, stop.
    d. If node is the trap node → stop.
 3. If no handler found, check all bindings with `when: 'mounted'`. Fire first match.
 
