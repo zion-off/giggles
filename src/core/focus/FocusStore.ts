@@ -438,16 +438,16 @@ export class FocusStore {
 
       const nodeBindings = this.getNodeBindings(nodeId);
       if (nodeBindings) {
-        if (nodeBindings.capture && nodeBindings.onKeypress) {
-          if (!nodeBindings.passthrough?.has(keyName)) {
-            nodeBindings.onKeypress(input, key);
-            return;
-          }
-        }
-
         const entry = nodeBindings.bindings.get(keyName);
         if (entry && entry.when !== 'mounted') {
           entry.handler(input, key);
+          return;
+        }
+
+        if (nodeBindings.capture && nodeBindings.onKeypress) {
+          if (!nodeBindings.passthrough?.has(keyName)) {
+            nodeBindings.onKeypress(input, key);
+          }
           return;
         }
       }
