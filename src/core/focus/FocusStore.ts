@@ -32,6 +32,7 @@ export class FocusStore {
   private passiveSet: Set<string> = new Set();
   private pendingFocusFirstChild: Set<string> = new Set();
   private trapNodeId: string | null = null;
+  private renderedScopes: Set<string> = new Set();
   private listeners: Set<() => void> = new Set();
   private version = 0;
   // nodeId → registrationId → BindingRegistration
@@ -301,6 +302,18 @@ export class FocusStore {
   // ---------------------------------------------------------------------------
   // Trap
   // ---------------------------------------------------------------------------
+
+  registerFocusScopeComponent(id: string): void {
+    this.renderedScopes.add(id);
+  }
+
+  unregisterFocusScopeComponent(id: string): void {
+    this.renderedScopes.delete(id);
+  }
+
+  hasFocusScopeComponent(id: string): boolean {
+    return this.renderedScopes.has(id);
+  }
 
   setTrap(nodeId: string): void {
     this.trapNodeId = nodeId;

@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect, useId, useMemo, useSyncExternalStore } from 'react';
+import { GigglesError } from '../GigglesError';
 import type { Keybindings } from '../input/types';
 import { ScopeIdContext, useStore } from './StoreContext';
 
@@ -6,9 +7,6 @@ export type FocusScopeHandle = {
   id: string;
   hasFocus: boolean;
   isPassive: boolean;
-};
-
-export type FocusScopeHelpers = {
   next: () => void;
   prev: () => void;
   nextShallow: () => void;
@@ -16,6 +14,12 @@ export type FocusScopeHelpers = {
   escape: () => void;
   drillIn: () => void;
 };
+
+// Subset of FocusScopeHandle — the navigation helpers passed to the keybindings factory.
+export type FocusScopeHelpers = Pick<
+  FocusScopeHandle,
+  'next' | 'prev' | 'nextShallow' | 'prevShallow' | 'escape' | 'drillIn'
+>;
 
 export type FocusScopeOptions = {
   // Explicit parent — use when creating a scope in the same component as its parent,
@@ -89,5 +93,15 @@ export function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle {
     };
   }, [id, keybindingRegistrationId, store]);
 
-  return { id, hasFocus, isPassive };
+  useEffect(() => {
+    if (!store.hasFocusScopeComponent(id)) {
+      throw new GigglesError(
+        'useFocusScope() was called but no <FocusScope handle={scope}> was rendered. ' +
+          'Every useFocusScope() call requires a corresponding <FocusScope> in the render output — ' +
+          'without it, child components register under the wrong parent scope and keyboard navigation silently breaks.'
+      );
+    }
+  }, [id, store]);
+
+  return { id, hasFocus, isPassive, next, prev, nextShallow, prevShallow, escape, drillIn };
 }
