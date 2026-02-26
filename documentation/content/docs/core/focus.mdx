@@ -14,7 +14,7 @@ The focus system provides hooks and components for managing keyboard navigation.
 
 `useFocusScope` is the scoping primitive — it creates a navigable region and returns a handle with reactive focus state. Wrap children with `<FocusScope>` to set the parent context, so any child that calls `useFocusNode()` automatically registers under that scope.
 
-Navigation between children is explicit: pass a `keybindings` function to `useFocusScope` that receives `next`, `prev`, and `escape` helpers and returns a key map. This makes nested layouts composable — each scope only handles the keys you assign it.
+Navigation between children is explicit: each scope exposes helpers (`next`, `prev`, `nextShallow`, `prevShallow`, `escape`, `drillIn`) directly on the returned handle, and also as the argument to the `keybindings` factory. This makes nested layouts composable — each scope only handles the keys you assign it.
 
 ```tsx title="Navigable Menu"
 import { FocusScope, useFocusNode, useFocusScope } from 'giggles';
@@ -105,51 +105,54 @@ function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle
       type: 'boolean',
       required: true,
     },
+    next: {
+      description: 'Focus the next sibling child, descending to the first leaf automatically.',
+      type: '() => void',
+      required: true,
+    },
+    prev: {
+      description: 'Focus the previous sibling child, descending to the first leaf automatically.',
+      type: '() => void',
+      required: true,
+    },
+    nextShallow: {
+      description: 'Focus the next sibling child without descending into its children.',
+      type: '() => void',
+      required: true,
+    },
+    prevShallow: {
+      description: 'Focus the previous sibling child without descending into its children.',
+      type: '() => void',
+      required: true,
+    },
+    escape: {
+      description: "Yield focus to this scope's own node, enabling passive mode. Parent keybindings become active.",
+      type: '() => void',
+      required: true,
+    },
+    drillIn: {
+      description: 'Focus the first child of this scope, clearing passive mode. If the scope has no children yet, the focus is queued — the first child to register claims it automatically.',
+      type: '() => void',
+      required: true,
+    },
   }}
 />
 
 Use `hasFocus` for visual indicators like borders and highlights. Use `isPassive` to show that a scope has been escaped from — for example, dimming a border when j/k will navigate at the parent level instead.
 
+The navigation methods are stable references — safe to call from effects and event handlers. Call them imperatively, not during render.
+
 #### FocusScopeHelpers
 
-<TypeTable
-  type={{
-    next: {
-      description: 'Focus the next sibling within this scope, descending to the first leaf automatically.',
-      type: '() => void',
-      required: true,
-    },
-    prev: {
-      description: 'Focus the previous sibling within this scope, descending to the first leaf automatically.',
-      type: '() => void',
-      required: true,
-    },
-    nextShallow: {
-      description: 'Focus the next sibling without descending into child scopes.',
-      type: '() => void',
-      required: true,
-    },
-    prevShallow: {
-      description: 'Focus the previous sibling without descending into child scopes.',
-      type: '() => void',
-      required: true,
-    },
-    escape: {
-      description: 'Yield focus to this scope\'s own node, enabling passive mode. Parent keybindings become active.',
-      type: '() => void',
-      required: true,
-    },
-    drillIn: {
-      description: 'Focus the first child of this scope, clearing passive mode.',
-      type: '() => void',
-      required: true,
-    },
-  }}
-/>
+`Pick<FocusScopeHandle, 'next' | 'prev' | 'nextShallow' | 'prevShallow' | 'escape' | 'drillIn'>` — the navigation methods passed as the argument to the `keybindings` factory.
 
 ### FocusScope
 
 Sets the parent scope for all children rendered inside it. Children that call `useFocusNode()` or `useFocusScope()` without an explicit `parent` option will register under this scope.
+
+<Callout type="warn">
+  Every `useFocusScope()` call must have exactly one corresponding `<FocusScope>` rendered. Omitting it throws a `GigglesError` — without it, children silently register under the wrong parent scope and navigation breaks.
+</Callout>
 
 ```tsx title="Type Signature"
 function FocusScope({ handle, children }: {
@@ -279,7 +282,7 @@ function App() {
 
 ### File tree
 
-A collapsible file tree with two levels of navigation. The root scope uses `nextShallow`/`prevShallow` to move between top-level entries without drilling into their children — so a closed directory lands focus on the directory node, where `l`/`enter` open it. When open, the directory scope's `j: next` descends into the file list. Inside the file list, `j`/`k` navigate between files and `h` collapses back.
+A collapsible file tree with two levels of navigation. The root scope uses `nextShallow`/`prevShallow` to move between top-level entries without drilling into their children — so a closed directory lands focus on the directory node, where `l`/`enter` open it. Opening calls `drillIn()` alongside `setOpen(true)` — because `drillIn` queues focus if the scope has no children yet, the file list claims focus automatically the moment it renders. Inside the file list, `j`/`k` navigate between files and `h` collapses back.
 
 The directory header's color reflects `scope.hasFocus`, which is true whenever any descendant — including files deep inside — has focus. This eliminates the need for a separate hook to read parent focus state.
 
@@ -292,10 +295,10 @@ function DirItem({ name, files }: { name: string; files: string[] }) {
   const { indicator, indicatorOpen } = useTheme();
 
   const scope = useFocusScope({
-    keybindings: ({ next }) =>
+    keybindings: ({ next, drillIn }) =>
       open
         ? { j: next, h: () => setOpen(false) }
-        : { l: () => setOpen(true), enter: () => setOpen(true) }
+        : { l: () => { setOpen(true); drillIn(); }, enter: () => { setOpen(true); drillIn(); } }
   });
 
   return (
