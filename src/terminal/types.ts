@@ -6,7 +6,7 @@ export type TerminalSize = {
 };
 
 export type ShellOutHandle = {
-  run: (command: string) => Promise<void>;
+  run: (command: string) => Promise<{ exitCode: number }>;
 };
 
 export type SpawnOptions = SpawnOptionsWithoutStdio & {
