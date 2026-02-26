@@ -35,19 +35,19 @@ render(<Root />);
 
 **`useFocusNode()`** — registers a leaf node in the focus tree. Returns `{ id, hasFocus }`. Used directly in custom interactive components.
 
-**`useFocusScope(options?)`** — registers a scope node. Returns `{ id, hasFocus, isPassive }`.
+**`useFocusScope(options?)`** — registers a scope node. Returns `{ id, hasFocus, isPassive, next, prev, nextShallow, prevShallow, escape, drillIn }`.
 - `hasFocus` is true when the scope node **or any descendant** has focus (ancestor walk, not strict equality).
-- Wrap children in `<FocusScope handle={scope}>` to set the implicit parent for nested hooks.
+- Wrap children in `<FocusScope handle={scope}>` to set the implicit parent for nested hooks. Omitting `<FocusScope>` throws a `GigglesError`.
 - `keybindings` accepts a plain object or a factory `(helpers) => object`. Handlers are re-registered every render so closures are never stale.
 
-**`FocusScopeHelpers`** (destructured from the keybindings factory):
+**Navigation helpers** — available directly on the handle and as the `keybindings` factory argument. Stable references; safe to call from effects and event handlers.
 ```ts
 next()         // move to next child, drill into its first leaf
 prev()         // move to prev child, drill into its first leaf
 nextShallow()  // move to next child, land on scope node (don't drill)
 prevShallow()  // move to prev child, land on scope node
 escape()       // make this scope passive — yields input to parent
-drillIn()      // focusFirstChild — re-enters scope from passive state
+drillIn()      // focusFirstChild — queues focus if no children yet; first child to register claims it
 ```
 
 ### Key bubbling
@@ -89,7 +89,7 @@ Key behaviour for interactive components:
 | `Select` (horizontal) | `h` `l` `←` `→` `enter` | All other keys bubble |
 | `MultiSelect` (vertical) | `j` `k` `↑` `↓` `space`; `enter` if `onSubmit` set | |
 | `TextInput` | All printable, `←` `→` `home` `end` `backspace` `delete` `enter` | Passthroughs: `tab` `shift+tab` `escape` |
-| `Autocomplete` | Same passthroughs as TextInput | TextInput + filtered Select |
+| `Autocomplete` | All printable, `←` `→` `home` `end` `backspace` `delete` `enter` | Passthroughs: `tab` `shift+tab` `escape` |
 | `Confirm` | `y` `n` `enter` | |
 | `Viewport` | `j` `k` `↑` `↓` `pageup` `pagedown` `g` `G` | |
 | `Modal` | — | Wraps `FocusTrap`; `escape` closes |
@@ -142,6 +142,7 @@ Access the active theme with `useTheme()`. Override values by passing a `theme` 
 | Pitfall | Fix |
 |---|---|
 | Focus hooks in the same component as `GigglesProvider` | Move them into a child component |
+| `useFocusScope()` without a corresponding `<FocusScope>` | Throws `GigglesError` — always render `<FocusScope handle={scope}>` wrapping the children |
 | `next()` hangs on a scope with no registered children | Use `nextShallow()` at the parent level |
 | `h`/`l` bubbling unexpectedly to parent scope | Vertical `Select` does not consume `h`/`l` — use different keys at each level, or use `escape()` if the same keys must serve both |
 | Parent bindings not firing while child is focused | Expected — add `escape()` to the child scope to yield control |
