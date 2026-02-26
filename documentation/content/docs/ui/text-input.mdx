@@ -10,8 +10,6 @@ import TextInputCustomExample from '@/components/examples/ui/text-input-custom';
 
 A controlled single-line text input with cursor navigation, inline editing, and render prop support.
 
-While focused, TextInput handles all keyboard input. Tab, shift+tab, and Escape bubble to parent components normally. Enter bubbles unless `onSubmit` is provided.
-
 ```tsx title="Basic Usage"
 import { TextInput } from 'giggles/ui';
 import { useState } from 'react';
@@ -72,7 +70,7 @@ function NameInput() {
 | `Backspace` | Delete character before cursor |
 | `Delete` | Delete character at cursor |
 | `Tab` / `Shift+Tab` | Move to next/previous field |
-| `Enter` | Fire `onSubmit` if provided, otherwise ignored |
+| `Enter` | Fire `onSubmit` if provided, otherwise available for parent keybindings |
 | `Escape` | Ignored (available for parent keybindings) |
 
 ### TextInputRenderProps

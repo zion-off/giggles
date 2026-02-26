@@ -12,12 +12,12 @@ A compact key hints bar that collects all named keybindings registered across th
 Components register commands by passing a `name` field to `useKeybindings`. The default UI shows no keybinding hints of its own — use the `render` prop to add them, or display a static `<CommandPalette interactive={false} />` elsewhere in the layout.
 
 ```tsx title="Interactive (Search & Execute)"
-import { useKeybindings, useFocus } from 'giggles';
+import { useKeybindings, useFocusScope } from 'giggles';
 import { CommandPalette } from 'giggles/ui';
 import { useState } from 'react';
 
 function App() {
-  const focus = useFocus();
+  const focus = useFocusScope();
   const [showPalette, setShowPalette] = useState(false);
 
   useKeybindings(focus, {
