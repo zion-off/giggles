@@ -56,30 +56,31 @@
 }
 
 /* ---------- Dark mode ---------- */
+/* Gallery at night — warm deep surfaces, paint catching lamplight. */
 .dark {
-  --color-fd-background: hsl(0, 0%, 5%);
-  --color-fd-foreground: hsl(45, 20%, 90%);
-  --color-fd-muted: hsl(0, 0%, 10%);
-  --color-fd-muted-foreground: hsla(45, 10%, 60%, 0.8);
-  --color-fd-popover: hsl(0, 0%, 8%);
-  --color-fd-popover-foreground: hsl(45, 15%, 85%);
-  --color-fd-card: hsl(0, 0%, 8%);
-  --color-fd-card-foreground: hsl(45, 20%, 94%);
-  --color-fd-border: hsl(45, 10%, 28%);
-  --color-fd-primary: hsl(215, 85%, 60%);
-  --color-fd-primary-foreground: hsl(0, 0%, 100%);
-  --color-fd-secondary: hsl(0, 0%, 12%);
-  --color-fd-secondary-foreground: hsl(45, 15%, 88%);
-  --color-fd-accent: hsla(215, 85%, 60%, 0.12);
-  --color-fd-accent-foreground: hsl(215, 85%, 65%);
-  --color-fd-ring: hsl(215, 85%, 60%);
-  --color-fd-overlay: hsla(0, 0%, 0%, 0.5);
+  --color-fd-background: hsl(30, 5%, 6%);
+  --color-fd-foreground: hsl(40, 16%, 88%);
+  --color-fd-muted: hsl(30, 4%, 11%);
+  --color-fd-muted-foreground: hsl(40, 8%, 62%);
+  --color-fd-popover: hsl(30, 5%, 9%);
+  --color-fd-popover-foreground: hsl(40, 12%, 82%);
+  --color-fd-card: hsl(30, 2%, 9%);
+  --color-fd-card-foreground: hsl(40, 16%, 92%);
+  --color-fd-border: hsl(35, 8%, 24%);
+  --color-fd-primary: hsl(215, 58%, 58%);
+  --color-fd-primary-foreground: hsl(40, 20%, 96%);
+  --color-fd-secondary: hsl(30, 4%, 13%);
+  --color-fd-secondary-foreground: hsl(40, 12%, 85%);
+  --color-fd-accent: hsla(215, 55%, 58%, 0.1);
+  --color-fd-accent-foreground: hsl(215, 55%, 64%);
+  --color-fd-ring: hsl(215, 58%, 58%);
+  --color-fd-overlay: hsla(20, 8%, 3%, 0.5);
 
-  /* mondrian palette — slightly brighter for dark bg */
-  --color-mondrian-red: hsl(4, 80%, 58%);
-  --color-mondrian-blue: hsl(215, 85%, 60%);
-  --color-mondrian-yellow: hsl(48, 95%, 62%);
-  --color-mondrian-black: hsl(45, 10%, 28%);
+  /* mondrian palette — lamplight, not neon */
+  --color-mondrian-red: hsl(4, 65%, 56%);
+  --color-mondrian-blue: hsl(215, 58%, 58%);
+  --color-mondrian-yellow: hsl(46, 78%, 60%);
+  --color-mondrian-black: hsl(35, 8%, 24%);
 }
 
 /* ============================================
