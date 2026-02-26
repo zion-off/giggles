@@ -11,6 +11,8 @@ A yes/no prompt. Press `y` to confirm, `n` to decline, or Enter to accept the de
 
 The `defaultValue` prop controls which option is pre-selected. The hint text updates to reflect this — `(Y/n)` when defaulting to yes, `(y/N)` when defaulting to no. Unlike Select, Confirm is a one-shot interaction: `onSubmit` fires once with a boolean and there's no controlled value state.
 
+`Confirm` is a leaf focus node. When used alongside other interactive components (e.g. a `Select`), wrap it in a `Modal` so that `FocusTrap` steals focus away and `y`/`n`/`Enter` reach it reliably.
+
 ```tsx title="Basic Usage"
 import { Confirm } from 'giggles/ui';
 
@@ -61,7 +63,6 @@ function DeletePrompt() {
 | `y` | Confirm (yes) |
 | `n` | Decline (no) |
 | `Enter` | Accept default |
-| `Tab` / `Shift+Tab` | Move to next/previous component |
 
 ## Examples
 
