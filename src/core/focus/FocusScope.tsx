@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScopeIdContext } from './StoreContext';
+import React, { useEffect } from 'react';
+import { ScopeIdContext, useStore } from './StoreContext';
 import type { FocusScopeHandle } from './useFocusScope';
 
 type FocusScopeProps = {
@@ -17,5 +17,12 @@ type FocusScopeProps = {
 //
 // A handle must not be passed to more than one <FocusScope> at a time.
 export function FocusScope({ handle, children }: FocusScopeProps) {
+  const store = useStore();
+
+  useEffect(() => {
+    store.registerFocusScopeComponent(handle.id);
+    return () => store.unregisterFocusScopeComponent(handle.id);
+  }, [handle.id, store]);
+
   return <ScopeIdContext.Provider value={handle.id}>{children}</ScopeIdContext.Provider>;
 }
