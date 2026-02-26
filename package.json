@@ -40,8 +40,8 @@
   "scripts": {
     "build": "tsup",
     "build:watch": "nodemon --watch src --ext ts,tsx --exec tsup",
-    "play": "tsx --watch",
-    "record": "vhs",
+    "play": "f() { tsx --watch playground/examples/$1.tsx; }; f",
+    "record": "f() { vhs playground/tapes/$1.tape; }; f",
     "dev:docs": "pnpm build && concurrently --kill-others \"pnpm build:watch\" \"pnpm --filter documentation dev\"",
     "lint": "prettier --write . && eslint . --fix"
   },
