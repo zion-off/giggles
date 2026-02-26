@@ -33,6 +33,7 @@ export class FocusStore {
   private pendingFocusFirstChild: Set<string> = new Set();
   private trapNodeId: string | null = null;
   private listeners: Set<() => void> = new Set();
+  private version = 0;
   // nodeId → registrationId → BindingRegistration
   // Keybindings register synchronously during render; nodes register in useEffect.
   // A keybinding may exist for a node that has not yet appeared in the node tree —
@@ -49,9 +50,14 @@ export class FocusStore {
   }
 
   private notify(): void {
+    this.version++;
     for (const listener of this.listeners) {
       listener();
     }
+  }
+
+  getVersion(): number {
+    return this.version;
   }
 
   // ---------------------------------------------------------------------------
