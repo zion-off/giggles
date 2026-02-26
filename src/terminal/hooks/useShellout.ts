@@ -1,8 +1,9 @@
 import { execa } from 'execa';
 import { useCallback, useState } from 'react';
 import { useStdin } from 'ink';
+import type { ShellOutHandle } from '../types';
 
-export function useShellOut() {
+export function useShellOut(): ShellOutHandle {
   const [, setRedrawCount] = useState(0);
   const { setRawMode } = useStdin();
 
