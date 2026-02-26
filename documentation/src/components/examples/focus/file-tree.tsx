@@ -10,8 +10,19 @@ function DirItem({ name, files }: { name: string; files: string[] }) {
   const { indicator, indicatorOpen } = useTheme();
 
   const scope = useFocusScope({
-    keybindings: ({ next }) =>
-      open ? { j: next, h: () => setOpen(false) } : { l: () => setOpen(true), enter: () => setOpen(true) }
+    keybindings: ({ next, drillIn }) =>
+      open
+        ? { j: next, h: () => setOpen(false) }
+        : {
+            l: () => {
+              setOpen(true);
+              drillIn();
+            },
+            enter: () => {
+              setOpen(true);
+              drillIn();
+            }
+          }
   });
 
   return (
