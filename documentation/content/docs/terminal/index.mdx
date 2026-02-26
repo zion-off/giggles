@@ -13,31 +13,6 @@ These are imported from `giggles/terminal` — a separate entry point not includ
 import { useTerminalSize, useTerminalFocus, useShellOut, useSpawn } from 'giggles/terminal';
 ```
 
-```tsx title="Shell Out Example"
-import { useKeybindings, useFocusScope } from 'giggles';
-import { useShellOut, useTerminalSize } from 'giggles/terminal';
-import { Box, Text } from 'ink';
-
-function Editor({ path }: { path: string }) {
-  const scope = useFocusScope();
-  const shell = useShellOut();
-  const { columns } = useTerminalSize();
-
-  useKeybindings(scope, {
-    e: async () => {
-      const { exitCode } = await shell.run(`${process.env.EDITOR ?? 'vim'} ${path}`);
-      if (exitCode === 0) reload();
-    },
-  });
-
-  return (
-    <Box width={columns}>
-      <Text>Press e to edit {path}</Text>
-    </Box>
-  );
-}
-```
-
 ## API Reference
 
 ### useTerminalSize()

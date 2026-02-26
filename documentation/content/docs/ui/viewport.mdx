@@ -7,7 +7,7 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Terminal } from '@/components/terminal';
 import ViewportExample from '@/components/examples/ui/viewport';
 
-A scrollable container that clips content to a fixed height and scrolls by row. Navigate with `j`/`k`, jump with `g`/`G`, page with `PgUp`/`PgDn`. Inspired by [Bubble Tea's viewport](https://github.com/charmbracelet/bubbles/blob/master/viewport/viewport.go) and [ink-scroll-view](https://github.com/ByteLandTechnology/ink-scroll-view).
+A scrollable container that clips content to a fixed height and scrolls by row. Inspired by [Bubble Tea's viewport](https://github.com/charmbracelet/bubbles/blob/master/viewport/viewport.go) and [ink-scroll-view](https://github.com/ByteLandTechnology/ink-scroll-view).
 
 Pass any children — text, components, mixed content. Viewport measures each child's actual rendered height after terminal wrapping, so long lines that wrap across multiple rows are accounted for correctly without any manual line-splitting. Use the ref to programmatically scroll or jump to a specific child with `scrollToItem`. For a virtualized item-count-based list, see [VirtualList](/ui/virtual-list).
 

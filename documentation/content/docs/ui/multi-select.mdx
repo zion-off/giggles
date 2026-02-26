@@ -8,7 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 import { Terminal } from '@/components/terminal';
 import MultiSelectExample from '@/components/examples/ui/multi-select';
 
-A multi-select list. Navigate with `j`/`k` or arrow keys, toggle items with Space.
+A multi-select list.
 
 Works in controlled or uncontrolled mode. Pass `value` and `onChange` to own the selection state yourself; omit them to let the component manage it internally — starting with nothing selected. Use `onSubmit` to handle a final confirmation on Enter.
 
@@ -62,7 +62,7 @@ function ControlledToppingPicker() {
       type: '(value: T[]) => void',
     },
     onSubmit: {
-      description: 'Called with the current selections when Enter is pressed. When not provided, Enter does nothing.',
+      description: 'Called with the current selections when Enter is pressed. When not provided, Enter is available for parent keybindings.',
       type: '(value: T[]) => void',
     },
     onHighlight: {
