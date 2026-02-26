@@ -8,49 +8,51 @@
    ============================================ */
 
 /* ---------- Light mode ---------- */
+/* "Oil on canvas" — pigment saturation, not LCD saturation.
+   Warm cream ground, espresso lines, cobalt/cadmium/ochre accents. */
 :root {
-  --color-fd-info: hsl(215, 90%, 42%);
-  --color-fd-warning: hsl(40, 90%, 50%);
-  --color-fd-error: hsl(4, 85%, 50%);
-  --color-fd-success: hsl(145, 70%, 40%);
-  --color-fd-idea: hsl(35, 90%, 55%);
+  --color-fd-info: hsl(215, 62%, 46%);
+  --color-fd-warning: hsl(40, 72%, 50%);
+  --color-fd-error: hsl(4, 68%, 48%);
+  --color-fd-success: hsl(145, 52%, 42%);
+  --color-fd-idea: hsl(35, 72%, 52%);
 }
 
 @theme {
-  --color-fd-background: hsl(45, 20%, 92%);
-  --color-fd-foreground: hsl(0, 0%, 20%);
-  --color-fd-muted: hsl(45, 15%, 88%);
-  --color-fd-muted-foreground: hsl(0, 0%, 42%);
-  --color-fd-popover: hsl(45, 18%, 93%);
-  --color-fd-popover-foreground: hsl(0, 0%, 22%);
-  --color-fd-card: hsl(45, 18%, 94%);
-  --color-fd-card-foreground: hsl(0, 0%, 20%);
-  --color-fd-border: hsl(0, 0%, 35%);
-  --color-fd-primary: hsl(215, 90%, 42%);
-  --color-fd-primary-foreground: hsl(0, 0%, 100%);
-  --color-fd-secondary: hsl(45, 15%, 90%);
-  --color-fd-secondary-foreground: hsl(0, 0%, 22%);
-  --color-fd-accent: hsla(215, 90%, 42%, 0.1);
-  --color-fd-accent-foreground: hsl(215, 90%, 38%);
-  --color-fd-ring: hsl(215, 90%, 42%);
-  --color-fd-overlay: hsla(0, 0%, 0%, 0.2);
+  --color-fd-background: hsl(40, 33%, 93%);
+  --color-fd-foreground: hsl(30, 10%, 24%);
+  --color-fd-muted: hsl(40, 25%, 89%);
+  --color-fd-muted-foreground: hsl(30, 6%, 48%);
+  --color-fd-popover: hsl(40, 30%, 92%);
+  --color-fd-popover-foreground: hsl(30, 8%, 26%);
+  --color-fd-card: hsl(40, 26%, 90.5%);
+  --color-fd-card-foreground: hsl(30, 10%, 24%);
+  --color-fd-border: hsl(30, 8%, 52%);
+  --color-fd-primary: hsl(215, 62%, 46%);
+  --color-fd-primary-foreground: hsl(40, 33%, 96%);
+  --color-fd-secondary: hsl(40, 24%, 88.5%);
+  --color-fd-secondary-foreground: hsl(30, 8%, 28%);
+  --color-fd-accent: hsla(215, 58%, 46%, 0.08);
+  --color-fd-accent-foreground: hsl(215, 55%, 42%);
+  --color-fd-ring: hsl(215, 62%, 46%);
+  --color-fd-overlay: hsla(30, 12%, 12%, 0.16);
 
-  /* mondrian palette */
-  --color-mondrian-red: hsl(4, 85%, 50%);
-  --color-mondrian-blue: hsl(215, 90%, 42%);
-  --color-mondrian-yellow: hsl(48, 95%, 55%);
-  --color-mondrian-black: hsl(0, 0%, 25%);
+  /* mondrian palette — pigment, not neon */
+  --color-mondrian-red: hsl(4, 68%, 48%);
+  --color-mondrian-blue: hsl(215, 62%, 46%);
+  --color-mondrian-yellow: hsl(46, 82%, 54%);
+  --color-mondrian-black: hsl(30, 10%, 32%);
 
   /* semantic */
-  --color-fd-info: oklch(44.5% 0.195 260);
-  --color-fd-warning: oklch(76.9% 0.188 70.08);
-  --color-fd-error: oklch(63.7% 0.237 25.331);
-  --color-fd-success: oklch(72.3% 0.219 149.579);
-  --color-fd-idea: oklch(70.5% 0.209 60.849);
-  --color-fd-diff-remove: rgba(200, 10, 100, 0.12);
-  --color-fd-diff-remove-symbol: rgb(230, 10, 100);
-  --color-fd-diff-add: rgba(14, 180, 100, 0.1);
-  --color-fd-diff-add-symbol: rgb(10, 200, 100);
+  --color-fd-info: oklch(44.5% 0.165 260);
+  --color-fd-warning: oklch(76.9% 0.158 70.08);
+  --color-fd-error: oklch(63.7% 0.2 25.331);
+  --color-fd-success: oklch(72.3% 0.185 149.579);
+  --color-fd-idea: oklch(70.5% 0.176 60.849);
+  --color-fd-diff-remove: rgba(180, 30, 80, 0.1);
+  --color-fd-diff-remove-symbol: rgb(190, 30, 80);
+  --color-fd-diff-add: rgba(20, 160, 90, 0.08);
+  --color-fd-diff-add-symbol: rgb(20, 170, 90);
 }
 
 /* ---------- Dark mode ---------- */
