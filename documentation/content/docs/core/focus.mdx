@@ -158,7 +158,20 @@ The navigation methods are stable references — safe to call from effects and e
 
 #### FocusScopeHelpers
 
-`Pick<FocusScopeHandle, 'next' | 'prev' | 'nextShallow' | 'prevShallow' | 'escape' | 'drillIn' | 'focusChild' | 'focusChildShallow'>` — the navigation methods passed as the argument to the `keybindings` factory.
+The subset of `FocusScopeHandle` passed as the argument to the `keybindings` factory function.
+
+<TypeTable
+  type={{
+    next: { description: 'Focus the next sibling child, descending to the first leaf automatically.', type: '() => void', required: true },
+    prev: { description: 'Focus the previous sibling child, descending to the first leaf automatically.', type: '() => void', required: true },
+    nextShallow: { description: 'Focus the next sibling child without descending into its children.', type: '() => void', required: true },
+    prevShallow: { description: 'Focus the previous sibling child without descending into its children.', type: '() => void', required: true },
+    escape: { description: "Yield focus to this scope's own node, enabling passive mode. Parent keybindings become active.", type: '() => void', required: true },
+    drillIn: { description: 'Focus the first child of this scope, clearing passive mode. Queues focus if the scope has no children yet.', type: '() => void', required: true },
+    focusChild: { description: 'Focus the direct child registered with the given focusKey, drilling into its first leaf.', type: '(key: string) => void', required: true },
+    focusChildShallow: { description: 'Focus the direct child registered with the given focusKey, landing on its scope node without drilling.', type: '(key: string) => void', required: true },
+  }}
+/>
 
 ### FocusScope
 
