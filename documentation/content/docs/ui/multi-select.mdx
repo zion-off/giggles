@@ -101,6 +101,10 @@ function ControlledToppingPicker() {
       description: 'Custom render function for each option. Replaces the default rendering entirely.',
       type: '(props: MultiSelectRenderProps<T>) => React.ReactNode',
     },
+    focusKey: {
+      description: 'Key used to address this component from its parent scope via focusChild/focusChildShallow.',
+      type: 'string',
+    },
   }}
 />
 

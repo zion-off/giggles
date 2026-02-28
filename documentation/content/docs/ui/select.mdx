@@ -109,6 +109,10 @@ function ControlledLanguagePicker() {
       description: 'Custom render function for each option. Replaces the default rendering entirely.',
       type: '(props: SelectRenderProps<T>) => React.ReactNode',
     },
+    focusKey: {
+      description: 'Key used to address this component from its parent scope via focusChild/focusChildShallow.',
+      type: 'string',
+    },
   }}
 />
 

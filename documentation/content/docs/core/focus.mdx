@@ -79,6 +79,10 @@ function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle
       description: 'Explicit parent scope. Defaults to the nearest <FocusScope> ancestor via context.',
       type: 'FocusScopeHandle',
     },
+    focusKey: {
+      description: 'Key used to address this scope from its parent via focusChild/focusChildShallow. Scoped to the immediate parent — no global namespace.',
+      type: 'string',
+    },
     keybindings: {
       description: 'Keybindings active while this scope or any descendant has focus. Pass a function to receive navigation helpers.',
       type: 'Keybindings | ((helpers: FocusScopeHelpers) => Keybindings)',
@@ -135,6 +139,16 @@ function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle
       type: '() => void',
       required: true,
     },
+    focusChild: {
+      description: 'Focus the direct child of this scope with the given focusKey, drilling into its first leaf. If the child is a scope with no children yet, the focus is queued. No-op if the key is not found.',
+      type: '(key: string) => void',
+      required: true,
+    },
+    focusChildShallow: {
+      description: 'Focus the direct child of this scope with the given focusKey, landing on its scope node without drilling in. Consistent with nextShallow. No-op if the key is not found.',
+      type: '(key: string) => void',
+      required: true,
+    },
   }}
 />
 
@@ -144,7 +158,7 @@ The navigation methods are stable references — safe to call from effects and e
 
 #### FocusScopeHelpers
 
-`Pick<FocusScopeHandle, 'next' | 'prev' | 'nextShallow' | 'prevShallow' | 'escape' | 'drillIn'>` — the navigation methods passed as the argument to the `keybindings` factory.
+`Pick<FocusScopeHandle, 'next' | 'prev' | 'nextShallow' | 'prevShallow' | 'escape' | 'drillIn' | 'focusChild' | 'focusChildShallow'>` — the navigation methods passed as the argument to the `keybindings` factory.
 
 ### FocusScope
 
@@ -205,6 +219,10 @@ function useFocusNode(options?: FocusNodeOptions): FocusNodeHandle
       description: 'Explicit parent scope. Defaults to the nearest <FocusScope> ancestor via context.',
       type: 'FocusScopeHandle',
     },
+    focusKey: {
+      description: 'Key used to address this node from its parent scope via focusChild/focusChildShallow. Scoped to the immediate parent — no global namespace.',
+      type: 'string',
+    },
   }}
 />
 
@@ -236,6 +254,42 @@ function MyComponent({ focus }: { focus: FocusNodeHandle }) {
 ```
 
 ## Examples
+
+### Controlled focus
+
+Use `focusKey` to give a child a stable name, then call `focusChild` from the parent to jump to it directly — without `next`/`prev` iteration. Keys are scoped to the immediate parent scope, so the same key can be reused inside sibling scopes.
+
+```tsx title="Jump to Child by Key"
+function Dashboard() {
+  const root = useFocusScope({
+    keybindings: ({ focusChild }) => ({
+      '1': () => focusChild('editor'),
+      '2': () => focusChild('terminal'),
+      '3': () => focusChild('sidebar'),
+    })
+  });
+
+  return (
+    <FocusScope handle={root}>
+      <Editor focusKey="editor" />
+      <Terminal focusKey="terminal" />
+      <Sidebar focusKey="sidebar" />
+    </FocusScope>
+  );
+}
+```
+
+`focusChild` drills into the first leaf of the target scope, so pressing `1` lands you inside the editor immediately — same behaviour as `next`. Use `focusChildShallow` if you want to land on the scope node itself without entering it.
+
+`focusChild` is also available directly on the handle for use in effects and event handlers:
+
+```tsx title="Focus Child from an Effect"
+const root = useFocusScope();
+
+useEffect(() => {
+  if (errorPanel) root.focusChild('errors');
+}, [errorPanel]);
+```
 
 ### Nested navigation
 
