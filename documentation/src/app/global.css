@@ -303,3 +303,8 @@ body::after {
 
 /* --- 6. TOC active indicator --- */
 /* Uses fd-primary (Mondrian blue) by default — already on-theme. */
+
+/* --- Override fumadocs oklab color-mix for cross-platform consistency --- */
+.bg-fd-popover\/60 {
+  background-color: color-mix(in srgb, var(--color-fd-popover) 60%, transparent);
+}
