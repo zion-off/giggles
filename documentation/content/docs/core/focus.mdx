@@ -1,6 +1,6 @@
 ---
 title: Focus
-description: API reference for the focus system
+description: Hooks and components for managing keyboard navigation
 ---
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
@@ -10,11 +10,46 @@ import NavigableMenuExample from '@/components/examples/focus/navigable-menu';
 import ControlledFocusExample from '@/components/examples/focus/controlled-focus';
 import FileTreeExample from '@/components/examples/focus/file-tree';
 
-The focus system provides hooks and components for managing keyboard navigation.
+## Nodes and scopes
 
-`useFocusScope` is the scoping primitive — it creates a navigable region and returns a handle with reactive focus state. Wrap children with `<FocusScope>` to set the parent context, so any child that calls `useFocusNode()` automatically registers under that scope.
+The focus tree has two kinds of participants.
 
-Navigation between children is explicit: each scope exposes helpers (`next`, `prev`, `nextShallow`, `prevShallow`, `escape`, `drillIn`) directly on the returned handle, and also as the argument to the `keybindings` factory. This makes nested layouts composable — each scope only handles the keys you assign it.
+A **node** (`useFocusNode`) is a focusable target — a list item, a text field, a button. It can receive focus and respond to keys, but has no children in the focus tree.
+
+A **scope** (`useFocusScope`) is a navigable container. It groups focusable children and controls how focus moves between them. Scopes can contain other scopes — nesting is how complex layouts are built.
+
+**Decision rule:** if your component *contains* focusable children, use `useFocusScope`. If your component *is* the focusable target, use `useFocusNode`. UI components like `Select` and `TextInput` use `useFocusNode` internally — they are leaf nodes, not containers.
+
+## Navigation is per level
+
+Each scope independently navigates its own direct children. The parent scope owns the movement keys; children don't move themselves.
+
+At the boundary between a scope and a child scope, you choose how to cross:
+
+- `next` / `prev` — move to the next or previous child and **drill in**, landing on its first leaf
+- `nextShallow` / `prevShallow` — move to the next or previous child and **stop at the scope node**, without entering it
+
+The shallow variants are essential when children may be collapsed or have no registered descendants yet — `next` would queue indefinitely on an empty scope, while `nextShallow` lands on the scope node where the user can choose to open it.
+
+## `hasFocus` propagates up
+
+Focus always lives at a single leaf node. But `hasFocus` on a scope is true whenever *any descendant* has focus — the value propagates up the tree. A container can highlight its border while focus is several levels deep inside it, with no extra state required.
+
+```tsx
+<Box borderColor={scope.hasFocus ? 'green' : 'grey'}>
+```
+
+## Keys bubble up
+
+Keypresses walk from the focused node up to the root. At each node, if a binding matches it fires and the walk stops. If nothing matches, the key continues to the parent scope.
+
+This means outer scopes receive any keys that inner scopes don't consume — no explicit forwarding needed. A `Select` consumes `j`/`k`/`enter`; any other key pressed while it has focus bubbles freely to the parent scope's bindings.
+
+**Passive mode** is the exception: when inner and outer scopes bind the *same* key, call `escape()` on the inner scope to make it yield. The scope is skipped during dispatch until focus moves elsewhere.
+
+---
+
+## Quick start
 
 ```tsx title="Navigable Menu"
 import { FocusScope, useFocusNode, useFocusScope } from 'giggles';
@@ -48,35 +83,24 @@ function MenuItem({ label }: { label: string }) {
   <NavigableMenuExample />
 </Terminal>
 
+---
+
 ## API Reference
 
 ### useFocusScope()
 
-Creates a scope node in the focus tree and returns a reactive handle. The scope acts as a grouping container — children that call `useFocusNode()` or `useFocusScope()` without an explicit `parent` register under the nearest `<FocusScope>` ancestor.
+Creates a scope node in the focus tree and returns a reactive handle. Wrap children with `<FocusScope handle={scope}>` so nested hooks know their parent.
 
 ```ts title="Type Signature"
 function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle
 ```
-
-**Parameters:**
-
-<TypeTable
-  type={{
-    options: {
-      description: 'Optional configuration for the scope',
-      type: 'FocusScopeOptions',
-    },
-  }}
-/>
-
-**Returns:** `FocusScopeHandle`
 
 #### FocusScopeOptions
 
 <TypeTable
   type={{
     parent: {
-      description: 'Explicit parent scope. Defaults to the nearest <FocusScope> ancestor via context.',
+      description: 'Explicit parent scope. Use when creating a scope in the same component as its parent, bypassing context. Defaults to the nearest <FocusScope> ancestor.',
       type: 'FocusScopeHandle',
     },
     focusKey: {
@@ -84,7 +108,7 @@ function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle
       type: 'string',
     },
     keybindings: {
-      description: 'Keybindings active while this scope or any descendant has focus. Pass a function to receive navigation helpers.',
+      description: 'Keybindings active while this scope or any descendant has focus. Pass a function to receive navigation helpers. Handlers re-register every render so closures are never stale.',
       type: 'Keybindings | ((helpers: FocusScopeHelpers) => Keybindings)',
     },
   }}
@@ -145,14 +169,14 @@ function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle
       required: true,
     },
     focusChildShallow: {
-      description: 'Focus the direct child of this scope with the given focusKey, landing on its scope node without drilling in. Consistent with nextShallow. No-op if the key is not found.',
+      description: 'Focus the direct child of this scope with the given focusKey, landing on its scope node without drilling in. No-op if the key is not found.',
       type: '(key: string) => void',
       required: true,
     },
   }}
 />
 
-Use `hasFocus` for visual indicators like borders and highlights. Use `isPassive` to show that a scope has been escaped from — for example, dimming a border when j/k will navigate at the parent level instead.
+Use `hasFocus` for visual indicators like borders and highlights. Use `isPassive` to show that a scope has been escaped from — for example, dimming a border when `j`/`k` will navigate at the parent level instead.
 
 The navigation methods are stable references — safe to call from effects and event handlers. Call them imperatively, not during render.
 
@@ -175,7 +199,7 @@ The subset of `FocusScopeHandle` passed as the argument to the `keybindings` fac
 
 ### FocusScope
 
-Sets the parent scope for all children rendered inside it. Children that call `useFocusNode()` or `useFocusScope()` without an explicit `parent` option will register under this scope.
+Sets the parent scope for all children rendered inside it. Children that call `useFocusNode()` or `useFocusScope()` without an explicit `parent` option register under this scope.
 
 <Callout type="warn">
   Every `useFocusScope()` call must have exactly one corresponding `<FocusScope>` rendered. Omitting it throws a `GigglesError` — without it, children silently register under the wrong parent scope and navigation breaks.
@@ -205,31 +229,18 @@ function FocusScope({ handle, children }: {
 
 ### useFocusNode()
 
-Registers a component as a leaf node in the focus tree. Use this for components that are themselves focusable targets: list items, form fields, buttons.
+Registers a component as a leaf node in the focus tree. Use this when the component itself is the focusable target — a list item, a form field, a button. If the component contains other focusable children, use `useFocusScope` instead.
 
 ```ts title="Type Signature"
 function useFocusNode(options?: FocusNodeOptions): FocusNodeHandle
 ```
-
-**Parameters:**
-
-<TypeTable
-  type={{
-    options: {
-      description: 'Optional configuration for the node',
-      type: 'FocusNodeOptions',
-    },
-  }}
-/>
-
-**Returns:** `FocusNodeHandle`
 
 #### FocusNodeOptions
 
 <TypeTable
   type={{
     parent: {
-      description: 'Explicit parent scope. Defaults to the nearest <FocusScope> ancestor via context.',
+      description: 'Explicit parent scope. Use when creating a node in the same component as its parent scope, bypassing context. Defaults to the nearest <FocusScope> ancestor.',
       type: 'FocusScopeHandle',
     },
     focusKey: {
@@ -265,6 +276,8 @@ function MyComponent({ focus }: { focus: FocusNodeHandle }) {
   return <Text color={focus.hasFocus ? 'green' : 'white'}>Item</Text>;
 }
 ```
+
+---
 
 ## Examples
 
