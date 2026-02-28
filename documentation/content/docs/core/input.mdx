@@ -1,6 +1,6 @@
 ---
 title: Input
-description: API reference for the input system
+description: Keybinding registration and keyboard event routing
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -10,11 +10,9 @@ import FileListExample from '@/components/examples/input/file-list';
 import CaptureModeExample from '@/components/examples/input/capture-mode';
 import FocusTrapExample from '@/components/examples/input/focus-trap';
 
-The input system routes keyboard events to the focused component and its ancestors.
+The input system routes keyboard events to the focused component and its ancestors. When a key is pressed, the focused component's bindings are checked first, then its parent's, and so on. The first matching binding wins; unmatched keys keep moving up. Components outside the focused path never receive input.
 
-Register handlers with `useKeybindings` — when a key is pressed, the focused component's bindings are checked first, then its parent's, and so on. The first matching binding wins; unmatched keys keep moving up. Components outside the focused path never receive input.
-
-For modal-like scenarios, `FocusTrap` locks input inside a subtree — nothing outside it is reachable until the trap unmounts.
+`useKeybindings` takes a focus handle as its first argument — bindings only fire when that component is in the active focus path. This is what makes bindings local: the same key can be bound differently at every nesting level, and only the focused path's bindings are consulted.
 
 ```tsx title="Basic Usage"
 import { useKeybindings, useFocusNode } from 'giggles';
@@ -192,7 +190,7 @@ Use these options to build text inputs. Named bindings are always checked first 
 
 ### useKeybindingRegistry()
 
-Reads all named keybindings registered across the app. Useful for building command palettes, help screens, and key hints bars.
+When a keybinding is registered with a `name`, it becomes discoverable — useful for building command palettes, help screens, and key hint bars. `useKeybindingRegistry` reads those named bindings, filtered by scope.
 
 ```tsx title="Help Screen"
 import { useKeybindingRegistry } from 'giggles';
@@ -262,7 +260,7 @@ function HelpScreen() {
 
 ### FocusTrap
 
-Isolates input within a boundary. When mounted, it captures focus into its subtree and prevents input from reaching components outside. When unmounted, it restores focus to the previously focused component.
+Sometimes you need to cut the focus path entirely rather than just intercept it — modal dialogs, confirmation prompts, anything that should be unreachable by key until explicitly dismissed. `FocusTrap` does this: when mounted, it captures focus into its subtree and prevents input from reaching anything outside. When unmounted, it restores focus to the previously focused component.
 
 ```tsx title="FocusTrap Example"
 function App() {
