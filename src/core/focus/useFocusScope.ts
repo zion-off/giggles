@@ -13,18 +13,23 @@ export type FocusScopeHandle = {
   prevShallow: () => void;
   escape: () => void;
   drillIn: () => void;
+  focusChild: (key: string) => void;
+  focusChildShallow: (key: string) => void;
 };
 
 // Subset of FocusScopeHandle — the navigation helpers passed to the keybindings factory.
 export type FocusScopeHelpers = Pick<
   FocusScopeHandle,
-  'next' | 'prev' | 'nextShallow' | 'prevShallow' | 'escape' | 'drillIn'
+  'next' | 'prev' | 'nextShallow' | 'prevShallow' | 'escape' | 'drillIn' | 'focusChild' | 'focusChildShallow'
 >;
 
 export type FocusScopeOptions = {
   // Explicit parent — use when creating a scope in the same component as its parent,
   // bypassing ScopeIdContext. If omitted, the parent is read from ScopeIdContext.
   parent?: FocusScopeHandle;
+  // Key used to address this scope from the parent scope via focusChild/focusChildShallow.
+  // Scoped to the immediate parent — no global namespace.
+  focusKey?: string;
   // Keybindings for this scope. Pass a plain object or a callback that receives
   // navigation helpers and returns a plain object. Handlers are fresh every render
   // (closures are never stale).
@@ -39,6 +44,7 @@ export function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle {
 
   // Explicit parent takes precedence over context.
   const parentId = options?.parent?.id ?? contextParentId;
+  const focusKey = options?.focusKey;
 
   // Stable subscribe reference for useSyncExternalStore.
   // store is stable (created once in GigglesProvider), so this never changes.
@@ -48,11 +54,11 @@ export function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle {
   // The reverse-scan in FocusStore.registerNode handles the case where a child
   // registers before its parent scope exists in the tree.
   useEffect(() => {
-    store.registerNode(id, parentId);
+    store.registerNode(id, parentId, focusKey);
     return () => {
       store.unregisterNode(id);
     };
-  }, [id, parentId, store]);
+  }, [id, parentId, focusKey, store]);
 
   // Reactive reads via useSyncExternalStore. Each subscription returns a primitive
   // (boolean), so Object.is comparison avoids unnecessary re-renders.
@@ -72,6 +78,10 @@ export function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle {
   const escape = useCallback(() => store.makePassive(id), [store, id]);
   // drillIn: focus the deepest first child of this scope, clearing any passive state.
   const drillIn = useCallback(() => store.focusFirstChild(id), [store, id]);
+  // focusChild: focus a direct child of this scope by focusKey, drilling into its first leaf.
+  const focusChild = useCallback((key: string) => store.focusChildByKey(id, key, false), [store, id]);
+  // focusChildShallow: focus a direct child by focusKey, landing on the scope node without drilling.
+  const focusChildShallow = useCallback((key: string) => store.focusChildByKey(id, key, true), [store, id]);
 
   // ---------------------------------------------------------------------------
   // Keybinding registration (synchronous during render — closures are always fresh)
@@ -79,7 +89,7 @@ export function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle {
 
   const resolvedBindings: Keybindings =
     typeof options?.keybindings === 'function'
-      ? options.keybindings({ next, prev, nextShallow, prevShallow, escape, drillIn })
+      ? options.keybindings({ next, prev, nextShallow, prevShallow, escape, drillIn, focusChild, focusChildShallow })
       : options?.keybindings ?? {};
 
   // Register synchronously so the bindings are always ready for the next keypress.
@@ -103,5 +113,17 @@ export function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle {
     }
   }, [id, store]);
 
-  return { id, hasFocus, isPassive, next, prev, nextShallow, prevShallow, escape, drillIn };
+  return {
+    id,
+    hasFocus,
+    isPassive,
+    next,
+    prev,
+    nextShallow,
+    prevShallow,
+    escape,
+    drillIn,
+    focusChild,
+    focusChildShallow
+  };
 }
