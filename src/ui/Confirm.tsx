@@ -6,10 +6,11 @@ type ConfirmProps = {
   message: string;
   defaultValue?: boolean;
   onSubmit: (value: boolean) => void;
+  focusKey?: string;
 };
 
-export function Confirm({ message, defaultValue = true, onSubmit }: ConfirmProps) {
-  const focus = useFocusNode();
+export function Confirm({ message, defaultValue = true, onSubmit, focusKey }: ConfirmProps) {
+  const focus = useFocusNode({ focusKey });
 
   useKeybindings(focus, {
     y: () => onSubmit(true),
