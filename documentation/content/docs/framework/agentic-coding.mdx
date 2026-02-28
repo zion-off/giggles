@@ -33,22 +33,51 @@ render(<Root />);
 
 ### Focus primitives
 
-**`useFocusNode()`** — registers a leaf node in the focus tree. Returns `{ id, hasFocus }`. Used directly in custom interactive components.
+**`useFocusNode(options?)`** — registers a leaf node in the focus tree. Returns `{ id, hasFocus }`. Used directly in custom interactive components. Accepts `focusKey` so the parent scope can address this node via `focusChild`/`focusChildShallow`.
 
-**`useFocusScope(options?)`** — registers a scope node. Returns `{ id, hasFocus, isPassive, next, prev, nextShallow, prevShallow, escape, drillIn }`.
+**`useFocusScope(options?)`** — registers a scope node. Returns `{ id, hasFocus, isPassive, next, prev, nextShallow, prevShallow, escape, drillIn, focusChild, focusChildShallow }`.
 - `hasFocus` is true when the scope node **or any descendant** has focus (ancestor walk, not strict equality).
 - Wrap children in `<FocusScope handle={scope}>` to set the implicit parent for nested hooks. Omitting `<FocusScope>` throws a `GigglesError`.
 - `keybindings` accepts a plain object or a factory `(helpers) => object`. Handlers are re-registered every render so closures are never stale.
+- `focusKey` — optional string that lets the parent scope address this scope by name via `focusChild`/`focusChildShallow`.
 
 **Navigation helpers** — available directly on the handle and as the `keybindings` factory argument. Stable references; safe to call from effects and event handlers.
 ```ts
-next()         // move to next child, drill into its first leaf
-prev()         // move to prev child, drill into its first leaf
-nextShallow()  // move to next child, land on scope node (don't drill)
-prevShallow()  // move to prev child, land on scope node
-escape()       // make this scope passive — yields input to parent
-drillIn()      // focusFirstChild — queues focus if no children yet; first child to register claims it
+next()                  // move to next child, drill into its first leaf
+prev()                  // move to prev child, drill into its first leaf
+nextShallow()           // move to next child, land on scope node (don't drill)
+prevShallow()           // move to prev child, land on scope node
+escape()                // make this scope passive — yields input to parent
+drillIn()               // focusFirstChild — queues focus if no children yet; first child to register claims it
+focusChild(key)         // focus the direct child registered with focusKey=key, drilling into its first leaf
+focusChildShallow(key)  // same, but land on the scope node without drilling
 ```
+
+### Controlled focus
+
+Use `focusKey` to give a child a stable name, then call `focusChild` from the parent to jump directly to it — bypassing `next`/`prev` iteration. Keys are scoped to the immediate parent scope.
+
+```tsx
+// Child declares its key
+const scope = useFocusScope({ focusKey: 'editor' });
+// or on a UI component:
+<TextInput focusKey="search" />
+
+// Parent jumps to it directly
+const root = useFocusScope({
+  keybindings: ({ focusChild }) => ({
+    '1': () => focusChild('files'),
+    '2': () => focusChild('editor'),
+  })
+});
+
+// Also available on the handle for effects
+useEffect(() => {
+  if (error) root.focusChild('errors');
+}, [error]);
+```
+
+`focusChild` drills into the first leaf of the target (same as `next`). Use `focusChildShallow` to land on the scope node itself. If the key is not found, both are no-ops. If the target scope has no children yet, `focusChild` queues focus — the first child to register claims it automatically.
 
 ### Key bubbling
 
@@ -77,7 +106,7 @@ Only use passive mode when parent and child scopes compete for the **same keys**
 
 ### UI components (`giggles/ui`)
 
-All interactive components use `useFocusNode()` internally — they are leaf nodes, not scopes. Their keybindings fire before bubbling to any parent scope.
+All interactive components use `useFocusNode()` internally — they are leaf nodes, not scopes. Their keybindings fire before bubbling to any parent scope. All interactive components accept a `focusKey` prop so their parent scope can address them via `focusChild`/`focusChildShallow`.
 
 Available components: `Select`, `MultiSelect`, `TextInput`, `Autocomplete`, `Confirm`, `Viewport`, `Modal`, `Badge`, `Spinner`, `Paginator`, `Panel`, `Markdown`, `VirtualList`, `CommandPalette`, `CodeBlock`.
 
