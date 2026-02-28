@@ -8,7 +8,7 @@
     "start": "next start",
     "types:check": "fumadocs-mdx && next typegen && tsc --noEmit",
     "postinstall": "fumadocs-mdx",
-    "lint": "prettier --write . && eslint --fix",
+    "lint": "prettier --write --loglevel warn . && eslint . --fix --quiet",
     "generate-og": "tsx scripts/generate-og.ts",
     "preview": "tsx scripts/generate-og.ts && opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "tsx scripts/generate-og.ts && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
