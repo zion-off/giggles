@@ -43,7 +43,7 @@
     "play": "f() { tsx --watch playground/examples/$1.tsx; }; f",
     "record": "f() { vhs playground/tapes/$1.tape; }; f",
     "dev:docs": "pnpm build && concurrently --kill-others \"pnpm build:watch\" \"pnpm --filter documentation dev\"",
-    "lint": "prettier --write . && eslint . --fix"
+    "lint": "prettier --write --loglevel warn . && eslint . --fix --quiet"
   },
   "files": [
     "dist"
