@@ -40,6 +40,8 @@ export class FocusStore {
   // A keybinding may exist for a node that has not yet appeared in the node tree —
   // this is safe because dispatch only walks nodes in the active branch path.
   private keybindings: Map<string, Map<string, BindingRegistration>> = new Map();
+  // parentId → focusKey → childId
+  private keyIndex: Map<string, Map<string, string>> = new Map();
 
   // ---------------------------------------------------------------------------
   // Subscription
@@ -65,7 +67,7 @@ export class FocusStore {
   // Registration
   // ---------------------------------------------------------------------------
 
-  registerNode(id: string, parentId: string | null): void {
+  registerNode(id: string, parentId: string | null, focusKey?: string): void {
     const node: FocusNode = { id, parentId, childrenIds: [] };
     this.nodes.set(id, node);
     this.parentMap.set(id, parentId);
@@ -91,6 +93,14 @@ export class FocusStore {
       if (existingNode.parentId === id && !node.childrenIds.includes(existingId)) {
         node.childrenIds.push(existingId);
       }
+    }
+
+    // Index by focusKey under the parent so focusChildByKey can resolve it
+    if (focusKey && parentId) {
+      if (!this.keyIndex.has(parentId)) {
+        this.keyIndex.set(parentId, new Map());
+      }
+      this.keyIndex.get(parentId)!.set(focusKey, id);
     }
 
     // Auto-focus the very first node added to the tree
@@ -122,7 +132,25 @@ export class FocusStore {
     // 4. Clear pending focusFirstChild
     this.pendingFocusFirstChild.delete(id);
 
-    // 5. Refocus if this node was focused
+    // 5. Remove from parent's key index
+    if (node.parentId) {
+      const parentKeys = this.keyIndex.get(node.parentId);
+      if (parentKeys) {
+        for (const [key, childId] of parentKeys) {
+          if (childId === id) {
+            parentKeys.delete(key);
+            break;
+          }
+        }
+        if (parentKeys.size === 0) {
+          this.keyIndex.delete(node.parentId);
+        }
+      }
+    }
+    // Remove this node's own key map (it can no longer be a parent)
+    this.keyIndex.delete(id);
+
+    // 6. Refocus if this node was focused
     // Walk parentMap (persistent, never deleted from) to find nearest living ancestor
     if (this.focusedId === id) {
       let candidate = node.parentId;
@@ -181,6 +209,22 @@ export class FocusStore {
       this.focusNode(target);
     } else {
       this.pendingFocusFirstChild.add(parentId);
+    }
+  }
+
+  focusChildByKey(parentId: string, key: string, shallow: boolean): void {
+    const childId = this.keyIndex.get(parentId)?.get(key);
+    if (!childId || !this.nodes.has(childId)) return;
+
+    if (shallow) {
+      this.focusNode(childId);
+    } else {
+      const child = this.nodes.get(childId)!;
+      if (child.childrenIds.length > 0) {
+        this.focusFirstChild(childId);
+      } else {
+        this.focusNode(childId);
+      }
     }
   }
 
