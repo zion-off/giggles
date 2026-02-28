@@ -29,6 +29,7 @@ type AutocompleteProps<T> = {
   paginatorStyle?: PaginatorStyle;
   wrap?: boolean;
   render?: (props: AutocompleteRenderProps<T>) => React.ReactNode;
+  focusKey?: string;
 };
 
 function defaultFilter<T>(query: string, option: SelectOption<T>): boolean {
@@ -52,7 +53,8 @@ export function Autocomplete<T>({
   maxVisible,
   paginatorStyle,
   wrap = true,
-  render
+  render,
+  focusKey
 }: AutocompleteProps<T>) {
   const seen = new Set<string>();
   for (const opt of options) {
@@ -63,7 +65,7 @@ export function Autocomplete<T>({
     seen.add(key);
   }
 
-  const focus = useFocusNode();
+  const focus = useFocusNode({ focusKey });
   const theme = useTheme();
   const [query, setQuery] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(0);

@@ -53,13 +53,14 @@ type ViewportProps = Omit<BoxProps, 'height' | 'overflow' | 'flexDirection'> & {
   height: number;
   keybindings?: boolean;
   footer?: React.ReactNode;
+  focusKey?: string;
 };
 
 export const Viewport = forwardRef<ViewportRef, ViewportProps>(function Viewport(
-  { children, height, keybindings: enableKeybindings = true, footer, ...boxProps },
+  { children, height, keybindings: enableKeybindings = true, footer, focusKey, ...boxProps },
   ref
 ) {
-  const focus = useFocusNode();
+  const focus = useFocusNode({ focusKey });
   const [scrollOffset, setScrollOffset] = useState(0);
 
   const contentHeightRef = useRef(0);

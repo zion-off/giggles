@@ -33,6 +33,7 @@ type SelectProps<T> = {
   paginatorStyle?: PaginatorStyle;
   wrap?: boolean;
   render?: (props: SelectRenderProps<T>) => React.ReactNode;
+  focusKey?: string;
 };
 
 export function Select<T>({
@@ -48,7 +49,8 @@ export function Select<T>({
   maxVisible,
   paginatorStyle,
   wrap = true,
-  render
+  render,
+  focusKey
 }: SelectProps<T>) {
   const seen = new Set<string>();
   for (const opt of options) {
@@ -59,7 +61,7 @@ export function Select<T>({
     seen.add(key);
   }
 
-  const focus = useFocusNode();
+  const focus = useFocusNode({ focusKey });
   const theme = useTheme();
   const [highlightIndex, setHighlightIndex] = useState(0);
 

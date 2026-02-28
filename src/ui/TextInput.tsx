@@ -19,10 +19,11 @@ type TextInputProps = {
   onSubmit?: (value: string) => void;
   placeholder?: string;
   render?: (props: TextInputRenderProps) => React.ReactNode;
+  focusKey?: string;
 };
 
-export function TextInput({ label, value, onChange, onSubmit, placeholder, render }: TextInputProps) {
-  const focus = useFocusNode();
+export function TextInput({ label, value, onChange, onSubmit, placeholder, render, focusKey }: TextInputProps) {
+  const focus = useFocusNode({ focusKey });
   const cursorRef = useRef(value.length);
   const [, forceRender] = useReducer((c: number) => c + 1, 0);
 

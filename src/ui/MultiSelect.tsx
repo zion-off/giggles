@@ -28,6 +28,7 @@ type MultiSelectProps<T> = {
   paginatorStyle?: PaginatorStyle;
   wrap?: boolean;
   render?: (props: MultiSelectRenderProps<T>) => React.ReactNode;
+  focusKey?: string;
 };
 
 export function MultiSelect<T>({
@@ -42,7 +43,8 @@ export function MultiSelect<T>({
   maxVisible,
   paginatorStyle,
   wrap = true,
-  render
+  render,
+  focusKey
 }: MultiSelectProps<T>) {
   const seen = new Set<string>();
   for (const opt of options) {
@@ -53,7 +55,7 @@ export function MultiSelect<T>({
     seen.add(key);
   }
 
-  const focus = useFocusNode();
+  const focus = useFocusNode({ focusKey });
   const theme = useTheme();
   const [highlightIndex, setHighlightIndex] = useState(0);
   const [internalSelected, setInternalSelected] = useState<T[]>([]);
