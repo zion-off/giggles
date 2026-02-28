@@ -57,6 +57,10 @@ function NameInput() {
       description: 'Custom render function. Replaces the default rendering entirely.',
       type: '(props: TextInputRenderProps) => React.ReactNode',
     },
+    focusKey: {
+      description: 'Key used to address this component from its parent scope via focusChild/focusChildShallow.',
+      type: 'string',
+    },
   }}
 />
 

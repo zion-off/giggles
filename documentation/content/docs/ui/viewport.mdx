@@ -53,6 +53,10 @@ function ArticleViewer({ paragraphs }: { paragraphs: string[] }) {
       description: 'Content rendered below the scrollable area, outside the clipping box — useful for scroll indicators or status lines',
       type: 'React.ReactNode',
     },
+    focusKey: {
+      description: 'Key used to address this component from its parent scope via focusChild/focusChildShallow.',
+      type: 'string',
+    },
     '...boxProps': {
       description: 'Any Ink Box prop (borderStyle, borderColor, padding, width, etc.) applied to the outer container. height, overflow, and flexDirection are reserved.',
       type: 'BoxProps',
