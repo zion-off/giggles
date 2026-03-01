@@ -4,6 +4,7 @@ import { useFocusNode } from '../core/focus';
 import { FocusTrap, useKeybindingRegistry, useKeybindings } from '../core/input';
 import type { Key, RegisteredKeybinding } from '../core/input';
 import { useTheme } from '../core/theme';
+import { VirtualList } from './VirtualList';
 
 const EMPTY_KEY: Key = {
   upArrow: false,
@@ -38,6 +39,7 @@ export type CommandPaletteRenderProps = {
 type CommandPaletteProps = {
   onClose?: () => void;
   interactive?: boolean;
+  maxVisible?: number;
   render?: (props: CommandPaletteRenderProps) => React.ReactNode;
 };
 
@@ -52,7 +54,15 @@ function fuzzyMatch(name: string, query: string): boolean {
   return qi === lowerQuery.length;
 }
 
-function Inner({ onClose, render }: { onClose: () => void; render?: CommandPaletteProps['render'] }) {
+function Inner({
+  onClose,
+  maxVisible = 10,
+  render
+}: {
+  onClose: () => void;
+  maxVisible?: number;
+  render?: CommandPaletteProps['render'];
+}) {
   const focus = useFocusNode();
   const theme = useTheme();
 
@@ -77,8 +87,8 @@ function Inner({ onClose, render }: { onClose: () => void; render?: CommandPalet
         const cmd = filtered[clampedIndex];
         if (cmd) onSelect(cmd);
       },
-      left: () => setSelectedIndex((i) => (i - 1 + filtered.length) % filtered.length),
-      right: () => setSelectedIndex((i) => (i + 1) % filtered.length),
+      up: () => setSelectedIndex((i) => (i - 1 + filtered.length) % filtered.length),
+      down: () => setSelectedIndex((i) => (i + 1) % filtered.length),
       backspace: () => {
         setQuery((q) => q.slice(0, -1));
         setSelectedIndex(0);
@@ -100,33 +110,40 @@ function Inner({ onClose, render }: { onClose: () => void; render?: CommandPalet
 
   return (
     <Box flexDirection="column">
-      {query.length > 0 && (
-        <Text>
-          <Text dimColor>&gt; </Text>
-          <Text>{query}</Text>
-          <Text inverse> </Text>
-        </Text>
-      )}
-      {filtered.length === 0 ? (
-        <Text dimColor>No commands found</Text>
-      ) : (
-        <Box flexWrap="wrap">
-          {filtered.map((cmd, index) => {
-            const highlighted = index === clampedIndex;
-            const keyColor = highlighted ? theme.hintHighlightColor : theme.hintColor;
-            const labelColor = highlighted ? theme.hintHighlightDimColor : theme.hintDimColor;
-            return (
-              <Text key={`${cmd.nodeId}-${cmd.key}`}>
-                <Text color={keyColor} bold>
-                  {cmd.key}
+      <Text>
+        <Text dimColor>&gt; </Text>
+        {query.length > 0 ? <Text>{query}</Text> : <Text dimColor>Search commands…</Text>}
+        <Text inverse> </Text>
+      </Text>
+      <Box flexDirection="column" marginTop={1}>
+        {filtered.length === 0 ? (
+          <Text dimColor>No commands found</Text>
+        ) : (
+          <VirtualList
+            items={filtered}
+            highlightIndex={clampedIndex}
+            maxVisible={maxVisible}
+            paginatorStyle="scrollbar"
+            render={({ item: cmd, index }) => {
+              const highlighted = index === clampedIndex;
+              const keyColor = highlighted ? theme.hintHighlightColor : theme.hintColor;
+              const labelColor = highlighted ? theme.hintHighlightDimColor : theme.hintDimColor;
+              return (
+                <Text>
+                  <Text dimColor>{highlighted ? theme.indicator + ' ' : '  '}</Text>
+                  <Text color={keyColor} bold>
+                    {cmd.key}
+                  </Text>
+                  <Text color={labelColor}> {cmd.name}</Text>
                 </Text>
-                <Text color={labelColor}> {cmd.name}</Text>
-                {index < filtered.length - 1 && <Text color={theme.hintDimColor}> • </Text>}
-              </Text>
-            );
-          })}
-        </Box>
-      )}
+              );
+            }}
+          />
+        )}
+      </Box>
+      <Box marginTop={1}>
+        <Text dimColor>↑↓ navigate · ↵ run · esc close</Text>
+      </Box>
     </Box>
   );
 }
@@ -155,14 +172,14 @@ function HintsBar() {
 
 const noop = () => {};
 
-export function CommandPalette({ onClose, interactive = true, render }: CommandPaletteProps) {
+export function CommandPalette({ onClose, interactive = true, maxVisible, render }: CommandPaletteProps) {
   if (!interactive) {
     return <HintsBar />;
   }
 
   return (
     <FocusTrap>
-      <Inner onClose={onClose ?? noop} render={render} />
+      <Inner onClose={onClose ?? noop} maxVisible={maxVisible} render={render} />
     </FocusTrap>
   );
 }
