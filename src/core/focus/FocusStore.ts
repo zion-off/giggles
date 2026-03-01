@@ -5,6 +5,7 @@ type FocusNode = {
   id: string;
   parentId: string | null;
   childrenIds: string[];
+  focusKey?: string;
 };
 
 type BindingEntry = {
@@ -36,7 +37,7 @@ export class FocusStore {
   private listeners: Set<() => void> = new Set();
   private version = 0;
   // nodeId → registrationId → BindingRegistration
-  // Keybindings register synchronously during render; nodes register in useEffect.
+  // Both keybindings and nodes register synchronously during render.
   // A keybinding may exist for a node that has not yet appeared in the node tree —
   // this is safe because dispatch only walks nodes in the active branch path.
   private keybindings: Map<string, Map<string, BindingRegistration>> = new Map();
@@ -52,10 +53,27 @@ export class FocusStore {
     return () => this.listeners.delete(listener);
   }
 
+  private dirty = false;
+
   private notify(): void {
     this.version++;
+    this.dirty = false;
     for (const listener of this.listeners) {
       listener();
+    }
+  }
+
+  // Mark the store as changed without notifying subscribers. Used when the
+  // store is mutated during React's render phase (e.g. silent node registration)
+  // where calling notify() would trigger subscription callbacks unsafely.
+  // Call flush() in a useLayoutEffect to deliver the notification before paint.
+  private markDirty(): void {
+    this.dirty = true;
+  }
+
+  flush(): void {
+    if (this.dirty) {
+      this.notify();
     }
   }
 
@@ -67,8 +85,20 @@ export class FocusStore {
   // Registration
   // ---------------------------------------------------------------------------
 
-  registerNode(id: string, parentId: string | null, focusKey?: string): void {
-    const node: FocusNode = { id, parentId, childrenIds: [] };
+  registerNode(id: string, parentId: string | null, focusKey?: string, silent: boolean = false): void {
+    // If the node already exists with the same parent, this is a re-render.
+    // Skip re-creation (which would wipe childrenIds) but update focusKey index.
+    const existing = this.nodes.get(id);
+    if (existing && existing.parentId === parentId) {
+      if (focusKey !== existing.focusKey) {
+        this.updateFocusKey(id, parentId, existing.focusKey, focusKey);
+        existing.focusKey = focusKey;
+        this.markDirty();
+      }
+      return;
+    }
+
+    const node: FocusNode = { id, parentId, childrenIds: [], focusKey };
     this.nodes.set(id, node);
     this.parentMap.set(id, parentId);
 
@@ -82,7 +112,11 @@ export class FocusStore {
         // Fulfill a pending focusFirstChild request on the parent
         if (wasEmpty && this.pendingFocusFirstChild.has(parentId)) {
           this.pendingFocusFirstChild.delete(parentId);
-          this.focusNode(id);
+          if (silent) {
+            this.setFocusedIdSilently(id);
+          } else {
+            this.focusNode(id);
+          }
         }
       }
     }
@@ -105,10 +139,18 @@ export class FocusStore {
 
     // Auto-focus the very first node added to the tree
     if (this.nodes.size === 1) {
-      this.focusNode(id);
+      if (silent) {
+        this.setFocusedIdSilently(id);
+      } else {
+        this.focusNode(id);
+      }
     }
 
-    this.notify();
+    if (silent) {
+      this.markDirty();
+    } else {
+      this.notify();
+    }
   }
 
   unregisterNode(id: string): void {
@@ -177,23 +219,18 @@ export class FocusStore {
     if (oldFocusedId === id) return;
 
     this.focusedId = id;
-
-    // Clear passive flags for scopes that focus is leaving or entering
-    for (const passiveId of this.passiveSet) {
-      const wasAncestor = this.isAncestorOf(passiveId, oldFocusedId);
-      const isAncestor = this.isAncestorOf(passiveId, id);
-
-      // Focus left the passive scope's subtree → clear
-      if (wasAncestor && !isAncestor) {
-        this.passiveSet.delete(passiveId);
-      }
-      // Focus entered a descendant of the passive scope → clear (drill-in)
-      if (isAncestor && id !== passiveId) {
-        this.passiveSet.delete(passiveId);
-      }
-    }
-
+    this.clearPassiveOnFocusChange(oldFocusedId, id);
     this.notify();
+  }
+
+  // Set focusedId without notifying subscribers. Safe to call during React's
+  // render phase. Clears passive flags the same way focusNode() does.
+  private setFocusedIdSilently(id: string): void {
+    const oldFocusedId = this.focusedId;
+    if (oldFocusedId === id) return;
+    this.focusedId = id;
+    this.clearPassiveOnFocusChange(oldFocusedId, id);
+    this.markDirty();
   }
 
   focusFirstChild(parentId: string): void {
@@ -525,5 +562,46 @@ export class FocusStore {
       cursor = node?.parentId ?? null;
     }
     return false;
+  }
+
+  // Clear passive flags when focus transitions between nodes.
+  private clearPassiveOnFocusChange(oldFocusedId: string | null, newFocusedId: string): void {
+    for (const passiveId of this.passiveSet) {
+      const wasAncestor = this.isAncestorOf(passiveId, oldFocusedId);
+      const isAncestor = this.isAncestorOf(passiveId, newFocusedId);
+
+      // Focus left the passive scope's subtree → clear
+      if (wasAncestor && !isAncestor) {
+        this.passiveSet.delete(passiveId);
+      }
+      // Focus entered a descendant of the passive scope → clear (drill-in)
+      if (isAncestor && newFocusedId !== passiveId) {
+        this.passiveSet.delete(passiveId);
+      }
+    }
+  }
+
+  // Update the keyIndex when a node's focusKey changes during a re-render.
+  private updateFocusKey(id: string, parentId: string | null, oldKey?: string, newKey?: string): void {
+    if (!parentId) return;
+
+    // Remove old key
+    if (oldKey) {
+      const parentKeys = this.keyIndex.get(parentId);
+      if (parentKeys) {
+        parentKeys.delete(oldKey);
+        if (parentKeys.size === 0) {
+          this.keyIndex.delete(parentId);
+        }
+      }
+    }
+
+    // Add new key
+    if (newKey) {
+      if (!this.keyIndex.has(parentId)) {
+        this.keyIndex.set(parentId, new Map());
+      }
+      this.keyIndex.get(parentId)!.set(newKey, id);
+    }
   }
 }

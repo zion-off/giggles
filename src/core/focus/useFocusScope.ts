@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useId, useMemo, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useSyncExternalStore } from 'react';
 import { GigglesError } from '../GigglesError';
 import type { Keybindings } from '../input/types';
 import { ScopeIdContext, useStore } from './StoreContext';
@@ -50,15 +50,23 @@ export function useFocusScope(options?: FocusScopeOptions): FocusScopeHandle {
   // store is stable (created once in GigglesProvider), so this never changes.
   const subscribe = useMemo(() => store.subscribe.bind(store), [store]);
 
-  // Node registration happens in useEffect (fires bottom-up: children before parents).
-  // The reverse-scan in FocusStore.registerNode handles the case where a child
-  // registers before its parent scope exists in the tree.
-  useEffect(() => {
-    store.registerNode(id, parentId, focusKey);
+  // Register during render (silent — no subscriber notifications) so that
+  // useSyncExternalStore's getSnapshot returns the correct hasFocus value
+  // on the first render, avoiding a visible focus jump.
+  store.registerNode(id, parentId, focusKey, true);
+
+  // Re-register in the effect setup so that Strict Mode's teardown/re-run
+  // cycle restores the node after the cleanup removes it. The early return
+  // guard in registerNode makes this a no-op in the normal (non-Strict) case.
+  // Flush deferred notifications before paint so already-subscribed
+  // components from previous renders see the update.
+  useLayoutEffect(() => {
+    store.registerNode(id, parentId, focusKey, true);
+    store.flush();
     return () => {
       store.unregisterNode(id);
     };
-  }, [id, parentId, focusKey, store]);
+  }, [id, store]);
 
   // Reactive reads via useSyncExternalStore. Each subscription returns a primitive
   // (boolean), so Object.is comparison avoids unnecessary re-renders.
