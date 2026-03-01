@@ -98,6 +98,18 @@ export class FocusStore {
       return;
     }
 
+    // Parent changed — remove from the old parent's children list so it doesn't
+    // become a phantom child that navigateSibling can land on unexpectedly.
+    if (existing && existing.parentId !== parentId) {
+      if (existing.parentId) {
+        const oldParent = this.nodes.get(existing.parentId);
+        if (oldParent) {
+          oldParent.childrenIds = oldParent.childrenIds.filter((c) => c !== id);
+        }
+      }
+      this.updateFocusKey(id, existing.parentId, existing.focusKey, undefined);
+    }
+
     const node: FocusNode = { id, parentId, childrenIds: [], focusKey };
     this.nodes.set(id, node);
     this.parentMap.set(id, parentId);
