@@ -7,7 +7,7 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Terminal } from '@/components/terminal';
 import CommandPaletteExample from '@/components/examples/ui/command-palette';
 
-A compact key hints bar that collects all named keybindings registered across the app. In interactive mode, it captures input and lets the user fuzzy-search and execute commands — type to filter, left/right arrow keys to navigate, Enter to execute, Escape to close. In non-interactive mode, it displays available keybindings for the currently focused context.
+A compact key hints bar that collects all named keybindings registered across the app. In interactive mode, it captures input and lets the user fuzzy-search and execute commands — type to filter, up/down arrow keys to navigate, Enter to execute, Escape to close. In non-interactive mode, it displays available keybindings for the currently focused context.
 
 Components register commands by passing a `name` field to `useKeybindings`. The default UI shows no keybinding hints of its own — use the `render` prop to add them, or display a static `<CommandPalette interactive={false} />` elsewhere in the layout.
 
@@ -64,6 +64,11 @@ function App() {
       description: 'When true, captures input with a FocusTrap for searching and executing commands. When false, renders a static hints bar showing available keybindings.',
       type: 'boolean',
       default: 'true',
+    },
+    maxVisible: {
+      description: 'Maximum number of commands shown at once. When the list exceeds this, a scrollbar is shown.',
+      type: 'number',
+      default: '10',
     },
     render: {
       description: 'Custom render function. Receives query, filtered commands, selected index, and onSelect. When provided, replaces the default palette UI entirely. Only used in interactive mode.',
