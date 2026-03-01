@@ -10,19 +10,19 @@ function DirItem({ name, files }: { name: string; files: string[] }) {
   const { indicator, indicatorOpen } = useTheme();
 
   const scope = useFocusScope({
-    keybindings: ({ next, drillIn }) =>
-      open
-        ? { j: next, h: () => setOpen(false) }
-        : {
-            l: () => {
-              setOpen(true);
-              drillIn();
-            },
-            enter: () => {
-              setOpen(true);
-              drillIn();
-            }
-          }
+    keybindings: ({ drillIn }) => ({
+      l: () => {
+        if (!open) {
+          setOpen(true);
+          drillIn();
+        }
+      },
+      enter: () => {
+        setOpen(true);
+        drillIn();
+      },
+      h: () => setOpen(false)
+    })
   });
 
   return (
@@ -55,7 +55,7 @@ function FileTree() {
         <DirItem name="src" files={['index.ts', 'utils.ts', 'types.ts']} />
         <DirItem name="tests" files={['unit.test.ts', 'e2e.test.ts']} />
       </FocusScope>
-      <Text dimColor>j/k — navigate · l — expand · j — enter · h — collapse</Text>
+      <Text dimColor>j/k — navigate · l/enter — expand · h — collapse</Text>
     </Box>
   );
 }

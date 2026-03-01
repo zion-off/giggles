@@ -90,7 +90,7 @@ function App() {
 
 ### Collapsible file tree
 
-A two-level tree where `j`/`k` move between top-level directories without entering them, and `l`/`enter` open the focused directory and move focus inside. The root uses [`nextShallow`/`prevShallow`](/core/focus#navigation-variants) to land on each directory node; the directory scope uses [`drillIn`](/core/focus#navigation-variants) to enter itself when opened, holding focus until the file list renders:
+A two-level tree where `j`/`k` move between top-level directories without entering them, and `l`/`enter` open the focused directory and move focus inside. The root uses [`nextShallow`/`prevShallow`](/core/focus#navigation-variants) to land on each directory node without drilling into it. The directory scope registers three bindings with a stable shape: `l` guards against re-entry when already open, `enter` is safe without a guard because `Select` always consumes it, and `h` is a harmless no-op when already closed. [`drillIn`](/core/focus#navigation-variants) is deferred — if the directory's children haven't rendered yet when it fires, the store queues the focus and delivers it as soon as the first child registers:
 
 ```tsx title="File tree"
 import { FocusScope, useFocusScope, useTheme } from 'giggles';
@@ -101,10 +101,11 @@ function DirItem({ name, files }: { name: string; files: string[] }) {
   const { indicator, indicatorOpen } = useTheme();
 
   const scope = useFocusScope({
-    keybindings: ({ next, drillIn }) =>
-      open
-        ? { j: next, h: () => setOpen(false) }
-        : { l: () => { setOpen(true); drillIn(); }, enter: () => { setOpen(true); drillIn(); } }
+    keybindings: ({ drillIn }) => ({
+      l:     () => { if (!open) { setOpen(true); drillIn(); } },
+      enter: () => { setOpen(true); drillIn(); },
+      h:     () => setOpen(false),
+    })
   });
 
   return (
