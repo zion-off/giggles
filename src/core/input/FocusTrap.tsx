@@ -7,9 +7,9 @@ type FocusTrapProps = {
 };
 
 export function FocusTrap({ children }: FocusTrapProps) {
-  const { id } = useFocusNode();
   const store = useStore();
   const previousFocusRef = useRef<string | null>(store.getFocusedId());
+  const { id } = useFocusNode();
 
   useEffect(() => {
     const previousFocus = previousFocusRef.current;
@@ -17,7 +17,7 @@ export function FocusTrap({ children }: FocusTrapProps) {
     store.focusFirstChild(id);
     return () => {
       store.clearTrap(id);
-      if (previousFocus) {
+      if (previousFocus && previousFocus !== id) {
         store.focusNode(previousFocus);
       }
     };
