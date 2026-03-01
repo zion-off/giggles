@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Box, Text } from 'ink';
-import { useFocusNode } from '../core/focus';
-import { FocusTrap, useKeybindingRegistry, useKeybindings } from '../core/input';
+import { FocusScope, useFocusScope } from '../core/focus';
+import { FocusTrap, useKeybindingRegistry } from '../core/input';
 import type { Key, RegisteredKeybinding } from '../core/input';
 import { useTheme } from '../core/theme';
+import { TextInput } from './TextInput';
 import { VirtualList } from './VirtualList';
 
 const EMPTY_KEY: Key = {
@@ -31,6 +32,7 @@ const EMPTY_KEY: Key = {
 
 export type CommandPaletteRenderProps = {
   query: string;
+  onChange: (query: string) => void;
   filtered: RegisteredKeybinding[];
   selectedIndex: number;
   onSelect: (cmd: RegisteredKeybinding) => void;
@@ -63,9 +65,7 @@ function Inner({
   maxVisible?: number;
   render?: CommandPaletteProps['render'];
 }) {
-  const focus = useFocusNode();
   const theme = useTheme();
-
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const registry = useKeybindingRegistry();
@@ -79,72 +79,66 @@ function Inner({
     onClose();
   };
 
-  useKeybindings(
-    focus,
-    {
+  const handleChange = (value: string) => {
+    setQuery(value);
+    setSelectedIndex(0);
+  };
+
+  const scope = useFocusScope({
+    keybindings: {
       escape: onClose,
       enter: () => {
         const cmd = filtered[clampedIndex];
         if (cmd) onSelect(cmd);
       },
       up: () => setSelectedIndex((i) => (i - 1 + filtered.length) % filtered.length),
-      down: () => setSelectedIndex((i) => (i + 1) % filtered.length),
-      backspace: () => {
-        setQuery((q) => q.slice(0, -1));
-        setSelectedIndex(0);
-      }
-    },
-    {
-      fallback: (input, key) => {
-        if (input.length === 1 && !key.ctrl) {
-          setQuery((q) => q + input);
-          setSelectedIndex(0);
-        }
-      }
+      down: () => setSelectedIndex((i) => (i + 1) % filtered.length)
     }
-  );
+  });
 
   if (render) {
-    return <>{render({ query, filtered, selectedIndex: clampedIndex, onSelect })}</>;
+    return (
+      <FocusScope handle={scope}>
+        {render({ query, onChange: handleChange, filtered, selectedIndex: clampedIndex, onSelect })}
+      </FocusScope>
+    );
   }
 
   return (
-    <Box flexDirection="column">
-      <Text>
-        <Text dimColor>&gt; </Text>
-        {query.length > 0 ? <Text>{query}</Text> : <Text dimColor>Search commands…</Text>}
-        <Text inverse> </Text>
-      </Text>
-      <Box flexDirection="column" marginTop={1}>
-        {filtered.length === 0 ? (
-          <Text dimColor>No commands found</Text>
-        ) : (
-          <VirtualList
-            items={filtered}
-            highlightIndex={clampedIndex}
-            maxVisible={maxVisible}
-            paginatorStyle="scrollbar"
-            render={({ item: cmd, index }) => {
-              const highlighted = index === clampedIndex;
-              const keyColor = highlighted ? theme.hintHighlightColor : theme.hintColor;
-              const labelColor = highlighted ? theme.hintHighlightDimColor : theme.hintDimColor;
-              return (
-                <Text>
-                  <Text dimColor>{highlighted ? theme.indicator + ' ' : '  '}</Text>
-                  <Text color={keyColor} bold>
-                    {cmd.key}
+    <FocusScope handle={scope}>
+      <Box flexDirection="column">
+        <TextInput label=">" value={query} onChange={handleChange} placeholder="Search commands…" />
+        <Box flexDirection="column" marginTop={1}>
+          {filtered.length === 0 ? (
+            <Text dimColor>No commands found</Text>
+          ) : (
+            <VirtualList
+              items={filtered}
+              highlightIndex={clampedIndex}
+              maxVisible={maxVisible}
+              paginatorStyle="scrollbar"
+              render={({ item: cmd, index }) => {
+                const highlighted = index === clampedIndex;
+                const keyColor = highlighted ? theme.hintHighlightColor : theme.hintColor;
+                const labelColor = highlighted ? theme.hintHighlightDimColor : theme.hintDimColor;
+                return (
+                  <Text>
+                    <Text dimColor>{highlighted ? theme.indicator + ' ' : '  '}</Text>
+                    <Text color={keyColor} bold>
+                      {cmd.key}
+                    </Text>
+                    <Text color={labelColor}> {cmd.name}</Text>
                   </Text>
-                  <Text color={labelColor}> {cmd.name}</Text>
-                </Text>
-              );
-            }}
-          />
-        )}
+                );
+              }}
+            />
+          )}
+        </Box>
+        <Box marginTop={1}>
+          <Text dimColor>↑↓ navigate · ↵ run · esc close</Text>
+        </Box>
       </Box>
-      <Box marginTop={1}>
-        <Text dimColor>↑↓ navigate · ↵ run · esc close</Text>
-      </Box>
-    </Box>
+    </FocusScope>
   );
 }
 

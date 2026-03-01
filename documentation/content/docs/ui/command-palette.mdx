@@ -71,7 +71,7 @@ function App() {
       default: '10',
     },
     render: {
-      description: 'Custom render function. Receives query, filtered commands, selected index, and onSelect. When provided, replaces the default palette UI entirely. Only used in interactive mode.',
+      description: 'Custom render function. When provided, replaces the default palette UI entirely. Navigation keybindings (up/down/enter/escape) are handled automatically — use the provided onChange with a TextInput for search input. Only used in interactive mode.',
       type: '(props: CommandPaletteRenderProps) => React.ReactNode',
     },
   }}
@@ -84,6 +84,11 @@ function App() {
     query: {
       description: 'Current search query string',
       type: 'string',
+      required: true,
+    },
+    onChange: {
+      description: 'Update the search query. Pass this to a TextInput to wire up search input.',
+      type: '(query: string) => void',
       required: true,
     },
     filtered: {
