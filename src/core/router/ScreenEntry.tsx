@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import { Box } from 'ink';
 import { ScopeIdContext, useStore } from '../focus/StoreContext';
 import { useFocusNode } from '../focus/useFocusNode';
@@ -33,7 +33,7 @@ export function ScreenEntry({
   const lastFocusedChildRef = useRef<string | null>(null);
   const wasTopRef = useRef(isTop);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!wasTopRef.current && isTop) {
       const saved = restoreFocus ? lastFocusedChildRef.current : null;
       if (saved) {

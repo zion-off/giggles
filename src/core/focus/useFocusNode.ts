@@ -1,4 +1,4 @@
-import { useContext, useEffect, useId, useMemo, useSyncExternalStore } from 'react';
+import { useContext, useId, useLayoutEffect, useMemo, useSyncExternalStore } from 'react';
 import { ScopeIdContext, useStore } from './StoreContext';
 import type { FocusScopeHandle } from './useFocusScope';
 
@@ -26,12 +26,23 @@ export function useFocusNode(options?: FocusNodeOptions): FocusNodeHandle {
 
   const subscribe = useMemo(() => store.subscribe.bind(store), [store]);
 
-  useEffect(() => {
-    store.registerNode(id, parentId, focusKey);
+  // Register during render (silent — no subscriber notifications) so that
+  // useSyncExternalStore's getSnapshot returns the correct hasFocus value
+  // on the first render, avoiding a visible focus jump.
+  store.registerNode(id, parentId, focusKey, true);
+
+  // Re-register in the effect setup so that Strict Mode's teardown/re-run
+  // cycle restores the node after the cleanup removes it. The early return
+  // guard in registerNode makes this a no-op in the normal (non-Strict) case.
+  // Flush deferred notifications before paint so already-subscribed
+  // components from previous renders see the update.
+  useLayoutEffect(() => {
+    store.registerNode(id, parentId, focusKey, true);
+    store.flush();
     return () => {
       store.unregisterNode(id);
     };
-  }, [id, parentId, focusKey, store]);
+  }, [id, store]);
 
   const hasFocus = useSyncExternalStore(subscribe, () => store.isFocused(id));
 
