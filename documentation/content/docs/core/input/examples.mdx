@@ -5,61 +5,42 @@ description: Worked examples for common input patterns
 
 import { Terminal } from '@/components/terminal';
 import FileListExample from '@/components/examples/input/file-list';
-import CaptureModeExample from '@/components/examples/input/capture-mode';
 import FocusTrapExample from '@/components/examples/input/focus-trap';
 
 ### File manager with search
 
-A file list where `j`/`k` navigate entries and `/` opens a search mode. In search mode, typed characters need to reach a handler rather than trigger named bindings — navigation keys are disabled conditionally, and a `fallback` captures everything the user types. `escape` and `enter` are listed in `bubble` so they skip the fallback and reach their named bindings above:
+A filterable file list composed from `Select` and `TextInput`. Because each component owns its keybindings, the parent scope has no navigation or character-capture logic — it only routes focus between fields. `/` bubbles up from the `Select` (which doesn't consume it) and triggers `focusChild('search')`; `escape` from the `TextInput` (which ignores it) triggers the reverse:
 
 ```tsx title="File manager"
 function FileManager() {
-  const focus = useFocusNode();
-  const [selected, setSelected] = useState(0);
-  const [files, setFiles] = useState([
-    { name: 'App.tsx', size: '2.4 KB' },
-    { name: 'utils.ts', size: '1.8 KB' },
-    { name: 'styles.css', size: '856 B' },
-  ]);
-  const [searchMode, setSearchMode] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [query, setQuery] = useState('');
 
-  const filteredFiles = searchMode
-    ? files.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : files;
-
-  // Navigation bindings — disabled during search so typed characters reach the fallback
-  useKeybindings(focus, {
-    ...(!searchMode && {
-      j: () => setSelected(i => Math.min(filteredFiles.length - 1, i + 1)),
-      k: () => setSelected(i => Math.max(0, i - 1)),
-      enter: () => console.log('Open', filteredFiles[selected].name),
-      '/': () => setSearchMode(true),
-    }),
-    escape: () => setSearchMode(false),
-  });
-
-  // Search mode — fallback catches typed characters; escape and enter bubble up
-  useKeybindings(
-    focus,
-    searchMode ? { enter: () => setSearchMode(false) } : {},
-    searchMode ? {
-      fallback: (input, key) => {
-        if (key.backspace) setSearchQuery(q => q.slice(0, -1));
-        else if (input) setSearchQuery(q => q + input);
-      },
-      bubble: ['escape', 'enter'],
-    } : undefined
+  const options = FILES.filter(
+    f => !query || f.value.toLowerCase().includes(query.toLowerCase())
   );
 
+  const scope = useFocusScope({
+    keybindings: ({ focusChild, next, prev }) => ({
+      '/': () => focusChild('search'),
+      escape: () => { setQuery(''); focusChild('list'); },
+      tab: next,
+      'shift+tab': prev,
+    }),
+  });
+
   return (
-    <Box flexDirection="column">
-      {searchMode && <Text>Search: {searchQuery}█</Text>}
-      {filteredFiles.map((file, i) => (
-        <Text key={file.name} color={i === selected ? 'green' : 'white'}>
-          {i === selected ? '▸ ' : '  '}{file.name} {file.size}
-        </Text>
-      ))}
+    <Box flexDirection="column" gap={1}>
+      <FocusScope handle={scope}>
+        <TextInput
+          focusKey="search"
+          label="/"
+          value={query}
+          onChange={setQuery}
+          onSubmit={() => scope.focusChild('list')}
+          placeholder="filter files…"
+        />
+        <Select focusKey="list" options={options} onSubmit={open} />
+      </FocusScope>
     </Box>
   );
 }
@@ -67,72 +48,6 @@ function FileManager() {
 
 <Terminal>
   <FileListExample />
-</Terminal>
-
-### Text input with mode switching
-
-A form that alternates between navigation mode (`j`/`k` to move between fields) and edit mode (press `enter` to type into the active field). The same `fallback`/`bubble` pattern handles edit mode — navigation bindings are disabled while editing so all typed characters reach the fallback:
-
-```tsx title="Contact form"
-function ContactForm() {
-  const focus = useFocusNode();
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-  const [activeField, setActiveField] = useState('name');
-  const [editing, setEditing] = useState(false);
-
-  const fields = ['name', 'email', 'message'];
-  const currentIndex = fields.indexOf(activeField);
-
-  // Navigation bindings — disabled while editing
-  useKeybindings(focus, {
-    ...(!editing && {
-      j: () => setActiveField(fields[Math.min(currentIndex + 1, 2)]),
-      k: () => setActiveField(fields[Math.max(currentIndex - 1, 0)]),
-      enter: () => setEditing(true),
-    }),
-    escape: () => setEditing(false),
-  });
-
-  // Edit mode — fallback catches typed characters; escape and enter bubble up
-  useKeybindings(
-    focus,
-    editing ? {
-      enter: () => {
-        setEditing(false);
-        if (currentIndex < 2) setActiveField(fields[currentIndex + 1]);
-      },
-    } : {},
-    editing ? {
-      fallback: (input, key) => {
-        if (key.backspace) {
-          setFormData(prev => ({ ...prev, [activeField]: prev[activeField].slice(0, -1) }));
-        } else if (input) {
-          setFormData(prev => ({ ...prev, [activeField]: prev[activeField] + input }));
-        }
-      },
-      bubble: ['escape', 'enter'],
-    } : undefined
-  );
-
-  return (
-    <Box flexDirection="column">
-      {fields.map(field => (
-        <Box key={field} flexDirection="column">
-          <Text color={field === activeField ? 'yellow' : 'grey'}>{field}:</Text>
-          <Text>
-            {field === activeField ? '▸ ' : '  '}
-            {formData[field as keyof typeof formData]}
-            {editing && field === activeField && '█'}
-          </Text>
-        </Box>
-      ))}
-    </Box>
-  );
-}
-```
-
-<Terminal>
-  <CaptureModeExample />
 </Terminal>
 
 ### Modal with focus trap

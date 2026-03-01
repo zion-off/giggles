@@ -21,10 +21,6 @@ function NameInput() {
 }
 ```
 
-<Terminal>
-  <TextInputExample />
-</Terminal>
-
 ## API Reference
 
 ### TextInput
@@ -117,26 +113,45 @@ The `render` prop receives pre-split text segments around the cursor.
 
 ## Examples
 
-### Form with submit
+### Multi-field form
 
-```tsx title="Form with Submit"
+Wrap multiple `TextInput` fields in a `FocusScope` and wire `tab`/`shift+tab` to `next`/`prev` — `TextInput` bubbles both keys automatically so the scope handles field switching with no extra logic. Put `onSubmit` on the last field to fire on `Enter`:
+
+```tsx title="Multi-field form"
+import { FocusScope, useFocusScope } from 'giggles';
 import { TextInput } from 'giggles/ui';
 import { useState } from 'react';
 
-function SearchForm() {
-  const [query, setQuery] = useState('');
+function ContactForm() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+
+  const scope = useFocusScope({
+    keybindings: ({ next, prev }) => ({ tab: next, 'shift+tab': prev }),
+  });
 
   return (
-    <TextInput
-      label="Search:"
-      value={query}
-      onChange={setQuery}
-      onSubmit={(value) => performSearch(value)}
-      placeholder="type to search..."
-    />
+    <Box flexDirection="column" gap={1}>
+      <FocusScope handle={scope}>
+        <TextInput label="Name:" value={name} onChange={setName} placeholder="Jane Doe" />
+        <TextInput label="Email:" value={email} onChange={setEmail} placeholder="jane@example.com" />
+        <TextInput
+          label="Message:"
+          value={message}
+          onChange={setMessage}
+          onSubmit={() => submit({ name, email, message })}
+          placeholder="Your message..."
+        />
+      </FocusScope>
+    </Box>
   );
 }
 ```
+
+<Terminal>
+  <TextInputExample />
+</Terminal>
 
 ### Custom render
 
