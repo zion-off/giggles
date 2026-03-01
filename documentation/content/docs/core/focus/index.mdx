@@ -1,0 +1,142 @@
+---
+title: Overview
+description: Hooks and components for building navigable component trees
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Terminal } from '@/components/terminal';
+import NavigableMenuExample from '@/components/examples/focus/navigable-menu';
+
+## Quick start
+
+```tsx title="Navigable menu"
+import { FocusScope, useFocusNode, useFocusScope } from 'giggles';
+
+function Menu() {
+  const scope = useFocusScope({
+    keybindings: ({ next, prev }) => ({ j: next, k: prev, down: next, up: prev })
+  });
+
+  return (
+    <FocusScope handle={scope}>
+      <MenuItem label="New File" />
+      <MenuItem label="Open File" />
+      <MenuItem label="Save" />
+    </FocusScope>
+  );
+}
+
+function MenuItem({ label }: { label: string }) {
+  const focus = useFocusNode();
+  return (
+    <Text color={focus.hasFocus ? 'green' : 'white'}>{label}</Text>
+  );
+}
+```
+
+<Terminal>
+  <NavigableMenuExample />
+</Terminal>
+
+## Nodes and scopes
+
+The example uses two hooks. Choosing between them comes down to a single question: does this component *contain* focusable children, or *is* it the focusable target?
+
+A **node** (`useFocusNode`) is a focusable target — a list item, a text field, a button. It can receive focus and respond to keys, but has no children in the focus tree. `MenuItem` above is a node.
+
+A **scope** (`useFocusScope`) is a navigable container. It groups focusable children and controls how focus moves between them. Scopes can nest — that's how complex layouts are built. `Menu` above is a scope.
+
+The `keybindings` option takes a function that receives navigation helpers and returns a map of key names to handlers. Handlers re-register on every render, so closures are never stale. Nodes register their keys with [`useKeybindings`](/core/input#registering-keybindings).
+
+Wrap children in `<FocusScope handle={scope}>` to set the parent context. Any `useFocusNode` or `useFocusScope` call inside it registers as a child of that scope.
+
+<Callout type="warn">
+  Every `useFocusScope()` call must have exactly one corresponding `<FocusScope>` rendered. Omitting it throws a `GigglesError` — without it, children register under the wrong parent and navigation breaks.
+</Callout>
+
+## `hasFocus` propagates up
+
+Focus always lives at a single leaf node, but a scope's `hasFocus` is true whenever *any descendant* currently has focus. This propagates up the tree, so a container can highlight its border while focus is several levels deep inside it — no extra state required:
+
+```tsx
+<Box borderColor={scope.hasFocus ? 'green' : 'grey'}>
+  <FocusScope handle={scope}>
+    {children}
+  </FocusScope>
+</Box>
+```
+
+## Navigation variants
+
+`next` and `prev` move focus to the next or previous child, automatically descending into the first leaf so navigation feels natural. Most of the time this is what you want.
+
+But consider a collapsible directory that hasn't rendered its children yet. `next` would stall on it — there's no leaf to land on inside a closed directory. `nextShallow` and `prevShallow` handle this: they land on the scope node itself without entering it, so the user can see the item and choose to open it.
+
+Since `nextShallow` lands *on* a scope without entering it, you need a separate action to go inside — that's `drillIn`. Call it alongside `setOpen(true)` in the same handler and focus moves to the first child as soon as it renders:
+
+```tsx
+// Root scope — move between items without entering them
+keybindings: ({ nextShallow, prevShallow }) => ({
+  j: nextShallow,
+  k: prevShallow,
+})
+
+// Child scope — enter when the user opens it
+keybindings: ({ drillIn }) => ({
+  l: () => { setOpen(true); drillIn(); },
+})
+```
+
+## Passive mode
+
+By default, the innermost matching binding always wins — so a panel that binds `j`/`k` consumes those keys before the parent ever sees them. That's usually correct. But sometimes the same keys need to mean different things at two levels: `j`/`k` navigate items inside a panel, and also switch between panels at the root.
+
+When that happens, the inner scope needs a way to yield. Calling `escape()` marks it passive — it is skipped during [dispatch](/core/input#how-a-keypress-reaches-its-handler) until focus moves elsewhere, so the parent's `j`/`k` fire instead:
+
+```tsx
+// Inner scope — yield on 'e'
+keybindings: ({ escape }) => ({ e: escape })
+
+// Outer scope — j/k now reach here while inner is passive
+keybindings: ({ next, prev }) => ({ j: next, k: prev })
+```
+
+`isPassive` lets you reflect the yielded state visually — a yellow border instead of green while the parent is in control. Passive mode clears automatically when focus moves to a different scope:
+
+```tsx
+<Box borderColor={scope.isPassive ? 'yellow' : scope.hasFocus ? 'green' : 'grey'}>
+```
+
+## Addressing children by name
+
+`next` and `prev` iterate in order. When you want to jump directly to a specific child — pressing `1` to open the editor, `2` for the terminal — give that child a `focusKey` and call `focusChild` from the parent:
+
+```tsx
+// Parent scope
+keybindings: ({ focusChild }) => ({
+  '1': () => focusChild('editor'),
+  '2': () => focusChild('terminal'),
+  '3': () => focusChild('sidebar'),
+})
+
+// Children
+<Editor focusKey="editor" />
+<Terminal focusKey="terminal" />
+<Sidebar focusKey="sidebar" />
+```
+
+`focusChild` drills into the first leaf of the target — the same behaviour as `next`. Use `focusChildShallow` to land on the scope node without entering it. `focusKey` works on both `useFocusScope` and `useFocusNode` — any focusable child can be addressed by name.
+
+Keys are scoped to the immediate parent, so the same key string can be reused inside sibling scopes without conflict. `focusChild` is also available directly on the handle for imperative use outside of keybindings:
+
+```tsx
+function handleFileOpen(name: string) {
+  openFile(name);
+  root.focusChild('preview');
+}
+```
+
+---
+
+- [API Reference](/core/focus/api-reference) — full type signatures for `useFocusScope`, `FocusScope`, and `useFocusNode`
+- [Examples](/core/focus/examples) — complete worked examples for common focus patterns
