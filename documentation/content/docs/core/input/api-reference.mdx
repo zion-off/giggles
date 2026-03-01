@@ -1,0 +1,187 @@
+---
+title: API Reference
+description: API reference for the input system
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+### useKeybindings()
+
+Registers keybindings that only fire when the component is in the active focus path.
+
+```ts title="Type Signature"
+function useKeybindings(
+  focus: { id: string },
+  bindings: Keybindings,
+  options?: KeybindingOptions
+): void
+```
+
+<TypeTable
+  type={{
+    focus: {
+      description: 'Focus handle from useFocusNode() or useFocusScope()',
+      type: '{ id: string }',
+      required: true,
+    },
+    bindings: {
+      description: 'Map of key names to handler functions or named binding objects',
+      type: 'Keybindings',
+      required: true,
+    },
+    options: {
+      description: 'Fallback and bubble configuration for text input scenarios',
+      type: 'KeybindingOptions',
+    },
+  }}
+/>
+
+#### KeyHandler
+
+```ts title="Type Signature"
+type KeyHandler = (input: string, key: Key) => void
+```
+
+<TypeTable
+  type={{
+    input: {
+      description: 'The character string for the key pressed',
+      type: 'string',
+      required: true,
+    },
+    key: {
+      description: 'Ink Key object with boolean properties (downArrow, return, escape, etc.)',
+      type: 'Key',
+      required: true,
+    },
+  }}
+/>
+
+#### Keybindings
+
+Each value can be a plain handler function or a named binding object. Named bindings are registered in the command registry and become discoverable via `useKeybindingRegistry`.
+
+<TypeTable
+  type={{
+    '[key: string]': {
+      description: 'Key name mapped to a handler or named binding object. See Key Names below for valid key strings.',
+      type: 'KeyHandler | { action: KeyHandler; name: string }',
+    },
+  }}
+/>
+
+#### Key Names
+
+| Key string | Triggers on |
+|---|---|
+| `up`, `down`, `left`, `right` | Arrow keys |
+| `enter` | Return / Enter |
+| `escape` | Escape |
+| `tab` | Tab |
+| `shift+tab` | Shift + Tab |
+| `backspace` | Backspace or Delete (⌫) |
+| `delete` | Forward delete (⌦) |
+| `pageup`, `pagedown` | Page Up / Page Down |
+| `home`, `end` | Home / End |
+| `ctrl+c`, `ctrl+q`, … | Ctrl + any letter |
+| `a`, `j`, `?`, … | Any printable character |
+
+#### KeybindingOptions
+
+<TypeTable
+  type={{
+    fallback: {
+      description: 'Handler for keystrokes that don\'t match named bindings. When provided, unmatched keys are routed here instead of bubbling to parent components.',
+      type: '(input: string, key: Key) => void',
+    },
+    bubble: {
+      description: 'Key names that skip the fallback and bubble to parent components instead. Use for keys like escape and enter that should always reach parent scopes.',
+      type: 'string[]',
+    },
+  }}
+/>
+
+When both `fallback` and named bindings are registered, dispatch follows this priority order:
+
+| Priority | What happens |
+|---|---|
+| 1. Named binding matches | Handler fires, key stops |
+| 2. Key is in `bubble` | Key propagates to parent scope |
+| 3. `fallback` exists | Fallback handler fires |
+| 4. Nothing matched | Key propagates to parent scope |
+
+
+### useKeybindingRegistry()
+
+Reads named bindings registered across the app, filtered by scope. Returns bindings in three views depending on how broadly you want to look.
+
+```ts title="Type Signature"
+function useKeybindingRegistry(): KeybindingRegistry
+```
+
+<TypeTable
+  type={{
+    all: {
+      description: 'All named bindings registered across the entire app',
+      type: 'RegisteredKeybinding[]',
+      required: true,
+    },
+    available: {
+      description: 'Named bindings currently reachable from the active focus path and its ancestors',
+      type: 'RegisteredKeybinding[]',
+      required: true,
+    },
+    local: {
+      description: 'Named bindings registered by the component that called useKeybindingRegistry. Empty if no focus handle provided.',
+      type: 'RegisteredKeybinding[]',
+      required: true,
+    },
+  }}
+/>
+
+#### RegisteredKeybinding
+
+<TypeTable
+  type={{
+    nodeId: {
+      description: 'Focus node ID of the registering component',
+      type: 'string',
+      required: true,
+    },
+    key: {
+      description: 'The key name the binding is registered under',
+      type: 'string',
+      required: true,
+    },
+    handler: {
+      description: 'The handler function',
+      type: 'KeyHandler',
+      required: true,
+    },
+    name: {
+      description: 'Human-readable label (only present on named bindings)',
+      type: 'string | undefined',
+    },
+  }}
+/>
+
+
+### FocusTrap
+
+Confines all keyboard input to its subtree. When mounted, keys no longer bubble past it — nothing outside the trap receives input. When unmounted, focus returns to the previously focused component.
+
+```tsx title="Type Signature"
+function FocusTrap({ children }: {
+  children: React.ReactNode;
+}): JSX.Element
+```
+
+<TypeTable
+  type={{
+    children: {
+      description: 'Components that should receive input exclusively while the trap is mounted',
+      type: 'React.ReactNode',
+      required: true,
+    },
+  }}
+/>

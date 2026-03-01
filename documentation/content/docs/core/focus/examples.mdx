@@ -1,0 +1,144 @@
+---
+title: Examples
+description: Worked examples for common focus patterns
+---
+
+import { Terminal } from '@/components/terminal';
+import FocusChildExample from '@/components/examples/focus/focus-child';
+import ControlledFocusExample from '@/components/examples/focus/controlled-focus';
+import FileTreeExample from '@/components/examples/focus/file-tree';
+
+### Jumping to a named child
+
+Iterating with `next` and `prev` works well when children are ordered, but sometimes you want to jump directly to a specific pane — press `1` for the editor, `2` for the terminal. Give each child a `focusKey` and call `focusChild` from the parent keybindings:
+
+```tsx title="Dashboard with named children"
+function Dashboard() {
+  const root = useFocusScope({
+    keybindings: ({ focusChild }) => ({
+      '1': () => focusChild('editor'),
+      '2': () => focusChild('terminal'),
+      '3': () => focusChild('sidebar'),
+    })
+  });
+
+  return (
+    <FocusScope handle={root}>
+      <Editor focusKey="editor" />
+      <Terminal focusKey="terminal" />
+      <Sidebar focusKey="sidebar" />
+    </FocusScope>
+  );
+}
+```
+
+<Terminal>
+  <FocusChildExample />
+</Terminal>
+
+`focusChild` drills into the first leaf of the target scope — the same behaviour as `next`. Use `focusChildShallow` to land on the scope node without entering it. `focusChild` is also available directly on the handle for imperative use outside of keybindings:
+
+```tsx title="Focus child from an event handler"
+const root = useFocusScope();
+
+function handleFileOpen(name: string) {
+  openFile(name);
+  root.focusChild('preview');
+}
+```
+
+### Nested scopes with shared keys
+
+Two panels side by side, each containing a `Select`. `j`/`k` navigate items inside the active panel — but at the root level, `j`/`k` should also switch between panels. Because the inner scope consumes those keys first, the user presses `e` to yield, putting the panel into passive mode so the root's `j`/`k` can take over:
+
+```tsx title="Two panels"
+function Panel({ title, items }: { title: string; items: string[] }) {
+  const scope = useFocusScope({
+    keybindings: ({ escape }) => ({ e: escape })
+  });
+
+  return (
+    <FocusScope handle={scope}>
+      <Box
+        borderStyle="round"
+        borderColor={scope.isPassive ? 'yellow' : scope.hasFocus ? 'green' : 'grey'}
+      >
+        <Text>{title}</Text>
+        <Select options={items.map(i => ({ label: i, value: i }))} />
+      </Box>
+    </FocusScope>
+  );
+}
+
+function App() {
+  const root = useFocusScope({
+    keybindings: ({ next, prev }) => ({ j: next, k: prev })
+  });
+
+  return (
+    <FocusScope handle={root}>
+      <Panel title="Navigation" items={['Home', 'About', 'Contact']} />
+      <Panel title="Tools" items={['Grep', 'Find', 'Awk']} />
+    </FocusScope>
+  );
+}
+```
+
+<Terminal>
+  <ControlledFocusExample />
+</Terminal>
+
+### Collapsible file tree
+
+A two-level tree where `j`/`k` move between top-level directories without entering them, and `l`/`enter` open the focused directory and move focus inside. The root uses [`nextShallow`/`prevShallow`](/core/focus#navigation-variants) to land on each directory node; the directory scope uses [`drillIn`](/core/focus#navigation-variants) to enter itself when opened, holding focus until the file list renders:
+
+```tsx title="File tree"
+import { FocusScope, useFocusScope, useTheme } from 'giggles';
+import { Select } from 'giggles/ui';
+
+function DirItem({ name, files }: { name: string; files: string[] }) {
+  const [open, setOpen] = useState(false);
+  const { indicator, indicatorOpen } = useTheme();
+
+  const scope = useFocusScope({
+    keybindings: ({ next, drillIn }) =>
+      open
+        ? { j: next, h: () => setOpen(false) }
+        : { l: () => { setOpen(true); drillIn(); }, enter: () => { setOpen(true); drillIn(); } }
+  });
+
+  return (
+    <FocusScope handle={scope}>
+      <Box flexDirection="column">
+        <Text color={scope.hasFocus ? 'green' : 'white'}>
+          {open ? indicatorOpen : indicator} {name}/
+        </Text>
+        {open && (
+          <Select options={files.map(f => ({ label: f, value: f }))} />
+        )}
+      </Box>
+    </FocusScope>
+  );
+}
+
+function FileTree() {
+  const root = useFocusScope({
+    keybindings: ({ nextShallow, prevShallow }) => ({
+      j: nextShallow, k: prevShallow
+    })
+  });
+
+  return (
+    <FocusScope handle={root}>
+      <DirItem name="src" files={['index.ts', 'utils.ts', 'types.ts']} />
+      <DirItem name="tests" files={['unit.test.ts', 'e2e.test.ts']} />
+    </FocusScope>
+  );
+}
+```
+
+The directory header's color reflects `scope.hasFocus`, which is true whenever any descendant — including files deep inside — has focus. No separate state needed to track whether the container is active.
+
+<Terminal>
+  <FileTreeExample />
+</Terminal>

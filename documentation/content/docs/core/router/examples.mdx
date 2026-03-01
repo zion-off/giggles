@@ -1,0 +1,37 @@
+---
+title: Examples
+description: Worked examples for common router patterns
+---
+
+import { Terminal } from '@/components/terminal';
+import NestedRouterExample from '@/components/examples/router/nested-router';
+
+### Nested routers
+
+Each `Router` manages its own independent stack, so you can nest them for tabbed layouts or sub-navigation. The outer router handles top-level navigation; inner routers handle navigation within a screen:
+
+```tsx title="Nested routers"
+function App() {
+  return (
+    <GigglesProvider>
+      <Router initialScreen="tabs">
+        <Screen name="tabs" component={Tabs} />
+        <Screen name="detail" component={Detail} />
+      </Router>
+    </GigglesProvider>
+  );
+}
+
+function Tabs() {
+  return (
+    <Router initialScreen="tab1">
+      <Screen name="tab1" component={Tab1} />
+      <Screen name="tab2" component={Tab2} />
+    </Router>
+  );
+}
+```
+
+<Terminal>
+  <NestedRouterExample />
+</Terminal>

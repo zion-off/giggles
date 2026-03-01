@@ -1,0 +1,74 @@
+---
+title: Overview
+description: Stack-based screen navigation for terminal UIs
+---
+
+import { Terminal } from '@/components/terminal';
+import BasicRouterExample from '@/components/examples/router/basic-router';
+
+## Quick start
+
+```tsx title="Basic router"
+import { GigglesProvider, Router, Screen, useNavigation, useFocusNode, useKeybindings } from 'giggles';
+
+function App() {
+  return (
+    <GigglesProvider>
+      <Router initialScreen="home">
+        <Screen name="home" component={Home} />
+        <Screen name="settings" component={Settings} />
+      </Router>
+    </GigglesProvider>
+  );
+}
+
+function Home() {
+  const { push } = useNavigation();
+  const focus = useFocusNode();
+
+  useKeybindings(focus, {
+    s: () => push('settings'),
+  });
+
+  return <Text>Home <Text dimColor>Press s for settings</Text></Text>;
+}
+
+function Settings() {
+  const { pop, canGoBack } = useNavigation();
+  const focus = useFocusNode();
+
+  useKeybindings(focus, {
+    q: () => pop(),
+  });
+
+  return <Text>Settings {canGoBack && <Text dimColor>Press q to go back</Text>}</Text>;
+}
+```
+
+<Terminal>
+  <BasicRouterExample />
+</Terminal>
+
+## How the stack works
+
+`Router` maintains a stack of screens. Only the top screen is visible — but every screen below it stays mounted, preserving its state. Navigating back is instant: there's no re-initialization, no lost scroll position, no refetched data.
+
+The four stack operations map directly to what you'd expect:
+
+- `push(name, params)` — add a screen on top
+- `pop()` — remove the top screen, return to the previous one
+- `replace(name, params)` — swap the current screen without adding to the stack
+- `reset(name, params)` — clear the stack and start fresh from a single screen
+
+Call these from `useNavigation()` inside any screen component.
+
+## Focus integration
+
+When a screen becomes the top of the stack, its first focusable child receives focus automatically. When navigating back, focus is restored to whichever element was focused before the screen was covered — so the user's position is preserved across navigation.
+
+To always focus the first child on return instead, set `restoreFocus={false}` on the `Router`.
+
+---
+
+- [API Reference](/core/router/api-reference) — full type signatures for `Router`, `Screen`, and `useNavigation`
+- [Examples](/core/router/examples) — nested routers and tabbed layouts

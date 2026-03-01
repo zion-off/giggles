@@ -1,62 +1,10 @@
 ---
-title: Router
+title: API Reference
 description: API reference for the screen router
 ---
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 import { Callout } from 'fumadocs-ui/components/callout';
-import { Terminal } from '@/components/terminal';
-import BasicRouterExample from '@/components/examples/router/basic-router';
-
-Stack-based screen navigation. Screens stay mounted when pushed to preserve state.
-
-When you `push` a screen, it's added to the top of the stack. When you `pop`, the top screen is removed and the previous one becomes visible again. Hidden screens remain mounted so they don't lose state.
-
-The Router integrates with the focus system automatically — when a screen becomes the top of the stack, its first focusable child receives focus. When navigating back to a previous screen, focus is restored to whichever element was focused before the screen was covered. This can be disabled with `restoreFocus={false}`, which always focuses the first child instead.
-
-```tsx title="Basic Usage"
-import { GigglesProvider, Router, Screen, useNavigation, useFocusNode, useKeybindings } from 'giggles';
-import { Text } from 'ink';
-
-function App() {
-  return (
-    <GigglesProvider>
-      <Router initialScreen="home">
-        <Screen name="home" component={Home} />
-        <Screen name="settings" component={Settings} />
-      </Router>
-    </GigglesProvider>
-  );
-}
-
-function Home() {
-  const { push } = useNavigation();
-  const focus = useFocusNode();
-
-  useKeybindings(focus, {
-    s: () => push('settings'),
-  });
-
-  return <Text>Home <Text dimColor>Press s for settings</Text></Text>;
-}
-
-function Settings() {
-  const { pop, canGoBack } = useNavigation();
-  const focus = useFocusNode();
-
-  useKeybindings(focus, {
-    q: () => pop(),
-  });
-
-  return <Text>Settings {canGoBack && <Text dimColor>Press q to go back</Text>}</Text>;
-}
-```
-
-<Terminal>
-  <BasicRouterExample />
-</Terminal>
-
-## API Reference
 
 ### Router
 
@@ -117,8 +65,6 @@ Returns navigation methods and current route state. Must be used within a Router
 function useNavigation(): NavigationContextValue
 ```
 
-**Returns:** `NavigationContextValue`
-
 <TypeTable
   type={{
     currentRoute: {
@@ -159,6 +105,10 @@ function useNavigation(): NavigationContextValue
   }}
 />
 
+<Callout type="warn">
+  `push`, `replace`, and `reset` throw a `GigglesError` if the screen name is not registered.
+</Callout>
+
 #### ScreenRoute
 
 <TypeTable
@@ -179,33 +129,3 @@ function useNavigation(): NavigationContextValue
     },
   }}
 />
-
-<Callout type="warn">
-  `push`, `replace`, and `reset` throw a `GigglesError` if the screen name is not registered.
-</Callout>
-
-## Nested Routers
-
-Each Router manages its own independent stack. You can nest routers for tabbed layouts or sub-navigation:
-
-```tsx title="Nested Routers"
-function App() {
-  return (
-    <GigglesProvider>
-      <Router initialScreen="tabs">
-        <Screen name="tabs" component={Tabs} />
-        <Screen name="detail" component={Detail} />
-      </Router>
-    </GigglesProvider>
-  );
-}
-
-function Tabs() {
-  return (
-    <Router initialScreen="tab1">
-      <Screen name="tab1" component={Tab1} />
-      <Screen name="tab2" component={Tab2} />
-    </Router>
-  );
-}
-```
