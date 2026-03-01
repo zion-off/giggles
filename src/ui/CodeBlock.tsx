@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Box, type BoxProps, Text } from 'ink';
 import { useTheme } from '../core/theme';
 import Prism from 'prismjs';
@@ -45,10 +45,13 @@ type CodeBlockProps = Omit<BoxProps, 'children'> & {
 
 export function CodeBlock({ children, language, tokenColors, ...boxProps }: CodeBlockProps) {
   const theme = useTheme();
-  const colors = { ...defaultTokenColors, ...tokenColors };
+  const colors = useMemo(() => ({ ...defaultTokenColors, ...tokenColors }), [tokenColors]);
   const grammar = language ? Prism.languages[language] : undefined;
 
-  const content = grammar ? renderTokens(Prism.tokenize(children, grammar), colors) : <Text>{children}</Text>;
+  const content = useMemo(
+    () => (grammar ? renderTokens(Prism.tokenize(children, grammar), colors) : <Text>{children}</Text>),
+    [children, grammar, colors]
+  );
 
   return (
     <Box paddingX={1} borderStyle={theme.borderStyle} borderColor={theme.borderColor} {...boxProps}>
