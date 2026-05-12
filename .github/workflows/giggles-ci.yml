@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - 'documentation/**'
       - 'tools/**'
+      - 'skills/**'
       - '.github/workflows/documentation-*'
       - '.github/workflows/create-giggles-app-*'
       - 'README.md'
@@ -17,6 +18,7 @@ on:
     paths-ignore:
       - 'documentation/**'
       - 'tools/**'
+      - 'skills/**'
       - '.github/workflows/documentation-*'
       - '.github/workflows/create-giggles-app-*'
       - 'README.md'
