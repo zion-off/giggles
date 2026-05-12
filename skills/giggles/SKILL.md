@@ -1,0 +1,181 @@
+---
+name: giggles
+description: Context and reference for building apps with the giggles framework. Trigger when working on a giggles project or when the user asks about focus management, keyboard input routing, screen navigation, or UI components in a terminal app.
+---
+
+## giggles
+
+This project uses giggles — a batteries-included React/Ink framework for terminal UIs. It provides focus management, keyboard input routing, screen navigation, and theming on top of Ink (React for CLIs).
+
+Full documentation is available at https://giggles.zzzzion.com. An index of all pages is available at https://giggles.zzzzion.com/llms.txt — fetch this to discover specific pages before searching for information.
+
+### Setup
+
+Every app wraps with `GigglesProvider`. Never call focus hooks in the same component as the provider — put them in a child component.
+
+```tsx
+import { GigglesProvider } from 'giggles';
+import { render } from 'ink';
+
+function Root() {
+  return (
+    <GigglesProvider>
+      <App />
+    </GigglesProvider>
+  );
+}
+
+render(<Root />);
+```
+
+### Focus primitives
+
+**`useFocusNode(options?)`** — registers a leaf node in the focus tree. Returns `{ id, hasFocus }`. Used directly in custom interactive components. Accepts `focusKey` so the parent scope can address this node via `focusChild`/`focusChildShallow`.
+
+**`useFocusScope(options?)`** — registers a scope node. Returns `{ id, hasFocus, isPassive, next, prev, nextShallow, prevShallow, escape, drillIn, focusChild, focusChildShallow }`.
+
+- `hasFocus` is true when the scope node **or any descendant** has focus (ancestor walk, not strict equality).
+- Wrap children in `<FocusScope handle={scope}>` to set the implicit parent for nested hooks. Omitting `<FocusScope>` throws a `GigglesError`.
+- `keybindings` accepts a plain object or a factory `(helpers) => object`. Handlers are re-registered every render so closures are never stale.
+- `focusKey` — optional string that lets the parent scope address this scope by name via `focusChild`/`focusChildShallow`.
+
+**Navigation helpers** — available directly on the handle and as the `keybindings` factory argument. Stable references; safe to call from effects and event handlers.
+
+```ts
+next(); // move to next child, drill into its first leaf
+prev(); // move to prev child, drill into its first leaf
+nextShallow(); // move to next child, land on scope node (don't drill)
+prevShallow(); // move to prev child, land on scope node
+escape(); // make this scope passive — yields input to parent
+drillIn(); // focusFirstChild — queues focus if no children yet; first child to register claims it
+focusChild(key); // focus the direct child registered with focusKey=key, drilling into its first leaf
+focusChildShallow(key); // same, but land on the scope node without drilling
+```
+
+### Controlled focus
+
+Use `focusKey` to give a child a stable name, then call `focusChild` from the parent to jump directly to it — bypassing `next`/`prev` iteration. Keys are scoped to the immediate parent scope.
+
+```tsx
+// Child declares its key
+const scope = useFocusScope({ focusKey: 'editor' });
+// or on a UI component:
+<TextInput focusKey="search" />;
+
+// Parent jumps to it directly
+const root = useFocusScope({
+  keybindings: ({ focusChild }) => ({
+    '1': () => focusChild('files'),
+    '2': () => focusChild('editor')
+  })
+});
+
+// Also available on the handle for effects
+useEffect(() => {
+  if (error) root.focusChild('errors');
+}, [error]);
+```
+
+`focusChild` drills into the first leaf of the target (same as `next`). Use `focusChildShallow` to land on the scope node itself. If the key is not found, both are no-ops. If the target scope has no children yet, `focusChild` queues focus — the first child to register claims it automatically.
+
+### Key bubbling
+
+Keys walk from the focused node up to the root. At each node:
+
+1. Skip if passive.
+2. If a binding matches, call it and **stop** — no further bubbling.
+3. If this is the trap node, stop.
+
+**Implication for composition:** keys not handled by a UI component bubble to the parent scope. A vertical `Select` consumes `j`/`k`/`↑`/`↓`/`enter` — everything else (e.g. `h`, `l`, `e`) bubbles freely. You only need `escape()` when the same key must serve both an inner and outer scope simultaneously.
+
+### `next` vs `nextShallow`
+
+Use `nextShallow`/`prevShallow` at a scope that contains children which may have no registered descendants (e.g. collapsed tree nodes). `next` drills into children — if a child scope has no registered descendants, it will queue indefinitely. `nextShallow` lands on the scope node itself, where the user can press a key to open it.
+
+### Passive mode
+
+Call `escape()` to make a scope passive. The scope node receives focus and is skipped during dispatch, so parent bindings fire instead. Passive clears automatically when focus leaves the scope's subtree.
+
+Only use passive mode when parent and child scopes compete for the **same keys**. If different keys are used at each level, normal bubbling separates them — no `escape()` needed.
+
+### Border color convention
+
+```tsx
+<Box borderColor={scope.isPassive ? 'yellow' : scope.hasFocus ? 'green' : 'grey'}>
+```
+
+### UI components (`giggles/ui`)
+
+All interactive components use `useFocusNode()` internally — they are leaf nodes, not scopes. Their keybindings fire before bubbling to any parent scope. All interactive components accept a `focusKey` prop so their parent scope can address them via `focusChild`/`focusChildShallow`.
+
+Available components: `Select`, `MultiSelect`, `TextInput`, `Autocomplete`, `Confirm`, `Viewport`, `Modal`, `Badge`, `Spinner`, `Paginator`, `Panel`, `Markdown`, `VirtualList`, `CommandPalette`, `CodeBlock`.
+
+Key behaviour for interactive components:
+
+| Component                | Keys consumed                                                    | Notes                                    |
+| ------------------------ | ---------------------------------------------------------------- | ---------------------------------------- |
+| `Select` (vertical)      | `j` `k` `↑` `↓` `enter`                                          | All other keys bubble                    |
+| `Select` (horizontal)    | `h` `l` `←` `→` `enter`                                          | All other keys bubble                    |
+| `MultiSelect` (vertical) | `j` `k` `↑` `↓` `space`; `enter` if `onSubmit` set               |                                          |
+| `TextInput`              | All printable, `←` `→` `home` `end` `backspace` `delete` `enter` | Passthroughs: `tab` `shift+tab` `escape` |
+| `Autocomplete`           | All printable, `←` `→` `home` `end` `backspace` `delete` `enter` | Passthroughs: `tab` `shift+tab` `escape` |
+| `Confirm`                | `y` `n` `enter`                                                  |                                          |
+| `Viewport`               | `j` `k` `↑` `↓` `pageup` `pagedown` `g` `G`                      |                                          |
+| `Modal`                  | —                                                                | Wraps `FocusTrap`; `escape` closes       |
+
+`Select` and `MultiSelect` work in controlled or uncontrolled mode. Pass `value`/`onChange` to own state yourself; omit them to let the component manage it internally. Use `onHighlight` to observe cursor movement without owning state.
+
+### `useKeybindings`
+
+Register keybindings independently from focus scope navigation. You can call it multiple times in the same component — all bindings are active simultaneously, later calls override earlier ones for duplicate keys.
+
+```tsx
+// Base navigation
+useKeybindings(focus, { j: moveDown, k: moveUp });
+
+// Search mode — fallback intercepts unbound keys; escape bubbles to named bindings above
+useKeybindings(
+  focus,
+  searchMode ? { escape: exitSearch } : {},
+  searchMode ? { fallback: handleInput, bubble: ['escape'] } : undefined
+);
+```
+
+**Fallback handler:** pass `fallback` to catch keys that don't match any named binding — useful for text input. Keys listed in `bubble` skip the fallback and propagate to parent scopes. `TextInput` and `Autocomplete` use this internally.
+
+**App-wide shortcuts:** register them on the root scope — unhandled keys bubble up naturally, so a binding at the root fires whenever no child consumes the key first.
+
+### `FocusTrap`
+
+Locks input to a subtree — nothing outside it receives keys until the trap unmounts. Used internally by `Modal`. Use it directly for custom modal-like components.
+
+### Screen router
+
+```ts
+const { push, pop, replace, reset, currentRoute } = useNavigation();
+
+push('screenName', params); // open on top of stack
+pop(); // return to previous screen
+replace('screenName', params); // swap current screen
+reset('screenName', params); // clear stack, show this screen
+```
+
+All screens stay mounted but hidden — state is preserved across navigation. Focus position is saved on push and restored on pop. Use `restoreFocus={false}` on `<Screen>` to always focus the first child instead.
+
+### Theme
+
+Access the active theme with `useTheme()`. Override values by passing a `theme` prop to `GigglesProvider`:
+
+```tsx
+<GigglesProvider theme={{ borderColor: 'cyan', borderStyle: 'round' }}>
+```
+
+### Common pitfalls
+
+| Pitfall                                                  | Fix                                                                                                                               |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Focus hooks in the same component as `GigglesProvider`   | Move them into a child component                                                                                                  |
+| `useFocusScope()` without a corresponding `<FocusScope>` | Throws `GigglesError` — always render `<FocusScope handle={scope}>` wrapping the children                                         |
+| `next()` hangs on a scope with no registered children    | Use `nextShallow()` at the parent level                                                                                           |
+| `h`/`l` bubbling unexpectedly to parent scope            | Vertical `Select` does not consume `h`/`l` — use different keys at each level, or use `escape()` if the same keys must serve both |
+| Parent bindings not firing while child is focused        | Expected — add `escape()` to the child scope to yield control                                                                     |
