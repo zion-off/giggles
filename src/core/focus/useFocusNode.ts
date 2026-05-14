@@ -36,6 +36,12 @@ export function useFocusNode(options?: FocusNodeOptions): FocusNodeHandle {
   // guard in registerNode makes this a no-op in the normal (non-Strict) case.
   // Flush deferred notifications before paint so already-subscribed
   // components from previous renders see the update.
+  // parentId and focusKey are intentionally omitted from deps. The render-time
+  // registerNode() call above already handles changes to those values on every
+  // render. This effect is only for Strict Mode teardown recovery — adding
+  // parentId/focusKey would cause unregisterNode to fire on prop changes,
+  // triggering an unwanted refocus to the ancestor.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
     store.registerNode(id, parentId, focusKey, true);
     store.flush();

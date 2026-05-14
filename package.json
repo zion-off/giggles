@@ -43,7 +43,9 @@
     "play": "f() { tsx --watch playground/examples/$1.tsx; }; f",
     "record": "f() { vhs playground/tapes/$1.tape; }; f",
     "dev:docs": "pnpm build && concurrently --kill-others \"pnpm build:watch\" \"pnpm --filter documentation dev\"",
-    "lint": "prettier --write --loglevel warn . && eslint . --fix --quiet"
+    "lint": "prettier --write --loglevel warn . && eslint . --fix --quiet",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "files": [
     "dist"
@@ -68,7 +70,8 @@
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.0.3",
-    "typescript-eslint": "^8.0.0"
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "cli-table3": "^0.6.5",
