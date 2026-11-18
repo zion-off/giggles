@@ -11,7 +11,6 @@
     "lint": "prettier --write --loglevel warn . && eslint . --fix --quiet",
     "generate-og": "tsx scripts/generate-og.ts",
     "preview": "tsx scripts/generate-og.ts && opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "tsx scripts/generate-og.ts && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
